@@ -1,0 +1,243 @@
+openapi: 3.1.0
+info:
+  title: QAUserSearch API
+  description: |
+    API para busca de massas de usuários em ambiente de QA.
+  version: 0.1.0
+  contact:
+    name: QA Team
+  license:
+    name: Proprietary
+
+servers:
+  - url: http://localhost:8000
+    description: Desenvolvimento local
+
+tags:
+  - name: Health
+    description: Endpoints de monitoramento e status da aplicação
+
+paths:
+  /health:
+    get:
+      operationId: getHealth
+      summary: Verifica status da aplicação
+      description: |
+        Retorna o status de saúde da aplicação e suas dependências.
+        Útil para load balancers, Kubernetes probes e monitoramento.
+      tags:
+        - Health
+      responses:
+        '200':
+          description: Aplicação saudável
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HealthCheckResponse'
+              example:
+                status: healthy
+                timestamp: '2026-01-28T19:58:46Z'
+                version: '0.1.0'
+                uptime_seconds: 3600
+                checks:
+                  - name: database
+                    status: ok
+                    latency_ms: 5
+                  - name: qa_database
+                    status: ok
+                    latency_ms: 12
+        '503':
+          description: Aplicação com problemas
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HealthCheckResponse'
+              example:
+                status: unhealthy
+                timestamp: '2026-01-28T19:58:46Z'
+                version: '0.1.0'
+                uptime_seconds: 3600
+                checks:
+                  - name: database
+                    status: ok
+                    latency_ms: 5
+                  - name: qa_database
+                    status: error
+                    message: Connection timeout
+
+  /health/live:
+    get:
+      operationId: getLiveness
+      summary: Liveness probe
+      description: |
+        Indica se a aplicação está rodando.
+        Retorna 200 se o processo está ativo, independente das dependências.
+      tags:
+        - Health
+      responses:
+        '200':
+          description: Aplicação está viva
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LivenessResponse'
+              example:
+                alive: true
+
+  /health/ready:
+    get:
+      operationId: getReadiness
+      summary: Readiness probe
+      description: |
+        Indica se a aplicação está pronta para receber tráfego.
+        Retorna 200 apenas se todas as dependências críticas estão acessíveis.
+      tags:
+        - Health
+      responses:
+        '200':
+          description: Aplicação pronta
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ReadinessResponse'
+              example:
+                ready: true
+        '503':
+          description: Aplicação não está pronta
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ReadinessResponse'
+              example:
+                ready: false
+                reason: Database connection failed
+
+  /:
+    get:
+      operationId: getRoot
+      summary: Root endpoint
+      description: Retorna informações básicas da API
+      responses:
+        '200':
+          description: Informações da API
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RootResponse'
+              example:
+                name: QAUserSearch API
+                version: '0.1.0'
+                docs_url: /docs
+
+components:
+  schemas:
+    HealthStatus:
+      type: string
+      enum:
+        - healthy
+        - degraded
+        - unhealthy
+      description: |
+        Status geral da aplicação:
+        - healthy: Todos os checks OK
+        - degraded: Algum check com warning
+        - unhealthy: Algum check com error
+
+    CheckStatus:
+      type: string
+      enum:
+        - ok
+        - warning
+        - error
+      description: Status de uma dependência individual
+
+    DependencyCheck:
+      type: object
+      required:
+        - name
+        - status
+      properties:
+        name:
+          type: string
+          description: Nome da dependência verificada
+          example: database
+        status:
+          $ref: '#/components/schemas/CheckStatus'
+        latency_ms:
+          type: integer
+          nullable: true
+          description: Latência da verificação em milissegundos
+          example: 5
+        message:
+          type: string
+          nullable: true
+          description: Mensagem adicional (geralmente para erros)
+          example: Connection refused
+
+    HealthCheckResponse:
+      type: object
+      required:
+        - status
+        - timestamp
+        - version
+        - uptime_seconds
+        - checks
+      properties:
+        status:
+          $ref: '#/components/schemas/HealthStatus'
+        timestamp:
+          type: string
+          format: date-time
+          description: Data/hora da verificação
+        version:
+          type: string
+          description: Versão da aplicação
+          example: '0.1.0'
+        uptime_seconds:
+          type: integer
+          description: Segundos desde o início da aplicação
+          example: 3600
+        checks:
+          type: array
+          items:
+            $ref: '#/components/schemas/DependencyCheck'
+          description: Status de cada dependência verificada
+
+    LivenessResponse:
+      type: object
+      required:
+        - alive
+      properties:
+        alive:
+          type: boolean
+          description: Indica se o processo está rodando
+
+    ReadinessResponse:
+      type: object
+      required:
+        - ready
+      properties:
+        ready:
+          type: boolean
+          description: Indica se a aplicação pode receber tráfego
+        reason:
+          type: string
+          nullable: true
+          description: Motivo da não-prontidão
+
+    RootResponse:
+      type: object
+      required:
+        - name
+        - version
+        - docs_url
+      properties:
+        name:
+          type: string
+          description: Nome da API
+        version:
+          type: string
+          description: Versão da API
+        docs_url:
+          type: string
+          description: URL da documentação Swagger
