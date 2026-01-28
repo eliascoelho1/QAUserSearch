@@ -17,8 +17,11 @@ API para busca de massas de usuários em ambiente de QA.
 git clone <repo-url>
 cd QAUserSearch
 
-# Run the setup script
+# Run the setup script (requires Docker)
 ./scripts/setup.sh
+
+# Or without Docker (local setup only)
+./scripts/setup-local.sh
 ```
 
 Or manually:

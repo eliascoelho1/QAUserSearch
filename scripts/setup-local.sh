@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
-# Setup script for QAUserSearch development environment
+# Setup script for QAUserSearch development environment (without Docker)
+# Use this script if you don't have Docker installed or prefer local setup
 
 set -euo pipefail
 
@@ -35,15 +36,13 @@ check_command() {
 main() {
     cd "${PROJECT_ROOT}"
     
-    log_info "Setting up QAUserSearch development environment..."
+    log_info "Setting up QAUserSearch development environment (without Docker)..."
     echo
     
     # Check prerequisites
     log_info "Checking prerequisites..."
     check_command "python3"
     check_command "uv"
-    check_command "docker"
-    check_command "docker-compose" || check_command "docker"
     echo
     
     # Check Python version
@@ -70,25 +69,6 @@ main() {
     uv sync --all-extras
     echo
     
-    # Start database
-    log_info "Starting PostgreSQL database..."
-    docker-compose -f docker/docker-compose.yml up -d db
-    
-    # Wait for database to be ready
-    log_info "Waiting for database to be ready..."
-    for i in {1..30}; do
-        if docker-compose -f docker/docker-compose.yml exec -T db pg_isready -U postgres &>/dev/null; then
-            log_info "Database is ready!"
-            break
-        fi
-        if [[ $i -eq 30 ]]; then
-            log_error "Database failed to start within 30 seconds"
-            exit 1
-        fi
-        sleep 1
-    done
-    echo
-    
     # Run linting
     log_info "Running linting checks..."
     uv run ruff check src/ tests/ || true
@@ -99,7 +79,15 @@ main() {
     uv run mypy src/ || true
     echo
     
-    log_info "Setup complete! You can now:"
+    log_info "Setup complete! (Database not configured)"
+    echo
+    log_warn "NOTE: This setup does not include a database."
+    log_warn "To use the application, you need to either:"
+    echo "  1. Install PostgreSQL locally and configure DATABASE_URL in .env"
+    echo "  2. Use a remote PostgreSQL instance"
+    echo "  3. Run 'bash scripts/setup.sh' with Docker running"
+    echo
+    log_info "You can now:"
     echo "  - Run the application: uv run uvicorn src.main:app --reload"
     echo "  - Run tests: uv run pytest"
     echo "  - Access API docs: http://localhost:8000/docs"
