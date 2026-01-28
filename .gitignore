@@ -90,6 +90,8 @@ cython_debug/
 # IDE / Editor
 .idea/
 .vscode/
+
+!.vscode/extensions.json
 *.swp
 *.swo
 *~
