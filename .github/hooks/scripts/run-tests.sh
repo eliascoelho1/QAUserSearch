@@ -8,8 +8,15 @@ set -euo pipefail
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 source "${SCRIPT_DIR}/lib/common.sh"
 
+# Debug log file
+DEBUG_LOG="/tmp/copilot-hooks-debug.log"
+
 # Read JSON input from stdin
 INPUT=$(cat)
+
+# Log hook invocation for debugging
+echo "[$(date '+%Y-%m-%d %H:%M:%S')] sessionEnd hook triggered" >> "${DEBUG_LOG}"
+echo "Input: ${INPUT}" >> "${DEBUG_LOG}"
 
 # Extract session end reason
 REASON=$(echo "$INPUT" | jq -r '.reason // "unknown"')
@@ -29,3 +36,4 @@ if ! uv run pytest tests/unit/ -v --tb=short; then
 fi
 
 log_success "All unit tests passed"
+echo "[$(date '+%Y-%m-%d %H:%M:%S')] Tests completed successfully" >> "${DEBUG_LOG}"

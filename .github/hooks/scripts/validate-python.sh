@@ -8,8 +8,15 @@ set -euo pipefail
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 source "${SCRIPT_DIR}/lib/common.sh"
 
+# Debug log file
+DEBUG_LOG="/tmp/copilot-hooks-debug.log"
+
 # Read JSON input from stdin
 INPUT=$(cat)
+
+# Log hook invocation for debugging
+echo "[$(date '+%Y-%m-%d %H:%M:%S')] postToolUse hook triggered" >> "${DEBUG_LOG}"
+echo "Input: ${INPUT}" >> "${DEBUG_LOG}"
 
 # Extract tool name and file path from toolArgs
 TOOL_NAME=$(echo "$INPUT" | jq -r '.toolName')
@@ -59,3 +66,4 @@ if ! uv run mypy "${FILE}" --no-error-summary; then
 fi
 
 log_success "Validation passed for ${FILE}"
+echo "[$(date '+%Y-%m-%d %H:%M:%S')] Validation completed for ${FILE}" >> "${DEBUG_LOG}"
