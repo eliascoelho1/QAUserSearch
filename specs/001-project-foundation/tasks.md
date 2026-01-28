@@ -25,13 +25,13 @@
 
 **Purpose**: Inicialização do projeto e estrutura básica com uv
 
-- [ ] T001 Inicializar projeto com `uv init` e configurar `pyproject.toml` com dependências
-- [ ] T002 Criar arquivo `.env.example` com template de variáveis de ambiente
-- [ ] T003 [P] Criar arquivo `.gitignore` com padrões Python, venv, .env, __pycache__, .venv
-- [ ] T004 [P] Criar estrutura base de diretórios: `src/`, `tests/`, `docker/`, `docs/`
-- [ ] T005 [P] Criar arquivos `__init__.py` em todos os módulos Python
-- [ ] T006 Instalar dependências com `uv add fastapi pydantic sqlalchemy alembic uvicorn structlog python-dotenv`
-- [ ] T007 Instalar dev dependencies com `uv add --dev pytest pytest-cov pytest-asyncio httpx ruff mypy`
+- [x] T001 Inicializar projeto com `uv init` e configurar `pyproject.toml` com dependências
+- [x] T002 Criar arquivo `.env.example` com template de variáveis de ambiente
+- [x] T003 [P] Criar arquivo `.gitignore` com padrões Python, venv, .env, __pycache__, .venv
+- [x] T004 [P] Criar estrutura base de diretórios: `src/`, `tests/`, `docker/`, `docs/`
+- [x] T005 [P] Criar arquivos `__init__.py` em todos os módulos Python
+- [x] T006 Instalar dependências com `uv add fastapi pydantic sqlalchemy alembic uvicorn structlog python-dotenv`
+- [x] T007 Instalar dev dependencies com `uv add --dev pytest pytest-cov pytest-asyncio httpx ruff mypy`
 
 ---
 
@@ -41,12 +41,12 @@
 
 **⚠️ CRÍTICO**: Nenhum trabalho de user story pode começar até esta fase estar completa
 
-- [ ] T008 Implementar `src/config.py` com Pydantic Settings para configurações tipadas
-- [ ] T009 Implementar enums em `src/schemas/enums.py` (HealthStatus, CheckStatus, Environment, LogLevel)
-- [ ] T010 [P] Implementar logging estruturado em `src/core/logging.py` com structlog
-- [ ] T011 [P] Implementar conexão de banco em `src/core/database.py` com SQLAlchemy async
-- [ ] T012 Criar `src/main.py` com FastAPI app básico (sem rotas)
-- [ ] T013 Criar `tests/conftest.py` com fixtures básicas para pytest
+- [x] T008 Implementar `src/config.py` com Pydantic Settings para configurações tipadas
+- [x] T009 Implementar enums em `src/schemas/enums.py` (HealthStatus, CheckStatus, Environment, LogLevel)
+- [x] T010 [P] Implementar logging estruturado em `src/core/logging.py` com structlog
+- [x] T011 [P] Implementar conexão de banco em `src/core/database.py` com SQLAlchemy async
+- [x] T012 Criar `src/main.py` com FastAPI app básico (sem rotas)
+- [x] T013 Criar `tests/conftest.py` com fixtures básicas para pytest
 
 **Checkpoint**: Fundação pronta - implementação de user stories pode começar em paralelo
 
@@ -60,12 +60,12 @@
 
 ### Implementation for User Story 1
 
-- [ ] T014 [P] [US1] Criar `docker/Dockerfile` com multi-stage build para Python 3.11 + uv
-- [ ] T015 [P] [US1] Criar `docker/docker-compose.yml` com serviços app e db (PostgreSQL)
-- [ ] T016 [US1] Atualizar `src/main.py` com lifespan handler para startup/shutdown
-- [ ] T017 [US1] Implementar hot-reload no docker-compose para desenvolvimento
-- [ ] T018 [US1] Criar script `scripts/setup.sh` para setup automatizado do ambiente com uv
-- [ ] T019 [US1] Atualizar `README.md` com instruções de instalação usando uv
+- [x] T014 [P] [US1] Criar `docker/Dockerfile` com multi-stage build para Python 3.11 + uv
+- [x] T015 [P] [US1] Criar `docker/docker-compose.yml` com serviços app e db (PostgreSQL)
+- [x] T016 [US1] Atualizar `src/main.py` com lifespan handler para startup/shutdown
+- [x] T017 [US1] Implementar hot-reload no docker-compose para desenvolvimento
+- [x] T018 [US1] Criar script `scripts/setup.sh` para setup automatizado do ambiente com uv
+- [x] T019 [US1] Atualizar `README.md` com instruções de instalação usando uv
 
 **Checkpoint**: User Story 1 completa - ambiente de desenvolvimento funcional e documentado
 
@@ -79,13 +79,13 @@
 
 ### Implementation for User Story 2
 
-- [ ] T020 [P] [US2] Criar schemas Pydantic em `src/schemas/health.py` (HealthCheckResponse, DependencyCheck, etc)
-- [ ] T021 [P] [US2] Criar schema `src/schemas/root.py` (RootResponse)
-- [ ] T022 [US2] Implementar service `src/services/health_service.py` com lógica de health check
-- [ ] T023 [US2] Criar router `src/api/v1/health.py` com endpoints /health, /health/live, /health/ready
-- [ ] T024 [US2] Criar router `src/api/v1/root.py` com endpoint / (root)
-- [ ] T025 [US2] Registrar routers em `src/main.py` e configurar OpenAPI/Swagger
-- [ ] T026 [US2] Implementar verificação de dependências (database checks) em health_service
+- [x] T020 [P] [US2] Criar schemas Pydantic em `src/schemas/health.py` (HealthCheckResponse, DependencyCheck, etc)
+- [x] T021 [P] [US2] Criar schema `src/schemas/root.py` (RootResponse)
+- [x] T022 [US2] Implementar service `src/services/health_service.py` com lógica de health check
+- [x] T023 [US2] Criar router `src/api/v1/health.py` com endpoints /health, /health/live, /health/ready
+- [x] T024 [US2] Criar router `src/api/v1/root.py` com endpoint / (root)
+- [x] T025 [US2] Registrar routers em `src/main.py` e configurar OpenAPI/Swagger
+- [x] T026 [US2] Implementar verificação de dependências (database checks) em health_service
 
 **Checkpoint**: User Story 2 completa - estrutura base com health check funcional
 
@@ -99,15 +99,15 @@
 
 ### Implementation for User Story 3
 
-- [ ] T027 [P] [US3] Criar `.github/workflows/ci.yml` com jobs: lint, typecheck, test, build (usando uv)
-- [ ] T028 [P] [US3] Configurar Ruff em `pyproject.toml` section [tool.ruff]
-- [ ] T029 [P] [US3] Configurar Black em `pyproject.toml` section [tool.black]
-- [ ] T030 [P] [US3] Configurar mypy em `pyproject.toml` section [tool.mypy] com strict=true
-- [ ] T031 [US3] Configurar pytest em `pyproject.toml` section [tool.pytest.ini_options]
-- [ ] T032 [US3] Criar `.github/hooks/hooks.json` com configuração de Copilot hooks
-- [ ] T033 [P] [US3] Criar `.github/hooks/scripts/validate-python.sh` para lint + typecheck
-- [ ] T034 [P] [US3] Criar `.github/hooks/scripts/run-tests.sh` para testes unitários
-- [ ] T035 [US3] Criar `.github/hooks/scripts/lib/common.sh` com funções compartilhadas
+- [x] T027 [P] [US3] Criar `.github/workflows/ci.yml` com jobs: lint, typecheck, test, build (usando uv)
+- [x] T028 [P] [US3] Configurar Ruff em `pyproject.toml` section [tool.ruff]
+- [x] T029 [P] [US3] Configurar Black em `pyproject.toml` section [tool.black]
+- [x] T030 [P] [US3] Configurar mypy em `pyproject.toml` section [tool.mypy] com strict=true
+- [x] T031 [US3] Configurar pytest em `pyproject.toml` section [tool.pytest.ini_options]
+- [x] T032 [US3] Criar `.github/hooks/hooks.json` com configuração de Copilot hooks
+- [x] T033 [P] [US3] Criar `.github/hooks/scripts/validate-python.sh` para lint + typecheck
+- [x] T034 [P] [US3] Criar `.github/hooks/scripts/run-tests.sh` para testes unitários
+- [x] T035 [US3] Criar `.github/hooks/scripts/lib/common.sh` com funções compartilhadas
 
 **Checkpoint**: User Story 3 completa - CI pipeline funcional com validações automáticas
 
@@ -121,10 +121,10 @@
 
 ### Implementation for User Story 4
 
-- [ ] T036 [P] [US4] Criar `docs/architecture.md` com diagramas e descrição das camadas
-- [ ] T037 [P] [US4] Criar `.github/agents/copilot-instructions.md` com contexto do agente
-- [ ] T038 [US4] Atualizar `README.md` com seção de arquitetura e links para docs/
-- [ ] T039 [US4] Documentar estrutura de diretórios em `docs/architecture.md`
+- [x] T036 [P] [US4] Criar `docs/architecture.md` com diagramas e descrição das camadas
+- [x] T037 [P] [US4] Criar `.github/agents/copilot-instructions.md` com contexto do agente
+- [x] T038 [US4] Atualizar `README.md` com seção de arquitetura e links para docs/
+- [x] T039 [US4] Documentar estrutura de diretórios em `docs/architecture.md`
 
 **Checkpoint**: User Story 4 completa - documentação técnica básica disponível
 
@@ -134,12 +134,12 @@
 
 **Purpose**: Melhorias que afetam múltiplas user stories
 
-- [ ] T040 Validar conformidade com quickstart.md (executar todos os comandos documentados com uv)
-- [ ] T041 [P] Adicionar logging nas rotas de health check
-- [ ] T042 [P] Garantir que todos os arquivos Python passam em ruff + mypy
-- [ ] T043 Criar testes básicos em `tests/unit/test_config.py` para validar configuração
-- [ ] T044 Criar testes básicos em `tests/integration/test_health.py` para health endpoints
-- [ ] T045 Executar CI pipeline completo e corrigir eventuais falhas
+- [x] T040 Validar conformidade com quickstart.md (executar todos os comandos documentados com uv)
+- [x] T041 [P] Adicionar logging nas rotas de health check
+- [x] T042 [P] Garantir que todos os arquivos Python passam em ruff + mypy
+- [x] T043 Criar testes básicos em `tests/unit/test_config.py` para validar configuração
+- [x] T044 Criar testes básicos em `tests/integration/test_health.py` para health endpoints
+- [x] T045 Executar CI pipeline completo e corrigir eventuais falhas
 
 ---
 
