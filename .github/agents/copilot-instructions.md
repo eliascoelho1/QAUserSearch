@@ -6,6 +6,8 @@ Auto-generated from all feature plans. Last updated: 2026-01-28
 
 QAUserSearch is a Python FastAPI application for searching user data in QA environments. It provides a REST API for QA teams to find test user records across multiple databases.
 
+> **📐 Architecture Reference**: For detailed architecture diagrams, layer responsibilities, and design decisions, see [docs/architecture.md](../../docs/architecture.md).
+
 ## Active Technologies
 
 - **Language**: Python 3.11+ (LTS)
