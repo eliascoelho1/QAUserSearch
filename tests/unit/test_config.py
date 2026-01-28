@@ -1,6 +1,5 @@
 """Unit tests for configuration."""
 
-
 import pytest
 from pydantic import ValidationError
 
@@ -13,9 +12,7 @@ class TestSettings:
 
     def test_default_values(self) -> None:
         """Test that default values are set correctly."""
-        settings = Settings(
-            database_url="postgresql+asyncpg://user:pass@localhost/db"
-        )
+        settings = Settings(database_url="postgresql+asyncpg://user:pass@localhost/db")
 
         assert settings.app_name == "qausersearch"
         assert settings.version == "0.1.0"
@@ -27,7 +24,9 @@ class TestSettings:
         """Test that environment variables override defaults."""
         monkeypatch.setenv("APP_NAME", "test-app")
         monkeypatch.setenv("ENVIRONMENT", "staging")
-        monkeypatch.setenv("DATABASE_URL", "postgresql+asyncpg://test:test@localhost/test")
+        monkeypatch.setenv(
+            "DATABASE_URL", "postgresql+asyncpg://test:test@localhost/test"
+        )
 
         settings = Settings()
 
