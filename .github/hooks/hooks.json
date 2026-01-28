@@ -1,22 +1,20 @@
 {
-  "$schema": "https://aka.ms/copilot-hooks-schema",
+  "version": 1,
   "hooks": {
     "postToolUse": [
       {
-        "id": "validate-python",
-        "description": "Run Ruff and mypy on modified Python files",
-        "tools": ["edit", "create"],
-        "script": ".github/hooks/scripts/validate-python.sh",
-        "filePatterns": ["**/*.py"],
-        "blocking": true
+        "type": "command",
+        "bash": "./.github/hooks/scripts/validate-python.sh",
+        "comment": "Run Ruff and mypy on modified Python files",
+        "timeoutSec": 60
       }
     ],
     "sessionEnd": [
       {
-        "id": "run-tests",
-        "description": "Run unit tests at the end of the session",
-        "script": ".github/hooks/scripts/run-tests.sh",
-        "blocking": true
+        "type": "command",
+        "bash": "./.github/hooks/scripts/run-tests.sh",
+        "comment": "Run unit tests at the end of the session",
+        "timeoutSec": 120
       }
     ]
   }

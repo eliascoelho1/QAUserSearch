@@ -1,28 +1,40 @@
 #!/usr/bin/env bash
 # Validate Python files with Ruff and mypy
 # Called by Copilot hooks after editing Python files
+# Input: JSON from stdin with toolName, toolArgs, toolResult
 
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 source "${SCRIPT_DIR}/lib/common.sh"
 
-# Get the modified file from hook arguments
-FILE="${1:-}"
+# Read JSON input from stdin
+INPUT=$(cat)
 
-if [[ -z "${FILE}" ]]; then
-    log_error "No file specified"
-    exit 1
+# Extract tool name and file path from toolArgs
+TOOL_NAME=$(echo "$INPUT" | jq -r '.toolName')
+TOOL_ARGS=$(echo "$INPUT" | jq -r '.toolArgs')
+
+# Only process edit and create tools
+if [[ "${TOOL_NAME}" != "edit" && "${TOOL_NAME}" != "create" ]]; then
+    exit 0
 fi
 
-if [[ ! -f "${FILE}" ]]; then
-    log_error "File not found: ${FILE}"
-    exit 1
+# Extract file path from toolArgs JSON
+FILE=$(echo "$TOOL_ARGS" | jq -r '.path // empty')
+
+if [[ -z "${FILE}" ]]; then
+    exit 0
 fi
 
 # Only process Python files
 if [[ "${FILE}" != *.py ]]; then
     exit 0
+fi
+
+if [[ ! -f "${FILE}" ]]; then
+    log_error "File not found: ${FILE}"
+    exit 1
 fi
 
 log_info "Validating ${FILE}..."
