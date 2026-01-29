@@ -20,6 +20,9 @@
 - Q: Qual o tamanho padrão da amostra de documentos para extração de schema? → A: 500 documentos por padrão (maior precisão), configurável via Settings/.env
 - Q: Como o sistema deve se comportar quando a LLM não está disponível ou falha? → A: Continuar sem descrição, marcar coluna como "pending_enrichment" para retry posterior
 - Q: Qual LLM será utilizada para enriquecimento? → A: OpenAI (não HubAI como assumido inicialmente)
+- Q: Como identificar e extrair valores únicos para colunas enumeráveis? → A: Extrair apenas para colunas com cardinalidade ≤50 valores únicos, marcando-as como "enumerável"
+- Q: A LLM deve participar da detecção de colunas enumeráveis? → A: Não, detecção é puramente estatística (cardinalidade). LLM foca apenas em descrições semânticas.
+- Q: O limite de cardinalidade para colunas enumeráveis deve ser configurável? → A: Sim, parametrizável via Settings/.env (padrão: 50)
 
 ## Contexto e Motivação
 
@@ -137,6 +140,11 @@ Como desenvolvedor ou usuário da plataforma, preciso consultar o catálogo de s
 - **FR-002**: Sistema DEVE inferir tipos de dados (string, number, boolean, date, object, array) baseado na análise de valores
 - **FR-003**: Sistema DEVE identificar campos obrigatórios (presentes em >95% dos registros) vs opcionais
 - **FR-004**: Sistema DEVE suportar estruturas aninhadas (nested objects) com representação hierárquica
+- **FR-025**: Sistema DEVE identificar colunas enumeráveis (cardinalidade ≤ limite configurável na amostra, padrão: 50)
+- **FR-026**: Sistema DEVE extrair e armazenar a lista de valores únicos para colunas identificadas como enumeráveis
+- **FR-027**: Sistema DEVE marcar colunas como "is_enumerable=true" quando atenderem ao critério de cardinalidade
+- **FR-028**: Sistema DEVE detectar colunas enumeráveis usando análise estatística de cardinalidade (LLM NÃO participa desta detecção)
+- **FR-029**: Sistema DEVE permitir configuração do limite de cardinalidade para detecção de enumeráveis via Settings/.env (ENUMERABLE_CARDINALITY_LIMIT, padrão: 50)
 
 **Persistência:**
 - **FR-005**: Sistema DEVE armazenar schemas em tabelas dedicadas no PostgreSQL local
@@ -170,7 +178,7 @@ Como desenvolvedor ou usuário da plataforma, preciso consultar o catálogo de s
 
 - **ExternalSource**: Representa uma fonte de dados externa (combinação de nome do banco + nome da tabela). Atributos: identificador, nome do banco, nome da tabela, timestamp de catalogação, versão do schema.
 
-- **ColumnMetadata**: Representa uma coluna dentro de uma fonte externa. Atributos: identificador, referência à fonte, nome da coluna, tipo inferido, é obrigatório, caminho no JSON (para nested), descrição semântica, valores de exemplo, status de enriquecimento (enriched/pending_enrichment).
+- **ColumnMetadata**: Representa uma coluna dentro de uma fonte externa. Atributos: identificador, referência à fonte, nome da coluna, tipo inferido, é obrigatório, caminho no JSON (para nested), descrição semântica, valores de exemplo, status de enriquecimento (enriched/pending_enrichment), é enumerável (cardinalidade ≤50), valores únicos (lista de valores distintos quando enumerável).
 
 - **SchemaVersion**: Histórico de versões de schema para uma fonte. Atributos: identificador, referência à fonte, versão, timestamp, snapshot do schema.
 
