@@ -46,7 +46,6 @@ AppConfig
 ├── debug: bool = false
 ├── log_level: LogLevel (enum: DEBUG, INFO, WARNING, ERROR)
 ├── database_url: string (secret)
-├── qa_database_url: string (secret)
 ├── allowed_hosts: string[] = ["*"]
 ├── cors_origins: string[] = []
 └── metrics_enabled: bool = true

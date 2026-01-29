@@ -148,7 +148,6 @@ docker compose logs -f app      # Seguir logs do container
 | Variável | Descrição | Obrigatório | Padrão |
 |----------|-----------|-------------|--------|
 | `DATABASE_URL` | URL do PostgreSQL da aplicação | Sim | - |
-| `QA_DATABASE_URL` | URL do banco de QA (leitura) | Sim | - |
 | `ENVIRONMENT` | Ambiente (development/staging/production) | Não | development |
 | `DEBUG` | Modo debug | Não | false |
 | `LOG_LEVEL` | Nível de log (DEBUG/INFO/WARNING/ERROR) | Não | INFO |

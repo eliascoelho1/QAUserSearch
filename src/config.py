@@ -34,11 +34,6 @@ class Settings(BaseSettings):
         description="Application database URL",
     )
 
-    # Database - QA (read-only)
-    qa_database_url: str | None = Field(
-        default=None, description="QA database URL (read-only access)"
-    )
-
     # Server
     host: str = Field(default="0.0.0.0", description="Server host")
     port: int = Field(default=8000, description="Server port")

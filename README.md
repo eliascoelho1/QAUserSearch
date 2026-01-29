@@ -108,7 +108,6 @@ See [docs/architecture.md](docs/architecture.md) for detailed architecture docum
 | Variable | Description | Default |
 |----------|-------------|---------|
 | `DATABASE_URL` | PostgreSQL connection URL | Required |
-| `QA_DATABASE_URL` | QA database URL (read-only) | Optional |
 | `ENVIRONMENT` | Runtime environment | `development` |
 | `DEBUG` | Enable debug mode | `false` |
 | `LOG_LEVEL` | Logging level | `INFO` |
