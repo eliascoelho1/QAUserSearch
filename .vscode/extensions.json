@@ -2,6 +2,13 @@
     "recommendations": [
         "ms-python.python",
         "charliermarsh.ruff",
-        "ms-python.mypy-type-checker"
+        "ms-python.mypy-type-checker",
+        "ms-python.vscode-python-envs",
+        "ms-python.mypy-type-checker",
+        "ms-python.vscode-pylance",
+        "ms-python.debugpy",
+        "kevinrose.vsc-python-indent",
+        "donjayamanne.python-extension-pack",
+        "donjayamanne.python-environment-manager"
     ]
 }
