@@ -19,17 +19,17 @@
 
 **Purpose**: Inicialização do projeto e estrutura básica
 
-- [ ] T001 Adicionar dependências openai>=1.0.0 e crewai>=0.80.0 em pyproject.toml
-- [ ] T002 Executar `uv sync` para instalar novas dependências
-- [ ] T003 [P] Criar estrutura de diretórios src/agents/config/
-- [ ] T004 [P] Criar estrutura de diretórios src/api/v1/websocket/
-- [ ] T005 [P] Criar estrutura de diretórios src/services/llm/
-- [ ] T006 [P] Criar estrutura de diretórios src/services/query/
-- [ ] T007 [P] Criar estrutura de diretórios src/services/audit/
-- [ ] T008 [P] Criar estrutura de diretórios src/models/query/
-- [ ] T009 [P] Criar estrutura de diretórios src/schemas/query/
-- [ ] T010 [P] Criar estrutura de diretórios src/core/security/
-- [ ] T011 Adicionar variáveis OPENAI_API_KEY, OPENAI_MODEL, OPENAI_TIMEOUT, OPENAI_MAX_RETRIES em .env.example
+- [X] T001 Adicionar dependências openai>=1.0.0 e crewai>=0.80.0 em pyproject.toml
+- [X] T002 Executar `uv sync` para instalar novas dependências
+- [X] T003 [P] Criar estrutura de diretórios src/agents/config/
+- [X] T004 [P] Criar estrutura de diretórios src/api/v1/websocket/
+- [X] T005 [P] Criar estrutura de diretórios src/services/llm/
+- [X] T006 [P] Criar estrutura de diretórios src/services/query/
+- [X] T007 [P] Criar estrutura de diretórios src/services/audit/
+- [X] T008 [P] Criar estrutura de diretórios src/models/query/
+- [X] T009 [P] Criar estrutura de diretórios src/schemas/query/
+- [X] T010 [P] Criar estrutura de diretórios src/core/security/
+- [X] T011 Adicionar variáveis OPENAI_API_KEY, OPENAI_MODEL, OPENAI_TIMEOUT, OPENAI_MAX_RETRIES em .env.example
 
 ---
 
@@ -39,33 +39,33 @@
 
 **⚠️ CRÍTICO**: Nenhuma user story pode começar até esta fase estar completa
 
-- [ ] T012 [P] Criar enum FilterOperator em src/models/query/enums.py
-- [ ] T013 [P] Criar enum InterpretationStatus em src/models/query/enums.py
-- [ ] T014 [P] Criar modelo Entity em src/models/query/interpretation.py
-- [ ] T015 [P] Criar modelo Filter em src/models/query/interpretation.py
-- [ ] T016 Criar modelo PromptInterpretation em src/models/query/interpretation.py (depende T014, T015)
-- [ ] T017 [P] Criar modelo GeneratedQuery em src/models/query/generated_query.py
-- [ ] T018 [P] Criar modelo QueryResult em src/models/query/query_result.py
-- [ ] T019 [P] Criar modelo AuditLog em src/models/query/audit_log.py
-- [ ] T020 Criar migration Alembic para tabela audit_log com índices em alembic/versions/
-- [ ] T021 [P] Criar schema InterpretPromptRequest em src/schemas/query/request.py
-- [ ] T022 [P] Criar schema ExecuteQueryRequest em src/schemas/query/request.py
-- [ ] T023 [P] Criar schema InterpretationResponse em src/schemas/query/response.py
-- [ ] T024 [P] Criar schema QueryResponse em src/schemas/query/response.py
-- [ ] T025 [P] Criar schema QueryResultResponse em src/schemas/query/response.py
-- [ ] T026 [P] Criar schema ErrorResponse em src/schemas/query/response.py
-- [ ] T027 [P] Criar schemas WSMessage, WSStatusMessage, WSChunkMessage, WSInterpretationMessage, WSErrorMessage em src/schemas/query/websocket.py
-- [ ] T028 Criar SQL blacklist FORBIDDEN_COMMANDS com regex em src/core/security/sql_blacklist.py
-- [ ] T029 Implementar função validate_query() em src/core/security/sql_blacklist.py
-- [ ] T030 [P] Criar teste unitário para validate_query() em tests/unit/core/test_sql_blacklist.py
-- [ ] T031 Criar ConnectionManager para WebSocket em src/api/v1/websocket/connection_manager.py
-- [ ] T032 [P] Criar teste unitário para ConnectionManager em tests/unit/api/test_connection_manager.py
-- [ ] T033 Criar OpenAIClient com retry e streaming em src/services/llm/openai_client.py
-- [ ] T034 [P] Criar teste unitário para OpenAIClient (mock) em tests/unit/services/test_openai_client.py
-- [ ] T035 Criar CatalogContext para integração com catálogo existente em src/services/query/catalog_context.py
-- [ ] T036 [P] Criar teste unitário para CatalogContext em tests/unit/services/test_catalog_context.py
-- [ ] T037 Criar agents.yaml com definições de interpreter, validator, refiner em src/agents/config/agents.yaml
-- [ ] T038 Criar tasks.yaml com definições de tasks do crew em src/agents/config/tasks.yaml
+- [X] T012 [P] Criar enum FilterOperator em src/models/query/enums.py
+- [X] T013 [P] Criar enum InterpretationStatus em src/models/query/enums.py
+- [X] T014 [P] Criar modelo Entity em src/models/query/interpretation.py
+- [X] T015 [P] Criar modelo Filter em src/models/query/interpretation.py
+- [X] T016 Criar modelo PromptInterpretation em src/models/query/interpretation.py (depende T014, T015)
+- [X] T017 [P] Criar modelo GeneratedQuery em src/models/query/generated_query.py
+- [X] T018 [P] Criar modelo QueryResult em src/models/query/query_result.py
+- [X] T019 [P] Criar modelo AuditLog em src/models/query/audit_log.py
+- [X] T020 Criar migration Alembic para tabela audit_log com índices em alembic/versions/
+- [X] T021 [P] Criar schema InterpretPromptRequest em src/schemas/query/request.py
+- [X] T022 [P] Criar schema ExecuteQueryRequest em src/schemas/query/request.py
+- [X] T023 [P] Criar schema InterpretationResponse em src/schemas/query/response.py
+- [X] T024 [P] Criar schema QueryResponse em src/schemas/query/response.py
+- [X] T025 [P] Criar schema QueryResultResponse em src/schemas/query/response.py
+- [X] T026 [P] Criar schema ErrorResponse em src/schemas/query/response.py
+- [X] T027 [P] Criar schemas WSMessage, WSStatusMessage, WSChunkMessage, WSInterpretationMessage, WSErrorMessage em src/schemas/query/websocket.py
+- [X] T028 Criar SQL blacklist FORBIDDEN_COMMANDS com regex em src/core/security/sql_blacklist.py
+- [X] T029 Implementar função validate_query() em src/core/security/sql_blacklist.py
+- [X] T030 [P] Criar teste unitário para validate_query() em tests/unit/core/test_sql_blacklist.py
+- [X] T031 Criar ConnectionManager para WebSocket em src/api/v1/websocket/connection_manager.py
+- [X] T032 [P] Criar teste unitário para ConnectionManager em tests/unit/api/test_connection_manager.py
+- [X] T033 Criar OpenAIClient com retry e streaming em src/services/llm/openai_client.py
+- [X] T034 [P] Criar teste unitário para OpenAIClient (mock) em tests/unit/services/test_openai_client.py
+- [X] T035 Criar CatalogContext para integração com catálogo existente em src/services/query/catalog_context.py
+- [X] T036 [P] Criar teste unitário para CatalogContext em tests/unit/services/test_catalog_context.py
+- [X] T037 Criar agents.yaml com definições de interpreter, validator, refiner em src/agents/config/agents.yaml
+- [X] T038 Criar tasks.yaml com definições de tasks do crew em src/agents/config/tasks.yaml
 
 **Checkpoint**: Foundation ready - implementação das user stories pode começar
 
@@ -81,31 +81,31 @@
 
 > **NOTE**: Escrever testes PRIMEIRO, garantir que FALHAM antes da implementação
 
-- [ ] T039 [P] [US1] Criar teste de contrato para POST /query/interpret em tests/contract/test_interpret_endpoint.py
-- [ ] T040 [P] [US1] Criar teste de contrato para POST /query/{id}/execute em tests/contract/test_execute_endpoint.py
-- [ ] T041 [P] [US1] Criar teste de integração para fluxo prompt → query → resultado em tests/integration/test_query_flow.py
+- [X] T039 [P] [US1] Criar teste de contrato para POST /query/interpret em tests/contract/test_interpret_endpoint.py
+- [X] T040 [P] [US1] Criar teste de contrato para POST /query/{id}/execute em tests/contract/test_execute_endpoint.py
+- [X] T041 [P] [US1] Criar teste de integração para fluxo prompt → query → resultado em tests/integration/test_query_flow.py
 
 ### Implementation for User Story 1
 
-- [ ] T042 [US1] Criar agente PromptInterpreterAgent em src/agents/prompt_interpreter.py
-- [ ] T043 [US1] Criar agente QueryValidatorAgent em src/agents/query_validator.py
-- [ ] T044 [US1] Criar agente QueryRefinerAgent em src/agents/query_refiner.py
-- [ ] T045 [US1] Criar InterpreterCrew com processo sequencial em src/agents/interpreter_crew.py
-- [ ] T046 [P] [US1] Criar teste unitário para InterpreterCrew em tests/unit/agents/test_interpreter_crew.py
-- [ ] T047 [US1] Criar InterpreterService (orquestra crew + catálogo) em src/services/query/interpreter_service.py
-- [ ] T048 [P] [US1] Criar teste unitário para InterpreterService em tests/unit/services/test_interpreter_service.py
-- [ ] T049 [US1] Criar ValidatorService (validação de segurança SQL) em src/services/query/validator_service.py
-- [ ] T050 [P] [US1] Criar teste unitário para ValidatorService em tests/unit/services/test_validator_service.py
-- [ ] T051 [US1] Criar ExecutorService (executa query no banco QA) em src/services/query/executor_service.py
-- [ ] T052 [P] [US1] Criar teste unitário para ExecutorService em tests/unit/services/test_executor_service.py
-- [ ] T053 [US1] Criar AuditService (log de queries bloqueadas) em src/services/audit/audit_service.py
-- [ ] T054 [P] [US1] Criar teste unitário para AuditService em tests/unit/services/test_audit_service.py
-- [ ] T055 [US1] Implementar endpoint POST /api/v1/query/interpret em src/api/v1/endpoints/query_interpreter.py
-- [ ] T056 [US1] Implementar endpoint POST /api/v1/query/{query_id}/execute em src/api/v1/endpoints/query_interpreter.py
-- [ ] T057 [US1] Implementar endpoint GET /api/v1/query/{query_id} em src/api/v1/endpoints/query_interpreter.py
-- [ ] T058 [US1] Registrar router query_interpreter no app FastAPI em src/main.py
-- [ ] T059 [US1] Adicionar tratamento de prompts ambíguos (ex: "usuários novos" → últimos 30 dias) em src/agents/prompt_interpreter.py
-- [ ] T060 [US1] Adicionar limite de 100 resultados com flag is_partial em src/services/query/executor_service.py
+- [X] T042 [US1] Criar agente PromptInterpreterAgent em src/agents/prompt_interpreter.py
+- [X] T043 [US1] Criar agente QueryValidatorAgent em src/agents/query_validator.py
+- [X] T044 [US1] Criar agente QueryRefinerAgent em src/agents/query_refiner.py
+- [X] T045 [US1] Criar InterpreterCrew com processo sequencial em src/agents/interpreter_crew.py
+- [X] T046 [P] [US1] Criar teste unitário para InterpreterCrew em tests/unit/agents/test_interpreter_crew.py
+- [X] T047 [US1] Criar InterpreterService (orquestra crew + catálogo) em src/services/query/interpreter_service.py
+- [X] T048 [P] [US1] Criar teste unitário para InterpreterService em tests/unit/services/test_interpreter_service.py
+- [X] T049 [US1] Criar ValidatorService (validação de segurança SQL) em src/services/query/validator_service.py
+- [X] T050 [P] [US1] Criar teste unitário para ValidatorService em tests/unit/services/test_validator_service.py
+- [X] T051 [US1] Criar ExecutorService (executa query no banco QA) em src/services/query/executor_service.py
+- [X] T052 [P] [US1] Criar teste unitário para ExecutorService em tests/unit/services/test_executor_service.py
+- [X] T053 [US1] Criar AuditService (log de queries bloqueadas) em src/services/audit/audit_service.py
+- [X] T054 [P] [US1] Criar teste unitário para AuditService em tests/unit/services/test_audit_service.py
+- [X] T055 [US1] Implementar endpoint POST /api/v1/query/interpret em src/api/v1/endpoints/query_interpreter.py
+- [X] T056 [US1] Implementar endpoint POST /api/v1/query/{query_id}/execute em src/api/v1/endpoints/query_interpreter.py
+- [X] T057 [US1] Implementar endpoint GET /api/v1/query/{query_id} em src/api/v1/endpoints/query_interpreter.py
+- [X] T058 [US1] Registrar router query_interpreter no app FastAPI em src/main.py
+- [X] T059 [US1] Adicionar tratamento de prompts ambíguos (ex: "usuários novos" → últimos 30 dias) em src/agents/prompt_interpreter.py
+- [X] T060 [US1] Adicionar limite de 100 resultados com flag is_partial em src/services/query/executor_service.py
 
 **Checkpoint**: User Story 1 funcional e testável independentemente - MVP pronto
 
