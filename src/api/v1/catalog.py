@@ -1,6 +1,7 @@
 """Catalog API endpoints for schema management."""
 
 import uuid
+from collections.abc import AsyncGenerator
 from datetime import datetime
 from typing import Annotated, Any
 
@@ -32,7 +33,7 @@ router = APIRouter(prefix="/catalog", tags=["catalog"])
 task_store: dict[str, dict[str, Any]] = {}
 
 
-async def get_session() -> AsyncSession:
+async def get_session() -> AsyncGenerator[AsyncSession, None]:
     """Get database session."""
     db_manager = get_db_manager()
     async with db_manager.session() as session:
