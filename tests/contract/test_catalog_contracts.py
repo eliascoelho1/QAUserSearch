@@ -107,9 +107,7 @@ class TestExtractionRequestSchema:
         from src.schemas.catalog import ExtractionRequest
 
         request = ExtractionRequest(
-            db_name="test_db",
-            table_name="test_table",
-            sample_size=500
+            db_name="test_db", table_name="test_table", sample_size=500
         )
 
         assert request.db_name == "test_db"
@@ -120,10 +118,7 @@ class TestExtractionRequestSchema:
         """Extraction request should have default sample_size."""
         from src.schemas.catalog import ExtractionRequest
 
-        request = ExtractionRequest(
-            db_name="test_db",
-            table_name="test_table"
-        )
+        request = ExtractionRequest(db_name="test_db", table_name="test_table")
 
         assert request.sample_size == 500
 
@@ -153,9 +148,7 @@ class TestExtractionRequestSchema:
 
         with pytest.raises(ValidationError):
             ExtractionRequest(
-                db_name="test_db",
-                table_name="test_table",
-                sample_size=100000
+                db_name="test_db", table_name="test_table", sample_size=100000
             )
 
     def test_extraction_request_sample_size_too_small(self) -> None:
@@ -165,11 +158,7 @@ class TestExtractionRequestSchema:
         from src.schemas.catalog import ExtractionRequest
 
         with pytest.raises(ValidationError):
-            ExtractionRequest(
-                db_name="test_db",
-                table_name="test_table",
-                sample_size=0
-            )
+            ExtractionRequest(db_name="test_db", table_name="test_table", sample_size=0)
 
     def test_extraction_request_db_name_too_long(self) -> None:
         """db_name > 100 chars should raise validation error."""
@@ -178,10 +167,7 @@ class TestExtractionRequestSchema:
         from src.schemas.catalog import ExtractionRequest
 
         with pytest.raises(ValidationError):
-            ExtractionRequest(
-                db_name="a" * 200,
-                table_name="test_table"
-            )
+            ExtractionRequest(db_name="a" * 200, table_name="test_table")
 
     def test_extraction_request_empty_db_name(self) -> None:
         """Empty db_name should raise validation error."""
@@ -190,7 +176,4 @@ class TestExtractionRequestSchema:
         from src.schemas.catalog import ExtractionRequest
 
         with pytest.raises(ValidationError):
-            ExtractionRequest(
-                db_name="",
-                table_name="test_table"
-            )
+            ExtractionRequest(db_name="", table_name="test_table")

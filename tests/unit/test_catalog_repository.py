@@ -31,9 +31,7 @@ class TestCatalogRepository:
         mock_session.execute.return_value = mock_result
 
         await repo.create_or_update_source(
-            db_name="test_db",
-            table_name="test_table",
-            document_count=100
+            db_name="test_db", table_name="test_table", document_count=100
         )
 
         assert mock_session.add.called

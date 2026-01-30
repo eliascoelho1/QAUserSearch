@@ -1,7 +1,6 @@
 """Unit tests for schema analyzer (field presence, cardinality)."""
 
 
-
 class TestAnalyzeFieldPresence:
     """Tests for field presence ratio analysis."""
 

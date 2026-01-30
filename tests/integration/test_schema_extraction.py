@@ -23,14 +23,11 @@ class TestSchemaExtractionIntegration:
                 "product_data": {
                     "type": "HYBRID_LEVERAGED",
                     "origin_flow": "manual-processing",
-                    "updated_at": "2025-10-07T11:47:09.803Z"
+                    "updated_at": "2025-10-07T11:47:09.803Z",
                 },
-                "guaranteed_limit": {
-                    "enabled": False,
-                    "enabled_wallet_balance": False
-                },
+                "guaranteed_limit": {"enabled": False, "enabled_wallet_balance": False},
                 "created_at": "2025-10-07T11:47:09.803Z",
-                "updated_at": "2025-10-07T11:47:09.803Z"
+                "updated_at": "2025-10-07T11:47:09.803Z",
             },
             {
                 "_id": "68e527ed7fc3841868bef0ab",
@@ -41,14 +38,11 @@ class TestSchemaExtractionIntegration:
                 "product_data": {
                     "type": "STANDARD",
                     "origin_flow": "auto-processing",
-                    "updated_at": "2025-10-08T11:47:09.803Z"
+                    "updated_at": "2025-10-08T11:47:09.803Z",
                 },
-                "guaranteed_limit": {
-                    "enabled": True,
-                    "enabled_wallet_balance": True
-                },
+                "guaranteed_limit": {"enabled": True, "enabled_wallet_balance": True},
                 "created_at": "2025-10-08T11:47:09.803Z",
-                "updated_at": "2025-10-08T11:47:09.803Z"
+                "updated_at": "2025-10-08T11:47:09.803Z",
             },
         ]
 
@@ -81,7 +75,10 @@ class TestSchemaExtractionIntegration:
 
         # Verify datetime detection
         assert analyzed["created_at"]["inferred_type"] == InferredType.DATETIME
-        assert analyzed["product_data.updated_at"]["inferred_type"] == InferredType.DATETIME
+        assert (
+            analyzed["product_data.updated_at"]["inferred_type"]
+            == InferredType.DATETIME
+        )
 
     def test_extraction_from_json_file(self) -> None:
         """Test extraction from actual JSON sample file."""
@@ -131,7 +128,7 @@ class TestSchemaExtractionIntegration:
         assert analyzed["name"]["presence_ratio"] == 1.0
         assert analyzed["name"]["is_required"] is True
 
-        assert analyzed["age"]["presence_ratio"] == pytest.approx(2/3)
+        assert analyzed["age"]["presence_ratio"] == pytest.approx(2 / 3)
         assert analyzed["age"]["is_required"] is False
 
     def test_extraction_handles_null_values(self) -> None:

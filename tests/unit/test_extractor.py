@@ -1,6 +1,5 @@
 """Unit tests for schema extraction (TypeInferrer, flatten_fields)."""
 
-
 from src.schemas.enums import InferredType
 
 
@@ -85,13 +84,16 @@ class TestTypeInferrer:
         assert inferrer.infer("507f1f77bcf86cd799439011") == InferredType.OBJECTID
         # Invalid ObjectId (wrong length or non-hex)
         assert inferrer.infer("not-an-objectid") == InferredType.STRING
-        assert inferrer.infer("68e527ed7fc3841868bef0") == InferredType.STRING  # 22 chars
+        assert (
+            inferrer.infer("68e527ed7fc3841868bef0") == InferredType.STRING
+        )  # 22 chars
 
     def test_infer_unknown_type(self) -> None:
         """Test unknown type for unusual values."""
         from src.services.schema_extraction.extractor import TypeInferrer
 
         inferrer = TypeInferrer()
+
         # Custom objects that aren't dict/list
         class CustomObj:
             pass
@@ -118,14 +120,7 @@ class TestFlattenFields:
         """Test flattening nested objects with dot notation."""
         from src.services.schema_extraction.extractor import flatten_fields
 
-        doc = {
-            "user": {
-                "profile": {
-                    "name": "John",
-                    "email": "john@example.com"
-                }
-            }
-        }
+        doc = {"user": {"profile": {"name": "John", "email": "john@example.com"}}}
         result = flatten_fields(doc)
 
         assert "user.profile.name" in result
@@ -151,9 +146,9 @@ class TestFlattenFields:
             "_id": "507f1f77bcf86cd799439011",
             "product_data": {
                 "type": "HYBRID_LEVERAGED",
-                "origin_flow": "manual-processing"
+                "origin_flow": "manual-processing",
             },
-            "status": "A"
+            "status": "A",
         }
         result = flatten_fields(doc)
 
@@ -174,15 +169,7 @@ class TestFlattenFields:
         """Test flattening deeply nested structures."""
         from src.services.schema_extraction.extractor import flatten_fields
 
-        doc = {
-            "level1": {
-                "level2": {
-                    "level3": {
-                        "value": "deep"
-                    }
-                }
-            }
-        }
+        doc = {"level1": {"level2": {"level3": {"value": "deep"}}}}
         result = flatten_fields(doc)
 
         assert "level1.level2.level3.value" in result
@@ -220,8 +207,8 @@ class TestSchemaExtractor:
                 "_id": "68e527ed7fc3841868bef0aa",
                 "product_data": {
                     "type": "HYBRID_LEVERAGED",
-                    "updated_at": "2025-10-07T11:47:09.803Z"
-                }
+                    "updated_at": "2025-10-07T11:47:09.803Z",
+                },
             }
         ]
 
@@ -233,7 +220,9 @@ class TestSchemaExtractor:
         assert "product_data.updated_at" in result
         assert result["_id"]["inferred_type"] == InferredType.OBJECTID
         assert result["product_data.type"]["inferred_type"] == InferredType.STRING
-        assert result["product_data.updated_at"]["inferred_type"] == InferredType.DATETIME
+        assert (
+            result["product_data.updated_at"]["inferred_type"] == InferredType.DATETIME
+        )
 
     def test_extract_collects_sample_values(self) -> None:
         """Test that extraction collects sample values for each field."""
