@@ -34,3 +34,33 @@ class LogLevel(str, Enum):
     INFO = "INFO"
     WARNING = "WARNING"
     ERROR = "ERROR"
+
+
+class DataSourceEnvironment(str, Enum):
+    """External data source environment."""
+
+    MOCK = "MOCK"  # Local JSON files in res/db/
+    PROD = "PROD"  # Direct MongoDB connection
+
+
+class EnrichmentStatus(str, Enum):
+    """LLM enrichment status for column descriptions."""
+
+    NOT_ENRICHED = "not_enriched"  # Default: never processed
+    PENDING_ENRICHMENT = "pending_enrichment"  # Failed/timeout, awaiting retry
+    ENRICHED = "enriched"  # Description generated successfully
+
+
+class InferredType(str, Enum):
+    """Inferred data types from JSON documents."""
+
+    STRING = "string"
+    INTEGER = "integer"
+    NUMBER = "number"  # Float
+    BOOLEAN = "boolean"
+    DATETIME = "datetime"  # ISO 8601 strings
+    OBJECTID = "objectid"  # MongoDB ObjectId (24 hex chars)
+    ARRAY = "array"
+    OBJECT = "object"  # Nested object
+    NULL = "null"  # Only null values found
+    UNKNOWN = "unknown"  # Type not determined

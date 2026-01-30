@@ -6,7 +6,7 @@ from typing import Any
 from pydantic import Field, field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
-from src.schemas.enums import Environment, LogLevel
+from src.schemas.enums import DataSourceEnvironment, Environment, LogLevel
 
 
 class Settings(BaseSettings):
@@ -44,6 +44,28 @@ class Settings(BaseSettings):
 
     # Metrics
     metrics_enabled: bool = Field(default=True, description="Enable metrics endpoint")
+
+    # External Data Sources
+    data_source_environment: DataSourceEnvironment = Field(
+        default=DataSourceEnvironment.MOCK,
+        description="External data source environment (MOCK or PROD)",
+    )
+    schema_sample_size: int = Field(
+        default=500,
+        description="Number of documents to sample for schema extraction",
+        ge=1,
+        le=10000,
+    )
+    enumerable_cardinality_limit: int = Field(
+        default=50,
+        description="Maximum unique values for a field to be considered enumerable",
+        ge=1,
+        le=1000,
+    )
+    mongodb_uri: str = Field(
+        default="mongodb://localhost:27017",
+        description="MongoDB connection URI for PROD environment",
+    )
 
     @field_validator("debug", mode="after")
     @classmethod

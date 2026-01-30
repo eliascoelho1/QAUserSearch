@@ -46,6 +46,13 @@ fi
 
 log_info "Validating ${FILE}..."
 
+# Run Black (formatting)
+log_info "Running Black..."
+if ! uv run black --check "${FILE}" 2>/dev/null; then
+    log_info "Formatting ${FILE} with Black..."
+    uv run black "${FILE}"
+fi
+
 # Run Ruff
 log_info "Running Ruff..."
 if ! uv run ruff check "${FILE}"; then
