@@ -60,7 +60,7 @@ def create_app() -> FastAPI:
         title="QAUserSearch API",
         description="API para busca de massas de usuários em ambiente de QA",
         version=settings.version,
-        docs_url="/docs",
+        docs_url="/",
         redoc_url="/redoc",
         openapi_url="/openapi.json",
         lifespan=lifespan,
