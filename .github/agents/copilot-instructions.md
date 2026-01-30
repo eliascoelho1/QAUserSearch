@@ -1,3 +1,7 @@
+---
+description: General development guidelines for the QAUserSearch project
+---
+
 # QAUserSearch Development Guidelines
 
 Auto-generated from all feature plans. Last updated: 2026-01-28
