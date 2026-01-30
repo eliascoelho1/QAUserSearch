@@ -13,7 +13,7 @@ class TestCatalogExtractionTaskStore:
     async def test_get_extraction_status(self, async_client: AsyncClient) -> None:
         """GET /catalog/extraction/{task_id} should return status."""
         task_id = "test-task-id-123"
-        
+
         # Directly inject test data into the task store
         catalog.task_store[task_id] = {
             "task_id": task_id,
@@ -57,7 +57,7 @@ class TestCatalogExtractionTaskStore:
     ) -> None:
         """GET /catalog/extraction/{task_id} should return error status."""
         task_id = "failed-task-id"
-        
+
         catalog.task_store[task_id] = {
             "task_id": task_id,
             "status": "failed",
@@ -82,7 +82,7 @@ class TestCatalogExtractionTaskStore:
     ) -> None:
         """GET /catalog/extraction/{task_id} should return pending status."""
         task_id = "pending-task-id"
-        
+
         catalog.task_store[task_id] = {
             "task_id": task_id,
             "status": "pending",
@@ -105,13 +105,13 @@ class TestExtractionRequestSchema:
     def test_extraction_request_valid(self) -> None:
         """Valid extraction request should pass validation."""
         from src.schemas.catalog import ExtractionRequest
-        
+
         request = ExtractionRequest(
             db_name="test_db",
             table_name="test_table",
             sample_size=500
         )
-        
+
         assert request.db_name == "test_db"
         assert request.table_name == "test_table"
         assert request.sample_size == 500
@@ -119,35 +119,38 @@ class TestExtractionRequestSchema:
     def test_extraction_request_defaults(self) -> None:
         """Extraction request should have default sample_size."""
         from src.schemas.catalog import ExtractionRequest
-        
+
         request = ExtractionRequest(
             db_name="test_db",
             table_name="test_table"
         )
-        
+
         assert request.sample_size == 500
 
     def test_extraction_request_missing_db_name(self) -> None:
         """Missing db_name should raise validation error."""
         from pydantic import ValidationError
+
         from src.schemas.catalog import ExtractionRequest
-        
+
         with pytest.raises(ValidationError):
             ExtractionRequest(table_name="test_table")
 
     def test_extraction_request_missing_table_name(self) -> None:
         """Missing table_name should raise validation error."""
         from pydantic import ValidationError
+
         from src.schemas.catalog import ExtractionRequest
-        
+
         with pytest.raises(ValidationError):
             ExtractionRequest(db_name="test_db")
 
     def test_extraction_request_sample_size_too_large(self) -> None:
         """Sample size > 10000 should raise validation error."""
         from pydantic import ValidationError
+
         from src.schemas.catalog import ExtractionRequest
-        
+
         with pytest.raises(ValidationError):
             ExtractionRequest(
                 db_name="test_db",
@@ -158,8 +161,9 @@ class TestExtractionRequestSchema:
     def test_extraction_request_sample_size_too_small(self) -> None:
         """Sample size < 1 should raise validation error."""
         from pydantic import ValidationError
+
         from src.schemas.catalog import ExtractionRequest
-        
+
         with pytest.raises(ValidationError):
             ExtractionRequest(
                 db_name="test_db",
@@ -170,8 +174,9 @@ class TestExtractionRequestSchema:
     def test_extraction_request_db_name_too_long(self) -> None:
         """db_name > 100 chars should raise validation error."""
         from pydantic import ValidationError
+
         from src.schemas.catalog import ExtractionRequest
-        
+
         with pytest.raises(ValidationError):
             ExtractionRequest(
                 db_name="a" * 200,
@@ -181,8 +186,9 @@ class TestExtractionRequestSchema:
     def test_extraction_request_empty_db_name(self) -> None:
         """Empty db_name should raise validation error."""
         from pydantic import ValidationError
+
         from src.schemas.catalog import ExtractionRequest
-        
+
         with pytest.raises(ValidationError):
             ExtractionRequest(
                 db_name="",

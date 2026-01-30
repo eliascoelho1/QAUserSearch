@@ -1,7 +1,7 @@
 """create_external_sources_and_column_metadata
 
 Revision ID: 32df100854bb
-Revises: 
+Revises:
 Create Date: 2026-01-29 22:02:32.293093
 
 """

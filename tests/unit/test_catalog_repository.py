@@ -30,7 +30,7 @@ class TestCatalogRepository:
         mock_result.scalar_one_or_none.return_value = None
         mock_session.execute.return_value = mock_result
 
-        source = await repo.create_or_update_source(
+        await repo.create_or_update_source(
             db_name="test_db",
             table_name="test_table",
             document_count=100
