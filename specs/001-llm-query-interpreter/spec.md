@@ -20,6 +20,9 @@
 - Q: Qual o timeout máximo para a interpretação LLM? → A: 15 segundos
 - Q: Há limite de requisições por usuário? → A: Sem limite (confiar no bom uso)
 - Q: Como tratar prompts muito genéricos que retornariam milhões de registros? → A: Retornar primeiros 100, alertar sobre resultado parcial e sugerir refinamento
+- Q: Qual estratégia de prevenção de injeção SQL será utilizada? → A: Blacklist de comandos proibidos (INSERT, UPDATE, DELETE, DROP, TRUNCATE, ALTER bloqueados)
+- Q: Qual comportamento quando uma query é bloqueada por conter comandos proibidos? → A: Retornar erro detalhado ao usuário (qual comando foi bloqueado) + registrar em log de auditoria
+- Q: Quais informações registrar no log de auditoria? → A: Query + timestamp + prompt original + resultado - somente para queries bloqueadas (sem identificação do usuário)
 
 ## User Scenarios & Testing *(mandatory)*
 
@@ -74,21 +77,21 @@ Como testador de QA, quando meu prompt não puder ser interpretado ou não encon
 - O que acontece quando o prompt contém termos conflitantes (ex: "usuários ativos e inativos")?
 - Quando o prompt é muito genérico e retornaria milhões de registros, o sistema retorna os primeiros 100 resultados, exibe alerta informando que o resultado é parcial, e sugere critérios de refinamento para busca mais específica
 - O que acontece quando o usuário menciona entidades ou campos que não existem no banco?
-- Como o sistema lida com prompts em outros idiomas além do português?
 - Quando o LLM (OpenAI GPT-4) está indisponível, o sistema realiza até 3 tentativas com backoff exponencial antes de retornar erro ao usuário
+- Quando a query gerada contém comandos proibidos (INSERT, UPDATE, DELETE, DROP, TRUNCATE, ALTER), o sistema bloqueia a execução, retorna erro detalhado ao usuário informando qual comando foi bloqueado, e registra a ocorrência em log de auditoria
 
 ## Requirements *(mandatory)*
 
 ### Functional Requirements
 
-- **FR-001**: O sistema DEVE aceitar prompts em linguagem natural em português brasileiro
+- **FR-001**: O sistema DEVE aceitar prompts em qualquer idioma
 - **FR-002**: O sistema DEVE interpretar o prompt e identificar as entidades e filtros desejados
 - **FR-003**: O sistema DEVE gerar uma query válida baseada na interpretação do prompt
 - **FR-004**: O sistema DEVE executar a query gerada e retornar os resultados ao usuário
 - **FR-005**: O sistema DEVE exibir um resumo da interpretação antes de executar a query
-- **FR-006**: O sistema DEVE limitar o número de resultados retornados para evitar sobrecarga (padrão: 100 registros)
-- **FR-007**: O sistema DEVE validar se a query gerada é segura antes de executá-la (prevenção de injeção)
-- **FR-008**: O sistema DEVE registrar todas as queries geradas para auditoria
+- **FR-006**: O sistema DEVE limitar o número de resultados retornados para evitar sobrecarga (padrão: 10 registros)
+- **FR-007**: O sistema DEVE validar se a query gerada é segura antes de executá-la utilizando blacklist de comandos proibidos (INSERT, UPDATE, DELETE, DROP, TRUNCATE, ALTER são bloqueados; apenas SELECT permitido)
+- **FR-008**: O sistema DEVE registrar em log de auditoria todas as queries bloqueadas, contendo: query gerada, timestamp, prompt original e motivo do bloqueio (sem identificação do usuário)
 - **FR-009**: O sistema DEVE informar o usuário quando não conseguir interpretar o prompt com mensagem clara
 - **FR-010**: O sistema DEVE sugerir termos ou reformulações quando a busca não retornar resultados
 - **FR-011**: O sistema DEVE utilizar o catálogo de metadados existente para validar entidades e campos mencionados no prompt
@@ -117,7 +120,6 @@ Como testador de QA, quando meu prompt não puder ser interpretado ou não encon
 - Os usuários estão autenticados através do sistema de login existente
 - Todos os testadores QA autenticados têm acesso irrestrito a todos os dados de teste (sem segregação por equipe ou projeto)
 - O ambiente de QA possui dados representativos para as buscas
-- O LLM utilizado tem capacidade de entender português brasileiro
 - Existe conectividade com as bases de dados de QA
 - O provider LLM é OpenAI GPT-4, com política de retry de 3 tentativas em caso de falha transitória
 - Não há rate limiting por usuário; confia-se no uso responsável pelos testadores QA
