@@ -283,6 +283,89 @@ Utilizar os serviços e modelos de catálogo já existentes no projeto (`Catalog
 - Tabelas já catalogadas: `card_account_authorization.account_main`, `card_account_authorization.card_main`, `credit.invoice`, `credit.closed_invoice`
 - Reutilizar infraestrutura evita duplicação e garante consistência
 
+### Dados do Catálogo Utilizados para Interpretação
+
+#### ExternalSource (Tabelas Disponíveis)
+
+| Campo | Tipo | Uso para o LLM |
+|-------|------|----------------|
+| `db_name` | string | Identificar banco de dados (ex: `credit`, `card_account_authorization`) |
+| `table_name` | string | Identificar tabela específica (ex: `invoice`, `account_main`) |
+| `document_count` | int | Informar volume de dados disponível para expectativa de resultados |
+
+#### ColumnMetadata (Schema das Colunas)
+
+| Campo | Tipo | Uso para o LLM |
+|-------|------|----------------|
+| `column_name` | string | Nome da coluna para construir a query SQL |
+| `column_path` | string | Caminho completo para campos nested (ex: `address.city`) |
+| `inferred_type` | string | Tipo de dado para validar operadores de filtro (string, int, datetime, boolean, array) |
+| `is_enumerable` | bool | Indica se coluna tem conjunto finito de valores conhecidos |
+| `unique_values` | list | **Lista de valores possíveis** para colunas enumeráveis - essencial para mapear termos de negócio |
+| `sample_values` | list | Exemplos de valores reais para contexto adicional |
+| `description` | string | Descrição semântica da coluna (se enriquecido via LLM) |
+| `is_required` | bool | Se campo é obrigatório (sempre presente nos registros) |
+| `is_nullable` | bool | Se campo pode ser nulo |
+| `presence_ratio` | float | Percentual de registros que possuem este campo |
+
+### Exemplo de Contexto Enviado ao LLM
+
+```markdown
+# Catálogo de Dados QA
+
+## credit.invoice (45.000 documentos)
+
+| Coluna | Tipo | Obrigatório | Valores Possíveis |
+|--------|------|-------------|-------------------|
+| status | string | ✅ Sim | `open`, `paid`, `overdue`, `cancelled` |
+| due_date | datetime | ✅ Sim | - |
+| amount | number | ✅ Sim | - |
+| user_id | string | ✅ Sim | - |
+| payment_date | datetime | ❌ Não | - |
+| days_overdue | number | ❌ Não | - |
+
+## credit.closed_invoice (120.000 documentos)
+
+| Coluna | Tipo | Obrigatório | Valores Possíveis |
+|--------|------|-------------|-------------------|
+| closure_reason | string | ✅ Sim | `paid`, `cancelled`, `written_off`, `merged` |
+| closed_at | datetime | ✅ Sim | - |
+| original_amount | number | ✅ Sim | - |
+
+## card_account_authorization.card_main (80.000 documentos)
+
+| Coluna | Tipo | Obrigatório | Valores Possíveis |
+|--------|------|-------------|-------------------|
+| card_status | string | ✅ Sim | `active`, `blocked`, `cancelled`, `expired` |
+| card_type | string | ✅ Sim | `credit`, `debit`, `multiple` |
+| credit_limit | number | ❌ Não | - |
+| account_id | string | ✅ Sim | - |
+| block_reason | string | ❌ Não | `fraud`, `user_request`, `overdue`, `lost` |
+
+## card_account_authorization.account_main (50.000 documentos)
+
+| Coluna | Tipo | Obrigatório | Valores Possíveis |
+|--------|------|-------------|-------------------|
+| account_status | string | ✅ Sim | `active`, `inactive`, `blocked`, `closed` |
+| document_number | string | ✅ Sim | - |
+| created_at | datetime | ✅ Sim | - |
+| customer_type | string | ✅ Sim | `individual`, `business` |
+```
+
+### Mapeamento de Termos de Negócio
+
+O campo `unique_values` permite que o LLM mapeie termos em linguagem natural para valores técnicos:
+
+| Termo do Usuário | Coluna | Valor Técnico |
+|------------------|--------|---------------|
+| "cartão bloqueado" | card_status | `blocked` |
+| "fatura vencida" | status | `overdue` |
+| "conta ativa" | account_status | `active` |
+| "cartão de crédito" | card_type | `credit` |
+| "cliente pessoa física" | customer_type | `individual` |
+| "fatura paga" | status | `paid` |
+| "bloqueio por fraude" | block_reason | `fraud` |
+
 ### Integration Points
 
 ```python
@@ -290,35 +373,65 @@ Utilizar os serviços e modelos de catálogo já existentes no projeto (`Catalog
 class CatalogContext:
     """Contexto do catálogo para o agente interpreter."""
     
+    def __init__(self, catalog_service: CatalogService):
+        self._catalog = catalog_service
+    
     async def get_available_tables(self) -> list[dict]:
         """Retorna tabelas disponíveis para query."""
-        sources = await self._repository.list_sources()
+        sources = await self._catalog._repository.list_sources()
         return [
             {
                 "db_name": s.db_name,
                 "table_name": s.table_name,
                 "full_name": f"{s.db_name}.{s.table_name}",
+                "document_count": s.document_count,
             }
             for s in sources
         ]
     
     async def get_table_schema(self, db_name: str, table_name: str) -> dict:
         """Retorna schema de uma tabela para o LLM."""
-        source = await self._repository.get_source_by_name(db_name, table_name)
-        columns = await self._repository.get_columns(source.id)
+        source = await self._catalog._repository.get_source_by_name(db_name, table_name)
+        if not source:
+            return None
+        columns = await self._catalog._repository.get_columns(source.id)
         return {
             "table": f"{db_name}.{table_name}",
+            "document_count": source.document_count,
             "columns": [
                 {
                     "name": c.column_name,
                     "path": c.column_path,
                     "type": c.inferred_type,
+                    "is_required": c.is_required,
+                    "is_nullable": c.is_nullable,
                     "is_enumerable": c.is_enumerable,
                     "possible_values": c.unique_values if c.is_enumerable else None,
+                    "sample_values": c.sample_values[:5] if c.sample_values else None,
+                    "description": c.description,
+                    "presence_ratio": c.presence_ratio,
                 }
                 for c in columns
             ]
         }
+    
+    async def build_llm_context(self) -> str:
+        """Constrói o contexto completo do catálogo para o prompt do LLM."""
+        sources = await self.get_available_tables()
+        context_parts = ["# Catálogo de Dados QA\n"]
+        
+        for source in sources:
+            schema = await self.get_table_schema(source["db_name"], source["table_name"])
+            context_parts.append(f"\n## {schema['table']} ({schema['document_count']:,} documentos)\n")
+            context_parts.append("| Coluna | Tipo | Obrigatório | Valores Possíveis |")
+            context_parts.append("|--------|------|-------------|-------------------|")
+            
+            for col in schema["columns"]:
+                required = "✅ Sim" if col["is_required"] else "❌ Não"
+                values = ", ".join(f"`{v}`" for v in col["possible_values"]) if col["possible_values"] else "-"
+                context_parts.append(f"| {col['name']} | {col['type']} | {required} | {values} |")
+        
+        return "\n".join(context_parts)
 ```
 
 ### Prompt Engineering com Catálogo

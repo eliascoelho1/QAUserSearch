@@ -21,6 +21,15 @@ Implementar um interpretador de linguagem natural que utiliza LLM (OpenAI GPT-4)
 - Utilizar `inferred_type` para validar tipos de filtros
 - Aproveitar `unique_values` de colunas enumeráveis para sugestões
 
+**Dados do Catálogo para o LLM**:
+| Dado | Fonte | Uso |
+|------|-------|-----|
+| Tabelas disponíveis | `ExternalSource` | Lista de tabelas que podem ser consultadas |
+| Colunas e tipos | `ColumnMetadata.inferred_type` | Validar operadores de filtro |
+| Valores possíveis | `ColumnMetadata.unique_values` | Mapear "bloqueado" → `blocked` |
+| Obrigatoriedade | `ColumnMetadata.is_required` | Informar campos sempre presentes |
+| Volume de dados | `ExternalSource.document_count` | Expectativa de resultados |
+
 ## Technical Context
 
 **Language/Version**: Python 3.11  
