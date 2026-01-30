@@ -25,9 +25,9 @@
 
 **Purpose**: Inicialização do projeto e estrutura básica
 
-- [ ] T001 Adicionar dependências ao pyproject.toml: aiofiles>=24.1.0, motor>=3.6.0
-- [ ] T002 [P] Criar enums DataSourceEnvironment, EnrichmentStatus, InferredType em src/schemas/enums.py
-- [ ] T003 [P] Adicionar variáveis de configuração ao src/config.py: DATA_SOURCE_ENVIRONMENT, SCHEMA_SAMPLE_SIZE, ENUMERABLE_CARDINALITY_LIMIT, MONGODB_URI
+- [X] T001 Adicionar dependências ao pyproject.toml: aiofiles>=24.1.0, motor>=3.6.0
+- [X] T002 [P] Criar enums DataSourceEnvironment, EnrichmentStatus, InferredType em src/schemas/enums.py
+- [X] T003 [P] Adicionar variáveis de configuração ao src/config.py: DATA_SOURCE_ENVIRONMENT, SCHEMA_SAMPLE_SIZE, ENUMERABLE_CARDINALITY_LIMIT, MONGODB_URI
 
 ---
 
@@ -37,12 +37,12 @@
 
 **⚠️ CRÍTICO**: Nenhum trabalho de user story pode começar até esta fase estar completa
 
-- [ ] T004 Criar modelo SQLAlchemy ExternalSource em src/models/catalog/external_source.py
-- [ ] T005 [P] Criar modelo SQLAlchemy ColumnMetadata em src/models/catalog/column_metadata.py
-- [ ] T006 Criar __init__.py para src/models/catalog/ exportando ExternalSource e ColumnMetadata
-- [ ] T007 Gerar migration Alembic para tabelas external_sources e column_metadata
-- [ ] T008 [P] Criar interface Protocol ExternalDataSource em src/repositories/external/base.py
-- [ ] T009 [P] Criar Pydantic schemas de request/response em src/schemas/catalog.py (ExtractionRequest, SourceSummary, SourceDetailResponse, ColumnDetail, etc.)
+- [X] T004 Criar modelo SQLAlchemy ExternalSource em src/models/catalog/external_source.py
+- [X] T005 [P] Criar modelo SQLAlchemy ColumnMetadata em src/models/catalog/column_metadata.py
+- [X] T006 Criar __init__.py para src/models/catalog/ exportando ExternalSource e ColumnMetadata
+- [X] T007 Gerar migration Alembic para tabelas external_sources e column_metadata
+- [X] T008 [P] Criar interface Protocol ExternalDataSource em src/repositories/external/base.py
+- [X] T009 [P] Criar Pydantic schemas de request/response em src/schemas/catalog.py (ExtractionRequest, SourceSummary, SourceDetailResponse, ColumnDetail, etc.)
 
 **Checkpoint**: Foundation pronta - implementação de user stories pode começar em paralelo
 
@@ -58,24 +58,24 @@
 
 > **NOTE: Escrever estes testes PRIMEIRO, garantir que FALHEM antes da implementação**
 
-- [ ] T010 [P] [US1] Unit test para TypeInferrer em tests/unit/test_extractor.py (tipos: string, integer, number, boolean, datetime, objectid, array, object, null)
-- [ ] T011 [P] [US1] Unit test para flatten_fields em tests/unit/test_extractor.py (dot notation para estruturas aninhadas)
-- [ ] T012 [P] [US1] Unit test para analyze_field_presence em tests/unit/test_analyzer.py (campos obrigatórios vs opcionais com threshold 95%)
-- [ ] T013 [P] [US1] Unit test para analyze_cardinality em tests/unit/test_analyzer.py (detecção de enumeráveis com limite configurável)
-- [ ] T014 [P] [US1] Integration test para extração completa de schema em tests/integration/test_schema_extraction.py
+- [X] T010 [P] [US1] Unit test para TypeInferrer em tests/unit/test_extractor.py (tipos: string, integer, number, boolean, datetime, objectid, array, object, null)
+- [X] T011 [P] [US1] Unit test para flatten_fields em tests/unit/test_extractor.py (dot notation para estruturas aninhadas)
+- [X] T012 [P] [US1] Unit test para analyze_field_presence em tests/unit/test_analyzer.py (campos obrigatórios vs opcionais com threshold 95%)
+- [X] T013 [P] [US1] Unit test para analyze_cardinality em tests/unit/test_analyzer.py (detecção de enumeráveis com limite configurável)
+- [X] T014 [P] [US1] Integration test para extração completa de schema em tests/integration/test_schema_extraction.py
 
 ### Implementation para User Story 1
 
-- [ ] T015 [P] [US1] Implementar TypeInferrer em src/services/schema_extraction/extractor.py (inferência de tipos com regex para datetime e objectid)
-- [ ] T016 [P] [US1] Implementar flatten_fields em src/services/schema_extraction/extractor.py (achatamento de estruturas aninhadas com dot notation)
-- [ ] T017 [US1] Implementar SchemaExtractor em src/services/schema_extraction/extractor.py (orquestra inferência de tipos e achatamento)
-- [ ] T018 [P] [US1] Implementar analyze_field_presence em src/services/schema_extraction/analyzer.py (cálculo de presence_ratio)
-- [ ] T019 [P] [US1] Implementar analyze_cardinality em src/services/schema_extraction/analyzer.py (detecção de enumeráveis e extração de valores únicos)
-- [ ] T020 [US1] Implementar SchemaAnalyzer em src/services/schema_extraction/analyzer.py (orquestra análise de presença e cardinalidade)
-- [ ] T021 [US1] Criar __init__.py para src/services/schema_extraction/ exportando SchemaExtractor e SchemaAnalyzer
-- [ ] T022 [US1] Implementar MockExternalDataSource em src/repositories/external/mock_repository.py (leitura de arquivos JSON de res/db/)
-- [ ] T023 [US1] Implementar ProdExternalDataSource em src/repositories/external/prod_repository.py (conexão MongoDB com Motor, $sample aggregation)
-- [ ] T024 [US1] Criar factory get_external_data_source em src/repositories/external/__init__.py (seleção por DATA_SOURCE_ENVIRONMENT)
+- [X] T015 [P] [US1] Implementar TypeInferrer em src/services/schema_extraction/extractor.py (inferência de tipos com regex para datetime e objectid)
+- [X] T016 [P] [US1] Implementar flatten_fields em src/services/schema_extraction/extractor.py (achatamento de estruturas aninhadas com dot notation)
+- [X] T017 [US1] Implementar SchemaExtractor em src/services/schema_extraction/extractor.py (orquestra inferência de tipos e achatamento)
+- [X] T018 [P] [US1] Implementar analyze_field_presence em src/services/schema_extraction/analyzer.py (cálculo de presence_ratio)
+- [X] T019 [P] [US1] Implementar analyze_cardinality em src/services/schema_extraction/analyzer.py (detecção de enumeráveis e extração de valores únicos)
+- [X] T020 [US1] Implementar SchemaAnalyzer em src/services/schema_extraction/analyzer.py (orquestra análise de presença e cardinalidade)
+- [X] T021 [US1] Criar __init__.py para src/services/schema_extraction/ exportando SchemaExtractor e SchemaAnalyzer
+- [X] T022 [US1] Implementar MockExternalDataSource em src/repositories/external/mock_repository.py (leitura de arquivos JSON de res/db/)
+- [X] T023 [US1] Implementar ProdExternalDataSource em src/repositories/external/prod_repository.py (conexão MongoDB com Motor, $sample aggregation)
+- [X] T024 [US1] Criar factory get_external_data_source em src/repositories/external/__init__.py (seleção por DATA_SOURCE_ENVIRONMENT)
 
 **Checkpoint**: User Story 1 está funcional - extração de schema funciona independentemente da persistência
 
@@ -89,16 +89,16 @@
 
 ### Tests para User Story 2 ⚠️
 
-- [ ] T025 [P] [US2] Unit test para CatalogRepository em tests/unit/test_catalog_repository.py (CRUD de ExternalSource e ColumnMetadata)
-- [ ] T026 [P] [US2] Integration test para persistência de schema em tests/integration/test_schema_extraction.py (extração + persistência end-to-end)
+- [X] T025 [P] [US2] Unit test para CatalogRepository em tests/unit/test_catalog_repository.py (CRUD de ExternalSource e ColumnMetadata)
+- [X] T026 [P] [US2] Integration test para persistência de schema em tests/integration/test_schema_extraction.py (extração + persistência end-to-end)
 
 ### Implementation para User Story 2
 
-- [ ] T027 [US2] Implementar CatalogRepository em src/repositories/catalog/catalog_repository.py (CRUD com upsert para re-extração)
-- [ ] T028 [US2] Criar __init__.py para src/repositories/catalog/ exportando CatalogRepository
-- [ ] T029 [US2] Implementar CatalogService em src/services/catalog_service.py (orquestra extração, análise e persistência)
-- [ ] T030 [US2] Adicionar lógica de upsert ao CatalogService para sobrescrever schemas existentes (sem versionamento em v1)
-- [ ] T031 [US2] Adicionar logging estruturado com structlog ao CatalogService
+- [X] T027 [US2] Implementar CatalogRepository em src/repositories/catalog/catalog_repository.py (CRUD com upsert para re-extração)
+- [X] T028 [US2] Criar __init__.py para src/repositories/catalog/ exportando CatalogRepository
+- [X] T029 [US2] Implementar CatalogService em src/services/catalog_service.py (orquestra extração, análise e persistência)
+- [X] T030 [US2] Adicionar lógica de upsert ao CatalogService para sobrescrever schemas existentes (sem versionamento em v1)
+- [X] T031 [US2] Adicionar logging estruturado com structlog ao CatalogService
 
 **Checkpoint**: User Stories 1 E 2 funcionam independentemente - extração e persistência completas
 
@@ -112,25 +112,25 @@
 
 ### Tests para User Story 4 ⚠️
 
-- [ ] T032 [P] [US4] Contract test para GET /catalog/sources em tests/contract/test_catalog_contracts.py
-- [ ] T033 [P] [US4] Contract test para GET /catalog/sources/{source_id} em tests/contract/test_catalog_contracts.py
-- [ ] T034 [P] [US4] Contract test para GET /catalog/sources/{source_id}/columns em tests/contract/test_catalog_contracts.py
-- [ ] T035 [P] [US4] Contract test para POST /catalog/extraction em tests/contract/test_catalog_contracts.py
-- [ ] T036 [P] [US4] Contract test para GET /catalog/extraction/{task_id} em tests/contract/test_catalog_contracts.py
-- [ ] T037 [P] [US4] Contract test para POST /catalog/extraction/all em tests/contract/test_catalog_contracts.py
-- [ ] T038 [P] [US4] Contract test para DELETE /catalog/sources/{source_id} em tests/contract/test_catalog_contracts.py
+- [X] T032 [P] [US4] Contract test para GET /catalog/sources em tests/contract/test_catalog_contracts.py
+- [X] T033 [P] [US4] Contract test para GET /catalog/sources/{source_id} em tests/contract/test_catalog_contracts.py
+- [X] T034 [P] [US4] Contract test para GET /catalog/sources/{source_id}/columns em tests/contract/test_catalog_contracts.py
+- [X] T035 [P] [US4] Contract test para POST /catalog/extraction em tests/contract/test_catalog_contracts.py
+- [X] T036 [P] [US4] Contract test para GET /catalog/extraction/{task_id} em tests/contract/test_catalog_contracts.py
+- [X] T037 [P] [US4] Contract test para POST /catalog/extraction/all em tests/contract/test_catalog_contracts.py
+- [X] T038 [P] [US4] Contract test para DELETE /catalog/sources/{source_id} em tests/contract/test_catalog_contracts.py
 
 ### Implementation para User Story 4
 
-- [ ] T039 [US4] Implementar endpoint GET /catalog/sources em src/api/v1/catalog.py (listagem com paginação e filtro por db_name)
-- [ ] T040 [US4] Implementar endpoint GET /catalog/sources/{source_id} em src/api/v1/catalog.py (detalhes com estatísticas)
-- [ ] T041 [US4] Implementar endpoint DELETE /catalog/sources/{source_id} em src/api/v1/catalog.py (remoção com cascade)
-- [ ] T042 [US4] Implementar endpoint GET /catalog/sources/{source_id}/columns em src/api/v1/catalog.py (filtros: type, is_required, is_enumerable)
-- [ ] T043 [US4] Implementar endpoint POST /catalog/extraction em src/api/v1/catalog.py (extração assíncrona com task_id)
-- [ ] T044 [US4] Implementar endpoint GET /catalog/extraction/{task_id} em src/api/v1/catalog.py (status da tarefa)
-- [ ] T045 [US4] Implementar endpoint POST /catalog/extraction/all em src/api/v1/catalog.py (extração em lote das 4 tabelas)
-- [ ] T046 [US4] Registrar router do catálogo no src/main.py (prefix /api/v1)
-- [ ] T047 [US4] Implementar mecanismo de task tracking para extrações assíncronas (in-memory ou Redis se disponível)
+- [X] T039 [US4] Implementar endpoint GET /catalog/sources em src/api/v1/catalog.py (listagem com paginação e filtro por db_name)
+- [X] T040 [US4] Implementar endpoint GET /catalog/sources/{source_id} em src/api/v1/catalog.py (detalhes com estatísticas)
+- [X] T041 [US4] Implementar endpoint DELETE /catalog/sources/{source_id} em src/api/v1/catalog.py (remoção com cascade)
+- [X] T042 [US4] Implementar endpoint GET /catalog/sources/{source_id}/columns em src/api/v1/catalog.py (filtros: type, is_required, is_enumerable)
+- [X] T043 [US4] Implementar endpoint POST /catalog/extraction em src/api/v1/catalog.py (extração assíncrona com task_id)
+- [X] T044 [US4] Implementar endpoint GET /catalog/extraction/{task_id} em src/api/v1/catalog.py (status da tarefa)
+- [X] T045 [US4] Implementar endpoint POST /catalog/extraction/all em src/api/v1/catalog.py (extração em lote das 4 tabelas)
+- [X] T046 [US4] Registrar router do catálogo no src/main.py (prefix /api/v1)
+- [X] T047 [US4] Implementar mecanismo de task tracking para extrações assíncronas (in-memory ou Redis se disponível)
 
 **Checkpoint**: Todas as user stories estão funcionais independentemente
 
@@ -142,8 +142,8 @@
 
 - [ ] T048 [P] Atualizar documentação em docs/ com instruções de uso da API de catálogo
 - [ ] T049 [P] Validar quickstart.md com todos os cenários de teste
-- [ ] T050 Code cleanup e validação de código com ruff e black
-- [ ] T051 [P] Adicionar unit tests complementares para cobertura mínima de 80% em tests/unit/
+- [X] T050 Code cleanup e validação de código com ruff e black
+- [X] T051 [P] Adicionar unit tests complementares para cobertura mínima de 80% em tests/unit/
 - [ ] T052 Verificar performance: extração < 30s, consulta p95 < 1s
 - [ ] T053 Executar extração das 4 tabelas iniciais para validação final
 
