@@ -62,25 +62,34 @@ git status --porcelain
 Execute sequencialmente (política de zero warnings):
 
 ```bash
-npm test
-npm run lint
+uv run pytest
+uv run ruff check src/ tests/
+uv run mypy src/
 ```
 
 **Tratamento de Erros:**
 
-- Se `npm test` falhar:
+- Se `uv run pytest` falhar:
   ```
   ❌ Erro: Testes falharam.
 
   Corrija os erros de teste antes de criar o PR.
-  Execute: npm test
+  Execute: uv run pytest
   ```
 
-- Se `npm run lint` falhar:
+- Se `uv run ruff check` falhar:
   ```
-  ❌ Erro: ESLint encontrou problemas (projeto tem política de zero warnings).
+  ❌ Erro: Ruff encontrou problemas de linting.
 
-  Corrija os problemas ou execute: npm run lint -- --fix
+  Corrija os problemas ou execute: uv run ruff check src/ tests/ --fix
+  ```
+
+- Se `uv run mypy src/` falhar:
+  ```
+  ❌ Erro: MyPy encontrou erros de tipagem.
+
+  Corrija os erros de tipo antes de criar o PR.
+  Execute: uv run mypy src/
   ```
 
 ## Fase 3: Detecção da Branch Base
@@ -201,21 +210,24 @@ Gere checklist baseado nos arquivos modificados.
 **Base (sempre incluir):**
 ```markdown
 ## Checklist
-- [x] ✅ Testes passando (npm test)
-- [x] ✅ Linting passando (npm run lint)
+- [x] ✅ Testes passando (uv run pytest)
+- [x] ✅ Linting passando (uv run ruff check)
+- [x] ✅ Tipagem verificada (uv run mypy src/)
 ```
 
 **Condicional (adicione baseado em padrões):**
 
 | Se arquivos modificados contêm | Adicione ao checklist |
 |-------------------------------|----------------------|
-| `src/design-system/` | `- [ ] ✅ Tokens do Design System utilizados (sem valores hard-coded)` |
-| `*.stories.tsx` | `- [ ] ✅ Stories do Storybook atualizadas e validadas (dark/light themes)` |
-| `*.ts` ou `*.tsx` | `- [ ] ✅ Tipagem TypeScript estrita mantida (sem any implícito)` |
-| `src/presentation/` | `- [ ] ✅ Chaves i18n adicionadas para novos textos da UI` |
-| `src/domain/` ou `src/infra/` | `- [ ] ✅ Fronteiras da Clean Architecture respeitadas` |
-| `*.test.ts` ou `*.test.tsx` | `- [ ] ✅ Cobertura de testes adequada (novos testes adicionados)` |
-| `atoms/`, `molecules/`, ou `organisms/` | `- [ ] ✅ Componentes seguem hierarquia Atomic Design (atoms → molecules → organisms)` |
+| `src/api/` | `- [ ] ✅ Endpoints documentados com docstrings e schemas Pydantic` |
+| `src/models/` | `- [ ] ✅ Migrations do Alembic criadas/atualizadas se necessário` |
+| `src/schemas/` | `- [ ] ✅ Schemas Pydantic com validações apropriadas` |
+| `src/services/` | `- [ ] ✅ Lógica de negócio com tratamento de erros adequado` |
+| `src/repositories/` | `- [ ] ✅ Repositórios seguem padrão async com SQLAlchemy` |
+| `src/core/` | `- [ ] ✅ Componentes cross-cutting documentados` |
+| `tests/` | `- [ ] ✅ Cobertura de testes adequada (novos testes adicionados)` |
+| `alembic/` | `- [ ] ✅ Migrations testadas e reversíveis` |
+| `*.py` | `- [ ] ✅ Tipagem Python estrita mantida (sem Any implícito)` |
 
 ### 6.3 Seção de Footer
 
@@ -282,6 +294,6 @@ Exiba mensagem de sucesso em PT-BR:
 
 ## Referências
 
-- Projeto: `/home/elias/workspace/Listify/CLAUDE.md`
+- Projeto: `PROJECT.md`
 - Conventional Commits: https://www.conventionalcommits.org/
-- Design System: `/home/elias/workspace/Listify/src/design-system/README.md`
+- Arquitetura: `docs/architecture.md`
