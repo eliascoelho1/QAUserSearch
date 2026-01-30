@@ -24,6 +24,11 @@
 - Q: A LLM deve participar da detecção de colunas enumeráveis? → A: Não, detecção é puramente estatística (cardinalidade). LLM foca apenas em descrições semânticas.
 - Q: O limite de cardinalidade para colunas enumeráveis deve ser configurável? → A: Sim, parametrizável via Settings/.env (padrão: 50)
 
+### Session 2026-01-30
+
+- Q: Os enriquecimentos que dependem de LLM devem fazer parte desta versão? → A: Mover LLM para versão futura, mas preparar estrutura de dados agora (campos de descrição e status `pending_enrichment` já presentes no modelo)
+- Q: Como o versionamento de schemas deve funcionar na re-extração? → A: Sobrescrever schema atual sem histórico de versões em v1 (SchemaVersion será implementado em versão futura se necessário)
+
 ## Contexto e Motivação
 
 A aplicação QAUserSearch precisa consultar múltiplos bancos de dados externos (MongoDB) para buscar massas de teste em ambiente QA. Para evitar acoplamento forte com a estrutura atual desses bancos, e permitir que o sistema gere queries dinâmicas de forma inteligente, é necessário:
@@ -91,11 +96,13 @@ Como desenvolvedor da plataforma, preciso que os schemas extraídos sejam persis
 
 ---
 
-### User Story 3 - Enriquecimento de Metadados via LLM (Priority: P2)
+### User Story 3 - Enriquecimento de Metadados via LLM (Priority: FUTURE - Escopo v2)
+
+> ⚠️ **ESCOPO FUTURO**: Esta user story foi movida para uma versão futura. A estrutura de dados (campos `description`, `enrichment_status`) será criada nesta versão para facilitar a implementação posterior.
 
 Como desenvolvedor da plataforma, preciso que uma LLM analise os schemas extraídos e gere descrições semânticas para cada coluna, para que usuários e o próprio sistema de geração de queries tenham contexto sobre o significado dos dados.
 
-**Why this priority**: O enriquecimento semântico é valioso mas não bloqueia a funcionalidade básica de busca. Pode ser implementado após o catálogo básico estar funcional.
+**Why this priority**: O enriquecimento semântico é valioso mas não bloqueia a funcionalidade básica de busca. Será implementado em versão futura após o catálogo básico estar funcional e validado.
 
 **Independent Test**: Pode ser testado enviando um schema para a LLM e verificando se descrições coerentes são geradas para cada coluna.
 
@@ -129,7 +136,7 @@ Como desenvolvedor ou usuário da plataforma, preciso consultar o catálogo de s
 - O que acontece quando o arquivo JSON de amostra está vazio ou malformado?
 - Como tratar campos que aparecem em menos de 5% dos registros (outliers)?
 - O que acontece quando a LLM não consegue gerar uma descrição coerente para um campo?
-  - **Resposta**: Sistema continua sem descrição, marca coluna como `pending_enrichment` para retry automático posterior
+  - **Resposta**: *(Escopo v2)* Sistema continua sem descrição, marca coluna como `pending_enrichment` para retry automático posterior
 
 ## Requirements *(mandatory)*
 
@@ -150,14 +157,19 @@ Como desenvolvedor ou usuário da plataforma, preciso consultar o catálogo de s
 - **FR-005**: Sistema DEVE armazenar schemas em tabelas dedicadas no PostgreSQL local
 - **FR-006**: Sistema DEVE manter relação entre fonte externa (db + tabela) e suas colunas
 - **FR-007**: Sistema DEVE registrar timestamp de última atualização do schema
-- **FR-008**: Sistema DEVE permitir re-extração de schema sem perda de dados do catálogo
+- **FR-008**: Sistema DEVE permitir re-extração de schema sobrescrevendo dados anteriores (sem versionamento em v1)
 
-**Enriquecimento LLM:**
-- **FR-009**: Sistema DEVE enviar contexto de schema para LLM (OpenAI) para geração de descrições
-- **FR-010**: Sistema DEVE armazenar descrições geradas pela LLM junto aos metadados da coluna
-- **FR-011**: Sistema DEVE permitir execução do enriquecimento de forma assíncrona/batch
-- **FR-023**: Sistema DEVE marcar colunas como "pending_enrichment" quando LLM falhar ou estiver indisponível
-- **FR-024**: Sistema DEVE implementar mecanismo de retry automático para colunas com status "pending_enrichment"
+**Enriquecimento LLM (ESCOPO FUTURO - v2):**
+> ⚠️ Os requisitos abaixo serão implementados em versão futura. A estrutura de dados será preparada nesta versão.
+- **FR-009**: ~~Sistema DEVE enviar contexto de schema para LLM (OpenAI) para geração de descrições~~ → *FUTURO*
+- **FR-010**: ~~Sistema DEVE armazenar descrições geradas pela LLM junto aos metadados da coluna~~ → *FUTURO (estrutura de dados preparada)*
+- **FR-011**: ~~Sistema DEVE permitir execução do enriquecimento de forma assíncrona/batch~~ → *FUTURO*
+- **FR-023**: ~~Sistema DEVE marcar colunas como "pending_enrichment" quando LLM falhar ou estiver indisponível~~ → *FUTURO (campo preparado)*
+- **FR-024**: ~~Sistema DEVE implementar mecanismo de retry automático para colunas com status "pending_enrichment"~~ → *FUTURO*
+
+**Preparação para Enriquecimento Futuro (v1):**
+- **FR-030**: Sistema DEVE incluir campos `description` (nullable) e `enrichment_status` no modelo ColumnMetadata para suportar enriquecimento LLM futuro
+- **FR-031**: Sistema DEVE inicializar `enrichment_status` como "not_enriched" para todas as colunas nesta versão
 
 **Arquitetura:**
 - **FR-012**: Sistema DEVE seguir padrão de Repository para acesso a dados
@@ -178,14 +190,14 @@ Como desenvolvedor ou usuário da plataforma, preciso consultar o catálogo de s
 
 - **ExternalSource**: Representa uma fonte de dados externa (combinação de nome do banco + nome da tabela). Atributos: identificador, nome do banco, nome da tabela, timestamp de catalogação, versão do schema.
 
-- **ColumnMetadata**: Representa uma coluna dentro de uma fonte externa. Atributos: identificador, referência à fonte, nome da coluna, tipo inferido, é obrigatório, caminho no JSON (para nested), descrição semântica, valores de exemplo, status de enriquecimento (enriched/pending_enrichment), é enumerável (cardinalidade ≤50), valores únicos (lista de valores distintos quando enumerável).
+- **ColumnMetadata**: Representa uma coluna dentro de uma fonte externa. Atributos: identificador, referência à fonte, nome da coluna, tipo inferido, é obrigatório, caminho no JSON (para nested), descrição semântica (nullable, preparado para LLM futuro), valores de exemplo, status de enriquecimento (not_enriched/pending_enrichment/enriched - inicializa como "not_enriched"), é enumerável (cardinalidade ≤50), valores únicos (lista de valores distintos quando enumerável).
 
-- **SchemaVersion**: Histórico de versões de schema para uma fonte. Atributos: identificador, referência à fonte, versão, timestamp, snapshot do schema.
+- **SchemaVersion**: *(ESCOPO FUTURO)* Histórico de versões de schema para uma fonte. Atributos: identificador, referência à fonte, versão, timestamp, snapshot do schema. Em v1, a re-extração sobrescreve o schema atual.
 
 ## Assumptions
 
 - O PostgreSQL local já está configurado e acessível pela aplicação
-- A LLM utilizada para enriquecimento é da **OpenAI** (configurada via Settings/.env)
+- A LLM utilizada para enriquecimento é da **OpenAI** (configurada via Settings/.env) - **implementação prevista para v2**
 - Os bancos externos são MongoDB (documentos JSON), conforme evidenciado pelos campos `_id` e `_class`
 - O foco inicial são as 4 tabelas identificadas; expansão para outras tabelas seguirá o mesmo padrão
 - Em ambiente MOCK, os arquivos JSON em `res/db/` são amostras representativas das tabelas externas
@@ -197,6 +209,7 @@ Como desenvolvedor ou usuário da plataforma, preciso consultar o catálogo de s
 
 - **SC-001**: 100% das 4 tabelas identificadas (account_main, card_main, invoice, closed_invoice) têm schemas extraídos e catalogados
 - **SC-002**: Extração de schema para uma nova tabela leva menos de 30 segundos
-- **SC-003**: 90% das colunas possuem descrições semânticas geradas pela LLM
+- **SC-003**: ~~90% das colunas possuem descrições semânticas geradas pela LLM~~ → *Movido para v2*
 - **SC-004**: O catálogo pode ser consultado retornando resultados em menos de 1 segundo
 - **SC-005**: Adicionar suporte a uma nova tabela externa requer apenas fornecer arquivo JSON de amostra, sem alterações de código
+- **SC-006**: 100% das colunas têm campos `description` e `enrichment_status` preparados para enriquecimento LLM futuro
