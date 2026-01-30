@@ -1,0 +1,512 @@
+openapi: 3.1.0
+info:
+  title: QAUserSearch Catalog API
+  description: API para gerenciamento do catálogo de schemas de fontes externas
+  version: 1.0.0
+  contact:
+    name: QAUserSearch Team
+
+servers:
+  - url: http://localhost:8000/api/v1
+    description: Development server
+
+tags:
+  - name: sources
+    description: Gerenciamento de fontes de dados externas
+  - name: columns
+    description: Consulta de metadados de colunas
+  - name: extraction
+    description: Extração de schemas
+
+paths:
+  /catalog/sources:
+    get:
+      tags: [sources]
+      summary: Lista todas as fontes catalogadas
+      description: Retorna lista de todas as fontes de dados externas com contagem de colunas
+      operationId: listSources
+      parameters:
+        - name: db_name
+          in: query
+          description: Filtrar por nome do banco
+          schema:
+            type: string
+        - name: skip
+          in: query
+          description: Número de registros para pular (paginação)
+          schema:
+            type: integer
+            default: 0
+            minimum: 0
+        - name: limit
+          in: query
+          description: Número máximo de registros
+          schema:
+            type: integer
+            default: 100
+            minimum: 1
+            maximum: 1000
+      responses:
+        '200':
+          description: Lista de fontes
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SourceListResponse'
+        '500':
+          $ref: '#/components/responses/InternalError'
+
+  /catalog/sources/{source_id}:
+    get:
+      tags: [sources]
+      summary: Obtém detalhes de uma fonte específica
+      description: Retorna informações detalhadas de uma fonte incluindo todas suas colunas
+      operationId: getSource
+      parameters:
+        - $ref: '#/components/parameters/SourceId'
+      responses:
+        '200':
+          description: Detalhes da fonte
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SourceDetailResponse'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalError'
+
+    delete:
+      tags: [sources]
+      summary: Remove uma fonte do catálogo
+      description: Remove a fonte e todas as suas colunas associadas
+      operationId: deleteSource
+      parameters:
+        - $ref: '#/components/parameters/SourceId'
+      responses:
+        '204':
+          description: Fonte removida com sucesso
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalError'
+
+  /catalog/sources/{source_id}/columns:
+    get:
+      tags: [columns]
+      summary: Lista colunas de uma fonte
+      description: Retorna lista de colunas com filtros opcionais
+      operationId: listColumns
+      parameters:
+        - $ref: '#/components/parameters/SourceId'
+        - name: type
+          in: query
+          description: Filtrar por tipo inferido
+          schema:
+            $ref: '#/components/schemas/InferredType'
+        - name: is_required
+          in: query
+          description: Filtrar por obrigatoriedade
+          schema:
+            type: boolean
+        - name: is_enumerable
+          in: query
+          description: Filtrar por enumerabilidade
+          schema:
+            type: boolean
+        - name: skip
+          in: query
+          schema:
+            type: integer
+            default: 0
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 100
+      responses:
+        '200':
+          description: Lista de colunas
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ColumnListResponse'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalError'
+
+  /catalog/extraction:
+    post:
+      tags: [extraction]
+      summary: Inicia extração de schema
+      description: |
+        Extrai schema de uma fonte externa e persiste no catálogo.
+        A extração é **assíncrona** - retorna imediatamente com ID da tarefa.
+      operationId: extractSchema
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ExtractionRequest'
+      responses:
+        '202':
+          description: Extração iniciada (assíncrona)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ExtractionTaskResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '500':
+          $ref: '#/components/responses/InternalError'
+
+  /catalog/extraction/{task_id}:
+    get:
+      tags: [extraction]
+      summary: Consulta status de extração
+      description: Retorna o status atual de uma tarefa de extração assíncrona
+      operationId: getExtractionStatus
+      parameters:
+        - name: task_id
+          in: path
+          required: true
+          description: ID da tarefa de extração
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Status da extração
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ExtractionStatusResponse'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalError'
+
+  /catalog/extraction/all:
+    post:
+      tags: [extraction]
+      summary: Extrai schemas de todas as fontes conhecidas
+      description: |
+        Inicia extração de todas as fontes configuradas (4 tabelas iniciais).
+        Operação **assíncrona** - útil para inicialização do catálogo.
+      operationId: extractAllSchemas
+      responses:
+        '202':
+          description: Extração em lote iniciada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BatchExtractionResponse'
+        '500':
+          $ref: '#/components/responses/InternalError'
+
+components:
+  parameters:
+    SourceId:
+      name: source_id
+      in: path
+      required: true
+      description: ID único da fonte
+      schema:
+        type: integer
+
+  schemas:
+    # Enums
+    InferredType:
+      type: string
+      enum:
+        - string
+        - integer
+        - number
+        - boolean
+        - datetime
+        - objectid
+        - array
+        - object
+        - "null"
+        - unknown
+
+    EnrichmentStatus:
+      type: string
+      enum:
+        - not_enriched
+        - pending_enrichment
+        - enriched
+
+    ExtractionStatus:
+      type: string
+      enum:
+        - pending
+        - running
+        - completed
+        - failed
+
+    # Request/Response schemas
+    ExtractionRequest:
+      type: object
+      required:
+        - db_name
+        - table_name
+      properties:
+        db_name:
+          type: string
+          description: Nome do banco de dados externo
+          example: card_account_authorization
+          minLength: 1
+          maxLength: 100
+        table_name:
+          type: string
+          description: Nome da tabela/collection
+          example: account_main
+          minLength: 1
+          maxLength: 100
+        sample_size:
+          type: integer
+          description: Tamanho da amostra de documentos
+          default: 500
+          minimum: 1
+          maximum: 10000
+
+    ExtractionTaskResponse:
+      type: object
+      properties:
+        task_id:
+          type: string
+          format: uuid
+          description: ID único da tarefa
+        status:
+          $ref: '#/components/schemas/ExtractionStatus'
+        message:
+          type: string
+          example: Extração iniciada com sucesso
+        created_at:
+          type: string
+          format: date-time
+
+    ExtractionStatusResponse:
+      type: object
+      properties:
+        task_id:
+          type: string
+          format: uuid
+        status:
+          $ref: '#/components/schemas/ExtractionStatus'
+        progress:
+          type: object
+          properties:
+            current:
+              type: integer
+            total:
+              type: integer
+        result:
+          type: object
+          nullable: true
+          properties:
+            source_id:
+              type: integer
+            columns_extracted:
+              type: integer
+            enumerable_columns:
+              type: integer
+        error:
+          type: string
+          nullable: true
+        started_at:
+          type: string
+          format: date-time
+          nullable: true
+        completed_at:
+          type: string
+          format: date-time
+          nullable: true
+
+    BatchExtractionResponse:
+      type: object
+      properties:
+        batch_id:
+          type: string
+          format: uuid
+        tasks:
+          type: array
+          items:
+            type: object
+            properties:
+              task_id:
+                type: string
+                format: uuid
+              db_name:
+                type: string
+              table_name:
+                type: string
+        total_tasks:
+          type: integer
+
+    SourceSummary:
+      type: object
+      properties:
+        id:
+          type: integer
+        db_name:
+          type: string
+        table_name:
+          type: string
+        column_count:
+          type: integer
+        enumerable_count:
+          type: integer
+        cataloged_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+
+    SourceListResponse:
+      type: object
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/SourceSummary'
+        total:
+          type: integer
+        skip:
+          type: integer
+        limit:
+          type: integer
+
+    ColumnDetail:
+      type: object
+      properties:
+        id:
+          type: integer
+        column_name:
+          type: string
+        column_path:
+          type: string
+        inferred_type:
+          $ref: '#/components/schemas/InferredType'
+        is_required:
+          type: boolean
+        is_nullable:
+          type: boolean
+        is_enumerable:
+          type: boolean
+        unique_values:
+          type: array
+          items: {}
+          nullable: true
+        sample_values:
+          type: array
+          items: {}
+          nullable: true
+        presence_ratio:
+          type: number
+          format: float
+          minimum: 0
+          maximum: 1
+        description:
+          type: string
+          nullable: true
+        enrichment_status:
+          $ref: '#/components/schemas/EnrichmentStatus'
+
+    SourceDetailResponse:
+      type: object
+      properties:
+        id:
+          type: integer
+        db_name:
+          type: string
+        table_name:
+          type: string
+        document_count:
+          type: integer
+        cataloged_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+        columns:
+          type: array
+          items:
+            $ref: '#/components/schemas/ColumnDetail'
+        stats:
+          type: object
+          properties:
+            total_columns:
+              type: integer
+            required_columns:
+              type: integer
+            enumerable_columns:
+              type: integer
+            types_distribution:
+              type: object
+              additionalProperties:
+                type: integer
+
+    ColumnListResponse:
+      type: object
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/ColumnDetail'
+        total:
+          type: integer
+        skip:
+          type: integer
+        limit:
+          type: integer
+
+    ErrorResponse:
+      type: object
+      properties:
+        detail:
+          type: string
+        error_code:
+          type: string
+        timestamp:
+          type: string
+          format: date-time
+
+  responses:
+    BadRequest:
+      description: Requisição inválida
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            detail: "Campo 'db_name' é obrigatório"
+            error_code: VALIDATION_ERROR
+            timestamp: "2026-01-30T10:00:00Z"
+
+    NotFound:
+      description: Recurso não encontrado
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            detail: "Fonte com ID 999 não encontrada"
+            error_code: NOT_FOUND
+            timestamp: "2026-01-30T10:00:00Z"
+
+    InternalError:
+      description: Erro interno do servidor
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            detail: "Erro ao processar requisição"
+            error_code: INTERNAL_ERROR
+            timestamp: "2026-01-30T10:00:00Z"

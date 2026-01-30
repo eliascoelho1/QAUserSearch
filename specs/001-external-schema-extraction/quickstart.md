@@ -1,161 +1,260 @@
 # Quickstart: Extração Automática de Schema
 
-**Feature Branch**: `001-external-schema-extraction`
+**Feature Branch**: `001-external-schema-extraction`  
+**Date**: 2026-01-30
 
 ## Pré-requisitos
 
 - Python 3.11+
-- PostgreSQL (catálogo local)
-- Docker (opcional, para ambiente completo)
-- Credenciais OpenAI (para enriquecimento)
+- PostgreSQL 14+ (local ou Docker)
+- uv (gerenciador de pacotes)
 
 ## Setup Rápido
 
 ### 1. Configuração do Ambiente
 
 ```bash
-# Clonar e entrar no projeto
+# Clone e entre no diretório
 cd QAUserSearch
 
-# Criar e ativar ambiente virtual
-uv venv
-source .venv/bin/activate
+# Instale dependências
+uv sync
 
-# Instalar dependências (incluindo novas do plano)
-uv pip install -e ".[dev]"
-```
-
-### 2. Configurar Variáveis de Ambiente
-
-Copiar e editar `.env`:
-
-```bash
+# Configure variáveis de ambiente
 cp .env.example .env
 ```
 
-Variáveis relevantes para esta feature:
+### 2. Configure o `.env`
 
-```env
-# Ambiente de dados (MOCK = JSON local, PROD = MongoDB real)
-DATA_ENVIRONMENT=MOCK
+```bash
+# Adicione ao .env:
 
-# PostgreSQL local (catálogo)
-DATABASE_URL=postgresql+asyncpg://user:pass@localhost:5432/qausersearch
+# Ambiente de fonte de dados (MOCK ou PROD)
+DATA_SOURCE_ENVIRONMENT=MOCK
 
-# Extração de schema
+# Configurações de extração
 SCHEMA_SAMPLE_SIZE=500
-REQUIRED_FIELD_THRESHOLD=0.95
 ENUMERABLE_CARDINALITY_LIMIT=50
 
-# OpenAI (enriquecimento)
-OPENAI_API_KEY=sk-...
-OPENAI_MODEL=gpt-4o-mini
-LLM_MAX_RETRIES=3
-
 # MongoDB (apenas para PROD)
-MONGO_URI=mongodb://host:27017
-MONGO_CONNECTION_TIMEOUT=30
+# MONGODB_URI=mongodb+srv://user:pass@cluster.mongodb.net
 ```
 
-### 3. Inicializar Banco de Dados
+### 3. Execute as Migrations
 
 ```bash
-# Rodar migrations
-alembic upgrade head
+# Certifique-se que o PostgreSQL está rodando
+docker compose up -d postgres
 
-# Verificar tabelas criadas
-psql $DATABASE_URL -c "\dt"
-# Deve mostrar: external_sources, column_metadata
+# Execute migrations
+uv run alembic upgrade head
 ```
 
-### 4. Executar Extração (Ambiente MOCK)
+### 4. Inicie a Aplicação
 
 ```bash
-# Iniciar servidor
-uvicorn src.main:app --reload
+uv run uvicorn src.main:app --reload
+```
 
-# Em outro terminal, iniciar extração
-curl -X POST http://localhost:8000/api/v1/extraction \
+---
+
+## Usando a API
+
+### Extrair Schema de Uma Fonte
+
+```bash
+# Inicia extração assíncrona
+curl -X POST http://localhost:8000/api/v1/catalog/extraction \
   -H "Content-Type: application/json" \
   -d '{
     "db_name": "card_account_authorization",
     "table_name": "account_main"
   }'
 
-# Resposta esperada:
+# Resposta:
 # {
-#   "source_id": "550e8400-...",
-#   "status": "in_progress",
+#   "task_id": "550e8400-e29b-41d4-a716-446655440000",
+#   "status": "pending",
 #   "message": "Extração iniciada com sucesso"
 # }
 ```
 
-### 5. Verificar Status
+### Consultar Status da Extração
 
 ```bash
-# Consultar status da extração
-curl http://localhost:8000/api/v1/extraction/{source_id}/status
+curl http://localhost:8000/api/v1/catalog/extraction/550e8400-e29b-41d4-a716-446655440000
 
-# Listar colunas extraídas
-curl http://localhost:8000/api/v1/sources/{source_id}/columns
+# Resposta (em progresso):
+# {
+#   "task_id": "550e8400-e29b-41d4-a716-446655440000",
+#   "status": "running",
+#   "progress": { "current": 250, "total": 500 }
+# }
+
+# Resposta (concluído):
+# {
+#   "task_id": "550e8400-e29b-41d4-a716-446655440000",
+#   "status": "completed",
+#   "result": {
+#     "source_id": 1,
+#     "columns_extracted": 45,
+#     "enumerable_columns": 8
+#   }
+# }
 ```
 
-### 6. Executar Enriquecimento (requer OpenAI)
+### Extrair Todas as Fontes Conhecidas
 
 ```bash
-# Enriquecer colunas de uma fonte
-curl -X POST http://localhost:8000/api/v1/enrichment \
-  -H "Content-Type: application/json" \
-  -d '{"source_id": "550e8400-..."}'
+curl -X POST http://localhost:8000/api/v1/catalog/extraction/all
 
-# Retry de colunas com falha
-curl -X POST http://localhost:8000/api/v1/enrichment/retry
+# Inicia extração das 4 tabelas configuradas
 ```
 
-## Arquivos Mock Disponíveis
-
-Os seguintes arquivos em `res/db/` podem ser usados para testes:
-
-| Arquivo | Banco | Tabela |
-|---------|-------|--------|
-| `card_account_authorization.account_main.json` | card_account_authorization | account_main |
-| `card_account_authorization.card_main.json` | card_account_authorization | card_main |
-| `credit.invoice.json` | credit | invoice |
-| `credit.closed_invoice.json` | credit | closed_invoice |
-
-## Executar Testes
+### Listar Fontes Catalogadas
 
 ```bash
-# Testes unitários
-pytest tests/unit/ -v
+curl http://localhost:8000/api/v1/catalog/sources
 
-# Testes de integração
-pytest tests/integration/ -v
-
-# Testes de contrato
-pytest tests/contract/ -v
-
-# Todos os testes com cobertura
-pytest --cov=src --cov-report=html
+# Resposta:
+# {
+#   "items": [
+#     {
+#       "id": 1,
+#       "db_name": "card_account_authorization",
+#       "table_name": "account_main",
+#       "column_count": 45,
+#       "enumerable_count": 8
+#     }
+#   ],
+#   "total": 1
+# }
 ```
+
+### Consultar Detalhes de Uma Fonte
+
+```bash
+curl http://localhost:8000/api/v1/catalog/sources/1
+
+# Retorna detalhes completos incluindo todas as colunas
+```
+
+### Listar Colunas com Filtros
+
+```bash
+# Apenas colunas obrigatórias
+curl "http://localhost:8000/api/v1/catalog/sources/1/columns?is_required=true"
+
+# Apenas colunas enumeráveis
+curl "http://localhost:8000/api/v1/catalog/sources/1/columns?is_enumerable=true"
+
+# Filtrar por tipo
+curl "http://localhost:8000/api/v1/catalog/sources/1/columns?type=string"
+```
+
+---
+
+## Ambientes
+
+### MOCK (Desenvolvimento)
+
+O ambiente MOCK usa arquivos JSON em `res/db/`:
+
+```
+res/db/
+├── card_account_authorization.account_main.json
+├── card_account_authorization.card_main.json
+├── credit.invoice.json
+└── credit.closed_invoice.json
+```
+
+Configure no `.env`:
+```bash
+DATA_SOURCE_ENVIRONMENT=MOCK
+```
+
+### PROD (Produção)
+
+O ambiente PROD conecta diretamente aos bancos MongoDB externos.
+
+Configure no `.env`:
+```bash
+DATA_SOURCE_ENVIRONMENT=PROD
+MONGODB_URI=mongodb+srv://user:pass@cluster.mongodb.net
+```
+
+---
+
+## Estrutura de Arquivos JSON (MOCK)
+
+Os arquivos seguem a nomenclatura `{db_name}.{table_name}.json`:
+
+```json
+[
+  {
+    "_id": "68e527ed7fc3841868bef0aa",
+    "consumer_id": "26160269",
+    "status": "A",
+    "product_data": {
+      "type": "HYBRID_LEVERAGED",
+      "origin_flow": "manual-processing"
+    },
+    "created_at": "2025-10-07T11:47:09.803Z"
+  }
+]
+```
+
+---
+
+## Testes
+
+```bash
+# Executar todos os testes
+uv run pytest
+
+# Apenas testes unitários
+uv run pytest tests/unit/
+
+# Apenas testes de integração
+uv run pytest tests/integration/
+
+# Com cobertura
+uv run pytest --cov=src --cov-report=term-missing
+```
+
+---
 
 ## Troubleshooting
 
-### Erro: "Fonte não encontrada"
-- Verifique se o arquivo JSON existe em `res/db/`
-- Confirme o padrão de nomenclatura: `{db_name}.{table_name}.json`
+### Erro: "Arquivo JSON não encontrado"
 
-### Erro: "OpenAI rate limit"
-- Reduza `SCHEMA_SAMPLE_SIZE` ou aumente intervalo entre requests
-- Colunas ficarão com status `pending_enrichment` para retry posterior
+Verifique se os arquivos existem em `res/db/` e seguem a nomenclatura correta.
 
-### Erro: "Connection refused" (PROD)
-- Verifique `MONGO_URI` em `.env`
-- Confirme conectividade de rede com MongoDB externo
-- Verifique se `DATA_ENVIRONMENT=PROD` está configurado
+### Erro: "Conexão com PostgreSQL falhou"
+
+```bash
+# Verifique se o container está rodando
+docker compose ps
+
+# Verifique a DATABASE_URL no .env
+echo $DATABASE_URL
+```
+
+### Erro: "Conexão com MongoDB falhou" (PROD)
+
+```bash
+# Verifique a MONGODB_URI
+# Certifique-se que o IP está na whitelist do cluster
+
+# Teste conexão manual
+uv run python -c "from motor.motor_asyncio import AsyncIOMotorClient; c = AsyncIOMotorClient('sua_uri'); print(c.server_info())"
+```
+
+---
 
 ## Próximos Passos
 
-1. Extrair schemas das 4 tabelas identificadas
-2. Revisar descrições geradas pela LLM
-3. Integrar catálogo com módulo de geração de queries
+1. **Extrair schemas**: Execute extração das 4 tabelas iniciais
+2. **Consultar catálogo**: Use a API para explorar os metadados
+3. **Integrar com busca**: Use o catálogo para gerar queries dinâmicas (feature futura)
+4. **Enriquecer com LLM**: Adicionar descrições semânticas (v2)

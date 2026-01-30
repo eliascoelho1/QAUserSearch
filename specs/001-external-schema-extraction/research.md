@@ -1,276 +1,422 @@
 # Research: Extração Automática de Schema de Bancos Externos
 
 **Feature Branch**: `001-external-schema-extraction`  
-**Date**: 2026-01-29  
+**Date**: 2026-01-30  
 **Status**: Complete
 
-## Research Tasks
+## 1. Inferência de Tipos JSON em Python
 
-### 1. Inferência de Tipos em Documentos JSON/MongoDB
+### Decision: Implementação customizada com Pydantic para validação
 
-**Contexto**: Sistema precisa inferir tipos de dados a partir de amostras JSON sem schema pré-definido.
+### Rationale
+- **genson** gera JSON Schema mas é overkill para nosso caso (apenas precisamos inferir tipos, não gerar schema completo)
+- **pydantic** já está no projeto (v2.10+) e oferece validação de tipos robusta
+- Implementação customizada permite controle fino sobre regras específicas do domínio (datas ISO 8601, ObjectId do MongoDB)
 
-**Decision**: Implementar inferência de tipos usando análise estatística de valores com regras hierárquicas.
+### Alternatives Considered
+| Alternativa | Motivo da Rejeição |
+|-------------|-------------------|
+| genson | Dependência adicional, output JSON Schema não necessário |
+| jsonschema | Foco em validação, não inferência |
+| dataclasses-json | Menos flexível que Pydantic |
 
-**Rationale**: 
-- MongoDB não possui schema rígido; tipos devem ser inferidos dinamicamente
-- Análise de múltiplas amostras (500 por padrão) permite detecção confiável de campos opcionais
-- Hierarquia de tipos: null < boolean < number < string (promoção de tipo quando há conflito)
+### Implementation Pattern
 
-**Alternatives Considered**:
-1. **Usar biblioteca jsonschema-inference**: Rejeitado - não suporta detecção de campos opcionais por frequência
-2. **Schema estático via configuração**: Rejeitado - viola requisito de descoberta automática (FR-001)
-3. **Análise de 100% dos documentos**: Rejeitado - impraticável em PROD com grandes volumes
-
-**Implementation Approach**:
 ```python
-# Regras de inferência de tipo
-TYPE_PRIORITY = {
-    "null": 0,
-    "boolean": 1, 
-    "integer": 2,
-    "number": 3,
-    "date": 4,
-    "string": 5,
-    "array": 6,
-    "object": 7
+from typing import Any
+from datetime import datetime
+import re
+
+class TypeInferrer:
+    """Infere tipos de dados a partir de valores JSON."""
+    
+    ISO8601_PATTERN = re.compile(
+        r'^\d{4}-\d{2}-\d{2}[T ]\d{2}:\d{2}:\d{2}'
+    )
+    OBJECTID_PATTERN = re.compile(r'^[a-f0-9]{24}$')
+    
+    def infer_type(self, value: Any) -> str:
+        if value is None:
+            return "null"
+        if isinstance(value, bool):
+            return "boolean"
+        if isinstance(value, int):
+            return "integer"
+        if isinstance(value, float):
+            return "number"
+        if isinstance(value, str):
+            if self.ISO8601_PATTERN.match(value):
+                return "datetime"
+            if self.OBJECTID_PATTERN.match(value):
+                return "objectid"
+            return "string"
+        if isinstance(value, list):
+            return "array"
+        if isinstance(value, dict):
+            return "object"
+        return "unknown"
+```
+
+---
+
+## 2. Detecção de Campos Obrigatórios vs Opcionais
+
+### Decision: Análise estatística com threshold de 95%
+
+### Rationale
+- Campos presentes em >95% dos documentos são considerados obrigatórios (FR-003)
+- Threshold configurável permite ajuste por tabela se necessário
+- Simples de implementar e entender
+
+### Implementation Pattern
+
+```python
+from collections import defaultdict
+from typing import Any
+
+def analyze_field_presence(documents: list[dict[str, Any]]) -> dict[str, float]:
+    """Retorna porcentagem de presença de cada campo."""
+    total = len(documents)
+    if total == 0:
+        return {}
+    
+    field_counts = defaultdict(int)
+    
+    for doc in documents:
+        for field in _flatten_fields(doc):
+            field_counts[field] += 1
+    
+    return {
+        field: count / total 
+        for field, count in field_counts.items()
+    }
+
+def is_required(presence_ratio: float, threshold: float = 0.95) -> bool:
+    """Determina se campo é obrigatório baseado no threshold."""
+    return presence_ratio >= threshold
+```
+
+---
+
+## 3. Tratamento de Estruturas Aninhadas
+
+### Decision: Notação de caminho com ponto (dot notation)
+
+### Rationale
+- Padrão amplamente utilizado (MongoDB, Elasticsearch, jq)
+- Permite reconstrução da hierarquia quando necessário
+- Facilita queries e filtros no catálogo
+
+### Implementation Pattern
+
+```python
+def flatten_fields(obj: dict, prefix: str = "") -> dict[str, Any]:
+    """Achata estruturas aninhadas usando dot notation."""
+    fields = {}
+    
+    for key, value in obj.items():
+        full_key = f"{prefix}.{key}" if prefix else key
+        
+        if isinstance(value, dict):
+            fields.update(flatten_fields(value, full_key))
+        elif isinstance(value, list) and value and isinstance(value[0], dict):
+            # Array de objetos: usa notação [*]
+            fields.update(flatten_fields(value[0], f"{full_key}[*]"))
+        else:
+            fields[full_key] = value
+    
+    return fields
+```
+
+### Exemplo de Output
+
+```json
+// Input
+{
+  "product_data": {
+    "origin_flow": "manual",
+    "type": "HYBRID"
+  },
+  "guaranteed_limit": {
+    "enabled": false
+  }
 }
 
-# Campo obrigatório: presente em >95% das amostras
-# Campo opcional: presente em ≤95% das amostras
-REQUIRED_THRESHOLD = 0.95
+// Output (campos achatados)
+{
+  "product_data.origin_flow": "manual",
+  "product_data.type": "HYBRID",
+  "guaranteed_limit.enabled": false
+}
 ```
 
 ---
 
-### 2. Detecção de Colunas Enumeráveis
+## 4. Detecção de Colunas Enumeráveis
 
-**Contexto**: Sistema deve identificar colunas com conjunto finito de valores (enums) para otimizar queries e UX.
+### Decision: Análise estatística de cardinalidade (sem LLM)
 
-**Decision**: Detecção puramente estatística baseada em cardinalidade, sem participação de LLM.
+### Rationale
+- FR-028 especifica detecção puramente estatística
+- Limite configurável de 50 valores únicos por padrão (FR-029)
+- LLM focará apenas em descrições semânticas (escopo futuro v2)
 
-**Rationale**:
-- Critério objetivo e determinístico (cardinalidade ≤ limite configurável)
-- Evita custos desnecessários com chamadas LLM
-- Limite padrão de 50 valores únicos cobre maioria dos casos práticos
-- Configurável via `ENUMERABLE_CARDINALITY_LIMIT` em Settings/.env
+### Implementation Pattern
 
-**Alternatives Considered**:
-1. **LLM para classificar colunas**: Rejeitado - conforme clarificação do usuário, LLM foca apenas em descrições semânticas
-2. **Heurística por nome de coluna**: Rejeitado - não confiável (ex: "status" pode ter 2 ou 200 valores)
-3. **Limite fixo hardcoded**: Rejeitado - diferentes domínios têm necessidades diferentes
-
-**Implementation Approach**:
 ```python
-def is_enumerable(unique_values: set, limit: int = 50) -> bool:
-    """Coluna é enumerável se cardinalidade <= limite."""
-    return len(unique_values) <= limit
+from collections import Counter
+
+def analyze_cardinality(
+    values: list[Any], 
+    limit: int = 50
+) -> tuple[bool, list[Any] | None]:
+    """
+    Analisa cardinalidade de valores para detecção de enumeráveis.
+    
+    Returns:
+        (is_enumerable, unique_values or None)
+    """
+    # Remove None values para análise
+    non_null = [v for v in values if v is not None]
+    
+    if not non_null:
+        return False, None
+    
+    unique = set(non_null)
+    
+    if len(unique) <= limit:
+        # Ordena por frequência (mais comum primeiro)
+        counter = Counter(non_null)
+        sorted_values = [v for v, _ in counter.most_common()]
+        return True, sorted_values
+    
+    return False, None
 ```
 
 ---
 
-### 3. Integração com OpenAI para Enriquecimento Semântico
+## 5. SQLAlchemy 2.0 Async - Padrões de Implementação
 
-**Contexto**: LLM deve gerar descrições em linguagem natural para cada coluna do schema.
+### Decision: Repository Pattern com Generic Base + Session injetada
 
-**Decision**: Usar OpenAI GPT-4o-mini com prompts estruturados e fallback gracioso.
+### Rationale
+- Projeto já usa SQLAlchemy 2.0 async com asyncpg
+- Padrão Repository facilita testes (mock de session)
+- Generic base evita duplicação de CRUD
 
-**Rationale**:
-- GPT-4o-mini oferece bom balanço custo/qualidade para geração de descrições
-- Batch processing reduz número de chamadas API
-- Fallback com status "pending_enrichment" garante sistema funcional mesmo sem LLM
+### Implementation Pattern
 
-**Alternatives Considered**:
-1. **HubAI**: Rejeitado - conforme clarificação, usar OpenAI
-2. **Processamento síncrono por coluna**: Rejeitado - muito lento e custoso
-3. **Falha total se LLM indisponível**: Rejeitado - viola FR-023 (sistema deve continuar sem descrição)
-
-**Implementation Approach**:
 ```python
-ENRICHMENT_PROMPT = """
-Analise o schema da tabela "{table_name}" do banco "{db_name}" e gere descrições 
-em português para cada coluna. Considere o contexto de dados financeiros/cartão.
+from typing import Generic, TypeVar, Sequence
+from sqlalchemy import select
+from sqlalchemy.ext.asyncio import AsyncSession
 
-Schema:
-{schema_json}
+T = TypeVar("T")
 
-Valores de exemplo (quando disponíveis):
-{sample_values}
-
-Responda em JSON com formato: {"column_name": "descrição semântica"}
-"""
-
-# Retry automático para colunas pending_enrichment
-MAX_RETRY_ATTEMPTS = 3
-RETRY_BACKOFF_SECONDS = 60
+class BaseRepository(Generic[T]):
+    def __init__(self, session: AsyncSession, model: type[T]):
+        self._session = session
+        self._model = model
+    
+    async def get_by_id(self, id: int) -> T | None:
+        result = await self._session.execute(
+            select(self._model).where(self._model.id == id)
+        )
+        return result.scalar_one_or_none()
+    
+    async def get_all(self) -> Sequence[T]:
+        result = await self._session.execute(select(self._model))
+        return result.scalars().all()
+    
+    async def create(self, entity: T) -> T:
+        self._session.add(entity)
+        await self._session.flush()
+        return entity
 ```
 
----
+### Relacionamentos One-to-Many (ExternalSource → ColumnMetadata)
 
-### 4. Padrão Repository para Múltiplos Ambientes
-
-**Contexto**: Sistema deve operar em MOCK (JSON local) e PROD (MongoDB real) com mesma interface.
-
-**Decision**: Abstract Repository Pattern com Factory para seleção de ambiente.
-
-**Rationale**:
-- Isola lógica de negócio da fonte de dados
-- Permite testes unitários com mock repository
-- Troca de ambiente via configuração sem alteração de código (FR-019)
-- Alinhado com arquitetura existente do projeto
-
-**Alternatives Considered**:
-1. **Adapter Pattern**: Rejeitado - Repository é mais natural para acesso a dados
-2. **Conexão direta com if/else**: Rejeitado - viola SRP e dificulta testes
-3. **Microserviços separados por ambiente**: Rejeitado - complexidade desnecessária
-
-**Implementation Approach**:
 ```python
-from abc import ABC, abstractmethod
+from sqlalchemy.orm import Mapped, mapped_column, relationship
+from sqlalchemy import ForeignKey
 
-class ExternalDataRepository(ABC):
-    @abstractmethod
-    async def get_sample_documents(
-        self, db_name: str, table_name: str, limit: int = 500
-    ) -> list[dict]:
-        """Retorna amostra de documentos para extração de schema."""
-        pass
-
-class MockDataRepository(ExternalDataRepository):
-    """Implementação para arquivos JSON em res/db/"""
-    pass
-
-class MongoDataRepository(ExternalDataRepository):
-    """Implementação para MongoDB externo"""
-    pass
-
-def get_repository(environment: str) -> ExternalDataRepository:
-    """Factory para seleção de repositório baseado em ambiente."""
-    if environment == "MOCK":
-        return MockDataRepository()
-    return MongoDataRepository()
-```
-
----
-
-### 5. Estruturas Aninhadas (Nested Objects)
-
-**Contexto**: Documentos MongoDB frequentemente têm objetos aninhados (ex: `product_data`, `guaranteed_limit`).
-
-**Decision**: Representação hierárquica com path notation (dot notation) no catálogo.
-
-**Rationale**:
-- Permite queries em campos aninhados (`product_data.type`)
-- Mantém estrutura flat no banco relacional PostgreSQL
-- Facilita exibição em interfaces (expandir/colapsar)
-
-**Alternatives Considered**:
-1. **Flatten completo**: Rejeitado - perde contexto hierárquico
-2. **JSON column no PostgreSQL**: Rejeitado - dificulta queries e indexação
-3. **Tabela separada para hierarquia**: Rejeitado - complexidade excessiva para o caso de uso
-
-**Implementation Approach**:
-```python
-# Exemplo de representação no catálogo:
-# Campo: guaranteed_limit.enabled
-# Path: "guaranteed_limit.enabled"
-# Parent: "guaranteed_limit"
-# Depth: 2
-
-def flatten_schema(obj: dict, prefix: str = "") -> list[ColumnMetadata]:
-    """Converte objeto aninhado em lista flat com paths."""
-    columns = []
-    for key, value in obj.items():
-        path = f"{prefix}.{key}" if prefix else key
-        if isinstance(value, dict):
-            columns.extend(flatten_schema(value, path))
-        else:
-            columns.append(ColumnMetadata(
-                name=key,
-                path=path,
-                parent_path=prefix or None,
-                depth=path.count('.') + 1
-            ))
-    return columns
-```
-
----
-
-### 6. Versionamento de Schema
-
-**Contexto**: Schemas podem mudar ao longo do tempo; sistema deve suportar re-extração.
-
-**Decision**: Sobrescrita simples com timestamp de última atualização (sem histórico completo).
-
-**Rationale**:
-- Requisito FR-007 exige apenas timestamp de última atualização
-- FR-008 permite re-extração sem perda de dados (idempotente)
-- Histórico completo não está nos requisitos e adiciona complexidade
-- Pode evoluir para versionamento completo se necessário no futuro
-
-**Alternatives Considered**:
-1. **Versionamento completo com histórico**: Rejeitado - não está nos requisitos, complexidade prematura
-2. **Append-only com soft delete**: Rejeitado - complica queries e aumenta storage
-3. **Schema comparison automático**: Considerado para futuro - detectar breaking changes
-
-**Implementation Approach**:
-```python
 class ExternalSource(Base):
     __tablename__ = "external_sources"
     
-    id: Mapped[UUID] = mapped_column(primary_key=True, default=uuid4)
-    db_name: Mapped[str] = mapped_column(String(100))
-    table_name: Mapped[str] = mapped_column(String(100))
-    created_at: Mapped[datetime] = mapped_column(default=datetime.utcnow)
-    updated_at: Mapped[datetime] = mapped_column(onupdate=datetime.utcnow)
+    id: Mapped[int] = mapped_column(primary_key=True)
+    db_name: Mapped[str]
+    table_name: Mapped[str]
     
-    # Unique constraint para identificação
-    __table_args__ = (UniqueConstraint('db_name', 'table_name'),)
+    columns: Mapped[list["ColumnMetadata"]] = relationship(
+        back_populates="source",
+        cascade="all, delete-orphan",
+        lazy="selectin"  # Async-safe loading
+    )
+
+class ColumnMetadata(Base):
+    __tablename__ = "column_metadata"
+    
+    id: Mapped[int] = mapped_column(primary_key=True)
+    source_id: Mapped[int] = mapped_column(ForeignKey("external_sources.id"))
+    
+    source: Mapped["ExternalSource"] = relationship(back_populates="columns")
 ```
 
 ---
 
-## Configuration Parameters
+## 6. Conexão MongoDB em Ambiente PROD
 
-| Parâmetro | Variável de Ambiente | Default | Descrição |
-|-----------|---------------------|---------|-----------|
-| Ambiente | `DATA_ENVIRONMENT` | `MOCK` | `MOCK` ou `PROD` |
-| Tamanho da amostra | `SCHEMA_SAMPLE_SIZE` | `500` | Documentos analisados para inferência |
-| Limite enumerável | `ENUMERABLE_CARDINALITY_LIMIT` | `50` | Cardinalidade máxima para enumerável |
-| Threshold obrigatório | `REQUIRED_FIELD_THRESHOLD` | `0.95` | % para considerar campo obrigatório |
-| OpenAI Model | `OPENAI_MODEL` | `gpt-4o-mini` | Modelo para enriquecimento |
-| Retry LLM | `LLM_MAX_RETRIES` | `3` | Tentativas para pending_enrichment |
+### Decision: Motor (driver async oficial) com connection pooling
+
+### Rationale
+- Motor é o único driver async-first para MongoDB
+- FastAPI requer operações não-bloqueantes
+- Pool de conexões essencial para performance em produção
+
+### Implementation Pattern
+
+```python
+from motor.motor_asyncio import AsyncIOMotorClient
+from contextlib import asynccontextmanager
+
+class MongoDBManager:
+    def __init__(self, uri: str):
+        self._client = AsyncIOMotorClient(
+            uri,
+            serverSelectionTimeoutMS=5000,
+            socketTimeoutMS=30000,
+            connectTimeoutMS=10000,
+            maxPoolSize=50,
+            minPoolSize=10,
+            retryWrites=True,
+        )
+    
+    async def sample_documents(
+        self, 
+        db_name: str, 
+        collection_name: str, 
+        sample_size: int = 500
+    ) -> list[dict]:
+        """Amostra documentos para inferência de schema."""
+        db = self._client[db_name]
+        collection = db[collection_name]
+        
+        # $sample para amostragem aleatória eficiente
+        pipeline = [{"$sample": {"size": sample_size}}]
+        cursor = collection.aggregate(pipeline)
+        return await cursor.to_list(length=sample_size)
+    
+    async def close(self):
+        self._client.close()
+```
+
+### Configuração Recomendada (.env)
+
+```bash
+# MongoDB External (PROD only)
+MONGODB_URI=mongodb+srv://user:pass@cluster.mongodb.net
+MONGODB_SAMPLE_SIZE=500
+```
 
 ---
 
-## Dependencies to Add
+## 7. Estratégia de Ambientes (MOCK vs PROD)
+
+### Decision: Interface abstrata com implementações apartadas
+
+### Rationale
+- FR-018 exige repositórios apartados com interface comum
+- Factory Pattern seleciona implementação baseado em configuração
+- Código de negócio não conhece a origem dos dados (FR-019)
+
+### Implementation Pattern
+
+```python
+from abc import ABC, abstractmethod
+from typing import Protocol
+
+class ExternalDataSource(Protocol):
+    """Interface para acesso a dados externos."""
+    
+    async def get_sample_documents(
+        self, 
+        db_name: str, 
+        table_name: str, 
+        sample_size: int
+    ) -> list[dict]:
+        """Retorna amostra de documentos para inferência."""
+        ...
+
+class MockExternalDataSource:
+    """Implementação MOCK - lê arquivos JSON locais."""
+    
+    def __init__(self, base_path: str = "res/db"):
+        self._base_path = base_path
+    
+    async def get_sample_documents(
+        self, db_name: str, table_name: str, sample_size: int
+    ) -> list[dict]:
+        import aiofiles
+        import json
+        
+        filename = f"{db_name}.{table_name}.json"
+        path = f"{self._base_path}/{filename}"
+        
+        async with aiofiles.open(path) as f:
+            content = await f.read()
+            documents = json.loads(content)
+            return documents[:sample_size]
+
+class ProdExternalDataSource:
+    """Implementação PROD - conecta ao MongoDB real."""
+    
+    def __init__(self, mongodb_manager: MongoDBManager):
+        self._mongo = mongodb_manager
+    
+    async def get_sample_documents(
+        self, db_name: str, table_name: str, sample_size: int
+    ) -> list[dict]:
+        return await self._mongo.sample_documents(
+            db_name, table_name, sample_size
+        )
+
+# Factory
+def get_external_data_source(env: str) -> ExternalDataSource:
+    if env == "MOCK":
+        return MockExternalDataSource()
+    elif env == "PROD":
+        return ProdExternalDataSource(get_mongodb_manager())
+    raise ValueError(f"Unknown environment: {env}")
+```
+
+---
+
+## 8. Dependências Adicionais Necessárias
+
+### Novas dependências para pyproject.toml
 
 ```toml
-# pyproject.toml - dependencies adicionais
-[project]
 dependencies = [
-    # Existentes...
-    "openai>=1.0.0",        # SDK OpenAI para enriquecimento
-    "motor>=3.3.0",         # Driver async MongoDB (PROD)
+    # ... existentes ...
+    "aiofiles>=24.1.0",       # Leitura async de arquivos JSON (MOCK)
+    "motor>=3.6.0",           # MongoDB async driver (PROD)
 ]
 ```
 
----
-
-## Risks & Mitigations
-
-| Risco | Probabilidade | Impacto | Mitigação |
-|-------|---------------|---------|-----------|
-| OpenAI rate limiting | Média | Médio | Batch processing + exponential backoff |
-| Schema muito diferente entre amostras | Baixa | Alto | Análise de 500 docs + threshold 95% |
-| MongoDB timeout em PROD | Média | Alto | Connection pooling + timeouts configuráveis |
-| Campos com tipos mistos | Alta | Médio | Promoção de tipo + warning no log |
+### Rationale
+- **aiofiles**: Operações de arquivo não-bloqueantes para ambiente MOCK
+- **motor**: Driver oficial async do MongoDB para ambiente PROD
 
 ---
 
-## Research Status: ✅ COMPLETE
+## Resumo de Decisões
 
-Todos os NEEDS CLARIFICATION foram resolvidos através de:
-1. Clarificações do usuário na spec (OpenAI vs HubAI, detecção estatística de enumeráveis)
-2. Análise da estrutura existente do projeto (pyproject.toml, src/, tests/)
-3. Análise dos arquivos JSON de exemplo em res/db/
+| Área | Decisão | Justificativa |
+|------|---------|---------------|
+| Inferência de tipos | Implementação customizada | Controle sobre regras de domínio |
+| Campos opcionais | Threshold 95% | Simplicidade + configurável |
+| Estruturas aninhadas | Dot notation | Padrão de mercado |
+| Enumeráveis | Cardinalidade ≤50 | FR-028/FR-029 |
+| Repository | Generic Base + Session | Padrão existente no projeto |
+| MongoDB driver | Motor | Único async-first |
+| Ambientes | Interface + Factory | FR-018/FR-019 |

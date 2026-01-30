@@ -1,189 +1,235 @@
 # Data Model: Extração Automática de Schema de Bancos Externos
 
 **Feature Branch**: `001-external-schema-extraction`  
-**Date**: 2026-01-29  
+**Date**: 2026-01-30  
 **Status**: Complete
 
 ## Entity Relationship Diagram
 
 ```
-┌─────────────────────────────────────────────────────────────────────────────┐
-│                              CATALOG SCHEMA                                  │
-└─────────────────────────────────────────────────────────────────────────────┘
+┌─────────────────────────────────────────────────────────────────────────┐
+│                           CATALOG (PostgreSQL)                          │
+├─────────────────────────────────────────────────────────────────────────┤
+│                                                                         │
+│  ┌─────────────────────┐         1:N         ┌────────────────────────┐ │
+│  │   ExternalSource    │◄────────────────────│    ColumnMetadata      │ │
+│  ├─────────────────────┤                     ├────────────────────────┤ │
+│  │ id: int (PK)        │                     │ id: int (PK)           │ │
+│  │ db_name: str        │                     │ source_id: int (FK)    │ │
+│  │ table_name: str     │                     │ column_name: str       │ │
+│  │ cataloged_at: dt    │                     │ column_path: str       │ │
+│  │ updated_at: dt      │                     │ inferred_type: str     │ │
+│  │ document_count: int │                     │ is_required: bool      │ │
+│  └─────────────────────┘                     │ is_nullable: bool      │ │
+│                                              │ is_enumerable: bool    │ │
+│         ▲                                    │ unique_values: json    │ │
+│         │                                    │ sample_values: json    │ │
+│         │                                    │ presence_ratio: float  │ │
+│         │ UNIQUE(db_name, table_name)        │ description: str?      │ │
+│                                              │ enrichment_status: str │ │
+│                                              │ created_at: dt         │ │
+│                                              │ updated_at: dt         │ │
+│                                              └────────────────────────┘ │
+│                                                                         │
+└─────────────────────────────────────────────────────────────────────────┘
 
-┌─────────────────────┐         ┌─────────────────────────────────────────────┐
-│   ExternalSource    │ 1     * │              ColumnMetadata                 │
-├─────────────────────┤─────────├─────────────────────────────────────────────┤
-│ id: UUID [PK]       │         │ id: UUID [PK]                               │
-│ db_name: str        │         │ source_id: UUID [FK]                        │
-│ table_name: str     │         │ column_name: str                            │
-│ created_at: datetime│         │ column_path: str                            │
-│ updated_at: datetime│         │ inferred_type: str                          │
-│ extraction_status:  │         │ is_required: bool                           │
-│   enum              │         │ is_enumerable: bool                         │
-│ total_columns: int  │         │ enumerable_values: JSON                     │
-│ enriched_columns:   │         │ semantic_description: str|null              │
-│   int               │         │ enrichment_status: enum                     │
-└─────────────────────┘         │ sample_values: JSON                         │
-         │                      │ parent_path: str|null                       │
-         │                      │ depth: int                                  │
-         │                      │ occurrence_rate: float                      │
-         │                      │ created_at: datetime                        │
-         │                      │ updated_at: datetime                        │
-         │                      └─────────────────────────────────────────────┘
-         │
-         │ (UNIQUE: db_name + table_name)
-         │
+┌─────────────────────────────────────────────────────────────────────────┐
+│                       EXTERNAL DATA SOURCES                             │
+├─────────────────────────────────────────────────────────────────────────┤
+│                                                                         │
+│  ┌──────────────────────┐        ┌──────────────────────┐              │
+│  │   MOCK Environment   │        │   PROD Environment   │              │
+│  ├──────────────────────┤        ├──────────────────────┤              │
+│  │ res/db/*.json        │        │ MongoDB Atlas        │              │
+│  │                      │        │                      │              │
+│  │ account_main.json    │        │ card_account_auth DB │              │
+│  │ card_main.json       │        │ credit DB            │              │
+│  │ invoice.json         │        │                      │              │
+│  │ closed_invoice.json  │        │                      │              │
+│  └──────────────────────┘        └──────────────────────┘              │
+│            │                              │                             │
+│            └──────────┬───────────────────┘                             │
+│                       ▼                                                 │
+│          ┌────────────────────────┐                                     │
+│          │  ExternalDataSource    │                                     │
+│          │      (Protocol)        │                                     │
+│          ├────────────────────────┤                                     │
+│          │ get_sample_documents() │                                     │
+│          └────────────────────────┘                                     │
+│                                                                         │
+└─────────────────────────────────────────────────────────────────────────┘
 ```
 
-## Entities
+---
+
+## Entity Definitions
 
 ### ExternalSource
 
-Representa uma fonte de dados externa (combinação de banco + tabela).
+Representa uma fonte de dados externa (combinação de nome do banco + nome da tabela).
 
-| Campo | Tipo | Constraints | Descrição |
-|-------|------|-------------|-----------|
-| `id` | UUID | PK, auto-generated | Identificador único |
-| `db_name` | VARCHAR(100) | NOT NULL | Nome do banco externo (ex: `card_account_authorization`) |
-| `table_name` | VARCHAR(100) | NOT NULL | Nome da tabela (ex: `account_main`) |
-| `created_at` | TIMESTAMP | NOT NULL, default NOW | Data de criação do registro |
-| `updated_at` | TIMESTAMP | NOT NULL, onupdate NOW | Data da última atualização |
-| `extraction_status` | ENUM | NOT NULL, default 'pending' | Status: `pending`, `in_progress`, `completed`, `failed` |
-| `total_columns` | INTEGER | default 0 | Total de colunas extraídas |
-| `enriched_columns` | INTEGER | default 0 | Colunas com descrição semântica |
+| Field | Type | Constraints | Description |
+|-------|------|-------------|-------------|
+| `id` | `int` | PK, auto-increment | Identificador único |
+| `db_name` | `str(100)` | NOT NULL, indexed | Nome do banco de dados externo |
+| `table_name` | `str(100)` | NOT NULL, indexed | Nome da tabela/collection |
+| `cataloged_at` | `datetime` | NOT NULL, default=now() | Data da primeira catalogação |
+| `updated_at` | `datetime` | NOT NULL, auto-update | Data da última atualização |
+| `document_count` | `int` | NOT NULL, default=0 | Número de documentos na última amostra |
 
 **Constraints**:
-- `UNIQUE(db_name, table_name)` - Identificação única da fonte
+- UNIQUE(`db_name`, `table_name`) - Combinação única de banco + tabela
 
-**Business Rules**:
-- Combinação `db_name` + `table_name` identifica unicamente uma fonte (FR-006)
-- `updated_at` reflete timestamp da última extração (FR-007)
-- Re-extração atualiza colunas existentes (FR-008)
+**SQLAlchemy Model**:
+
+```python
+from datetime import datetime
+from sqlalchemy import String, Integer, DateTime, UniqueConstraint
+from sqlalchemy.orm import Mapped, mapped_column, relationship
+from sqlalchemy.sql import func
+
+class ExternalSource(Base):
+    __tablename__ = "external_sources"
+    __table_args__ = (
+        UniqueConstraint("db_name", "table_name", name="uq_source_identity"),
+    )
+    
+    id: Mapped[int] = mapped_column(primary_key=True)
+    db_name: Mapped[str] = mapped_column(String(100), index=True)
+    table_name: Mapped[str] = mapped_column(String(100), index=True)
+    cataloged_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), 
+        server_default=func.now()
+    )
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), 
+        server_default=func.now(),
+        onupdate=func.now()
+    )
+    document_count: Mapped[int] = mapped_column(Integer, default=0)
+    
+    # Relationship
+    columns: Mapped[list["ColumnMetadata"]] = relationship(
+        back_populates="source",
+        cascade="all, delete-orphan",
+        lazy="selectin"
+    )
+```
 
 ---
 
 ### ColumnMetadata
 
-Representa uma coluna dentro de uma fonte externa com seus metadados.
+Representa uma coluna dentro de uma fonte externa.
 
-| Campo | Tipo | Constraints | Descrição |
-|-------|------|-------------|-----------|
-| `id` | UUID | PK, auto-generated | Identificador único |
-| `source_id` | UUID | FK → ExternalSource.id, NOT NULL | Referência à fonte |
-| `column_name` | VARCHAR(200) | NOT NULL | Nome do campo (último segmento do path) |
-| `column_path` | VARCHAR(500) | NOT NULL | Path completo com dot notation (ex: `product_data.type`) |
-| `inferred_type` | VARCHAR(50) | NOT NULL | Tipo inferido: `string`, `number`, `boolean`, `date`, `array`, `object`, `null`, `unknown` |
-| `is_required` | BOOLEAN | NOT NULL, default true | Campo obrigatório (presente em >95% das amostras) |
-| `is_enumerable` | BOOLEAN | NOT NULL, default false | Cardinalidade ≤ limite configurável (FR-025) |
-| `enumerable_values` | JSONB | nullable | Lista de valores únicos quando `is_enumerable=true` (FR-026) |
-| `semantic_description` | TEXT | nullable | Descrição gerada pela LLM |
-| `enrichment_status` | ENUM | NOT NULL, default 'pending' | Status: `pending`, `enriched`, `pending_enrichment`, `skipped` |
-| `sample_values` | JSONB | nullable | Até 5 valores de exemplo para contexto |
-| `parent_path` | VARCHAR(500) | nullable | Path do objeto pai (para campos aninhados) |
-| `depth` | INTEGER | NOT NULL, default 1 | Nível de aninhamento (1 = root) |
-| `occurrence_rate` | DECIMAL(5,4) | NOT NULL | % de documentos que contêm este campo (0.0000 a 1.0000) |
-| `created_at` | TIMESTAMP | NOT NULL, default NOW | Data de criação |
-| `updated_at` | TIMESTAMP | NOT NULL, onupdate NOW | Data da última atualização |
+| Field | Type | Constraints | Description |
+|-------|------|-------------|-------------|
+| `id` | `int` | PK, auto-increment | Identificador único |
+| `source_id` | `int` | FK(external_sources.id), NOT NULL | Referência à fonte |
+| `column_name` | `str(255)` | NOT NULL | Nome da coluna (último segmento do path) |
+| `column_path` | `str(500)` | NOT NULL | Caminho completo no JSON (dot notation) |
+| `inferred_type` | `str(50)` | NOT NULL | Tipo inferido (string, integer, number, boolean, datetime, objectid, array, object, null, unknown) |
+| `is_required` | `bool` | NOT NULL, default=False | True se presente em ≥95% dos documentos |
+| `is_nullable` | `bool` | NOT NULL, default=True | True se pelo menos um valor null encontrado |
+| `is_enumerable` | `bool` | NOT NULL, default=False | True se cardinalidade ≤ limite configurado |
+| `unique_values` | `json` | NULL | Lista de valores únicos (quando is_enumerable=True) |
+| `sample_values` | `json` | NULL | Amostra de 5 valores para referência |
+| `presence_ratio` | `float` | NOT NULL | Porcentagem de documentos com este campo (0.0-1.0) |
+| `description` | `str(1000)` | NULL | Descrição semântica (futuro: preenchida por LLM) |
+| `enrichment_status` | `str(20)` | NOT NULL, default='not_enriched' | Status: not_enriched, pending_enrichment, enriched |
+| `created_at` | `datetime` | NOT NULL, default=now() | Data de criação |
+| `updated_at` | `datetime` | NOT NULL, auto-update | Data da última atualização |
 
 **Constraints**:
-- `UNIQUE(source_id, column_path)` - Um path é único por fonte
-- `FK(source_id) → ExternalSource(id) ON DELETE CASCADE`
+- UNIQUE(`source_id`, `column_path`) - Combinação única de fonte + caminho
+- CHECK(`presence_ratio` >= 0.0 AND `presence_ratio` <= 1.0)
+- CHECK(`enrichment_status` IN ('not_enriched', 'pending_enrichment', 'enriched'))
 
-**Business Rules**:
-- `is_required = occurrence_rate >= 0.95` (FR-003)
-- `is_enumerable = true` quando cardinalidade ≤ `ENUMERABLE_CARDINALITY_LIMIT` (FR-027)
-- `enumerable_values` preenchido apenas quando `is_enumerable=true` (FR-026)
-- `enrichment_status = 'pending_enrichment'` quando LLM falha (FR-023)
-- `depth = column_path.count('.') + 1` (campos aninhados)
+**SQLAlchemy Model**:
+
+```python
+from datetime import datetime
+from typing import Any
+from sqlalchemy import String, Integer, Float, Boolean, DateTime, ForeignKey, JSON, CheckConstraint, UniqueConstraint
+from sqlalchemy.orm import Mapped, mapped_column, relationship
+from sqlalchemy.sql import func
+
+class ColumnMetadata(Base):
+    __tablename__ = "column_metadata"
+    __table_args__ = (
+        UniqueConstraint("source_id", "column_path", name="uq_column_identity"),
+        CheckConstraint("presence_ratio >= 0.0 AND presence_ratio <= 1.0", name="ck_presence_ratio"),
+        CheckConstraint(
+            "enrichment_status IN ('not_enriched', 'pending_enrichment', 'enriched')", 
+            name="ck_enrichment_status"
+        ),
+    )
+    
+    id: Mapped[int] = mapped_column(primary_key=True)
+    source_id: Mapped[int] = mapped_column(ForeignKey("external_sources.id"), index=True)
+    column_name: Mapped[str] = mapped_column(String(255))
+    column_path: Mapped[str] = mapped_column(String(500))
+    inferred_type: Mapped[str] = mapped_column(String(50))
+    is_required: Mapped[bool] = mapped_column(Boolean, default=False)
+    is_nullable: Mapped[bool] = mapped_column(Boolean, default=True)
+    is_enumerable: Mapped[bool] = mapped_column(Boolean, default=False)
+    unique_values: Mapped[list[Any] | None] = mapped_column(JSON, nullable=True)
+    sample_values: Mapped[list[Any] | None] = mapped_column(JSON, nullable=True)
+    presence_ratio: Mapped[float] = mapped_column(Float)
+    description: Mapped[str | None] = mapped_column(String(1000), nullable=True)
+    enrichment_status: Mapped[str] = mapped_column(String(20), default="not_enriched")
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), 
+        server_default=func.now()
+    )
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), 
+        server_default=func.now(),
+        onupdate=func.now()
+    )
+    
+    # Relationship
+    source: Mapped["ExternalSource"] = relationship(back_populates="columns")
+```
 
 ---
 
 ## Enums
 
-### ExtractionStatus
-
-```python
-class ExtractionStatus(str, Enum):
-    PENDING = "pending"           # Aguardando extração
-    IN_PROGRESS = "in_progress"   # Extração em andamento
-    COMPLETED = "completed"       # Extração concluída com sucesso
-    FAILED = "failed"             # Extração falhou
-```
-
 ### EnrichmentStatus
 
 ```python
 class EnrichmentStatus(str, Enum):
-    PENDING = "pending"                    # Aguardando enriquecimento
-    ENRICHED = "enriched"                  # Descrição gerada com sucesso
-    PENDING_ENRICHMENT = "pending_enrichment"  # Falha na LLM, aguardando retry (FR-023)
-    SKIPPED = "skipped"                    # Enriquecimento ignorado (campo técnico)
+    """Status de enriquecimento via LLM."""
+    NOT_ENRICHED = "not_enriched"        # Padrão: nunca processado
+    PENDING_ENRICHMENT = "pending_enrichment"  # Falha/timeout, aguardando retry
+    ENRICHED = "enriched"                # Descrição gerada com sucesso
 ```
 
 ### InferredType
 
 ```python
 class InferredType(str, Enum):
+    """Tipos de dados inferidos do JSON."""
     STRING = "string"
-    NUMBER = "number"
     INTEGER = "integer"
+    NUMBER = "number"          # Float
     BOOLEAN = "boolean"
-    DATE = "date"
+    DATETIME = "datetime"      # ISO 8601 strings
+    OBJECTID = "objectid"      # MongoDB ObjectId (24 hex chars)
     ARRAY = "array"
-    OBJECT = "object"
-    NULL = "null"
-    UNKNOWN = "unknown"  # Quando não foi possível inferir (FR-003 scenario 3)
+    OBJECT = "object"          # Nested object
+    NULL = "null"              # Apenas null encontrado
+    UNKNOWN = "unknown"        # Tipo não determinado
 ```
 
----
+### DataSourceEnvironment
 
-## State Transitions
-
-### ExternalSource.extraction_status
-
-```
-         ┌──────────┐
-         │ pending  │
-         └────┬─────┘
-              │ start_extraction()
-              ▼
-       ┌─────────────┐
-       │ in_progress │
-       └──────┬──────┘
-              │
-    ┌─────────┴─────────┐
-    │                   │
-    ▼                   ▼
-┌───────────┐     ┌─────────┐
-│ completed │     │ failed  │
-└───────────┘     └────┬────┘
-                       │ retry_extraction()
-                       └──────► pending
-```
-
-### ColumnMetadata.enrichment_status
-
-```
-         ┌──────────┐
-         │ pending  │
-         └────┬─────┘
-              │ enrich()
-              │
-    ┌─────────┴─────────┐
-    │                   │
-    ▼                   ▼
-┌──────────┐    ┌───────────────────┐
-│ enriched │    │ pending_enrichment│
-└──────────┘    └─────────┬─────────┘
-                          │ retry_enrich()
-                          │
-                ┌─────────┴─────────┐
-                │                   │
-                ▼                   ▼
-          ┌──────────┐    ┌───────────────────┐
-          │ enriched │    │ skipped (max retry)│
-          └──────────┘    └───────────────────┘
+```python
+class DataSourceEnvironment(str, Enum):
+    """Ambiente de fonte de dados externos."""
+    MOCK = "MOCK"    # Arquivos JSON locais em res/db/
+    PROD = "PROD"    # Conexão direta ao MongoDB
 ```
 
 ---
@@ -192,55 +238,65 @@ class InferredType(str, Enum):
 
 ### ExternalSource
 
-| Campo | Validação | Mensagem de Erro |
-|-------|-----------|------------------|
-| `db_name` | min_length=1, max_length=100, pattern=`^[a-z_]+$` | "Nome do banco deve conter apenas letras minúsculas e underscore" |
-| `table_name` | min_length=1, max_length=100, pattern=`^[a-z_]+$` | "Nome da tabela deve conter apenas letras minúsculas e underscore" |
+| Rule | Validation |
+|------|------------|
+| db_name | 1-100 caracteres, apenas alfanumérico + underscore |
+| table_name | 1-100 caracteres, apenas alfanumérico + underscore |
 
 ### ColumnMetadata
 
-| Campo | Validação | Mensagem de Erro |
-|-------|-----------|------------------|
-| `column_path` | pattern=`^[a-zA-Z_][a-zA-Z0-9_]*(\.[a-zA-Z_][a-zA-Z0-9_]*)*$` | "Path inválido" |
-| `occurrence_rate` | ge=0.0, le=1.0 | "Taxa de ocorrência deve estar entre 0 e 1" |
-| `enumerable_values` | max_items=50 quando `is_enumerable=true` | "Máximo de 50 valores enumeráveis" |
+| Rule | Validation |
+|------|------------|
+| column_name | 1-255 caracteres, não pode iniciar com número |
+| column_path | 1-500 caracteres, formato dot notation válido |
+| inferred_type | Deve ser valor válido do enum InferredType |
+| presence_ratio | 0.0 ≤ valor ≤ 1.0 |
+| unique_values | Quando is_enumerable=True, deve ter 1-50 valores |
+| enrichment_status | Deve ser valor válido do enum EnrichmentStatus |
 
 ---
 
-## Indexes
+## State Transitions
 
-### ExternalSource
+### EnrichmentStatus
 
-```sql
--- Busca por fonte específica
-CREATE UNIQUE INDEX idx_external_sources_db_table 
-ON external_sources(db_name, table_name);
-
--- Listagem por status
-CREATE INDEX idx_external_sources_status 
-ON external_sources(extraction_status);
+```
+                    ┌─────────────────┐
+                    │  not_enriched   │ (estado inicial)
+                    └────────┬────────┘
+                             │
+                             │ trigger_enrichment()
+                             │ (futuro: v2)
+                             ▼
+           ┌─────────────────────────────────┐
+           │                                 │
+    LLM OK │                                 │ LLM fail/timeout
+           │                                 │
+           ▼                                 ▼
+┌──────────────────┐              ┌────────────────────────┐
+│     enriched     │              │  pending_enrichment    │
+└──────────────────┘              └───────────┬────────────┘
+                                              │
+                                              │ retry_enrichment()
+                                              │
+                                              ▼
+                                   (retorna ao fluxo acima)
 ```
 
-### ColumnMetadata
+---
+
+## Database Indexes
 
 ```sql
--- Busca de colunas por fonte
-CREATE INDEX idx_column_metadata_source_id 
-ON column_metadata(source_id);
+-- ExternalSource
+CREATE INDEX ix_external_sources_db_name ON external_sources(db_name);
+CREATE INDEX ix_external_sources_table_name ON external_sources(table_name);
 
--- Busca por path (para queries em campos aninhados)
-CREATE INDEX idx_column_metadata_path 
-ON column_metadata(column_path);
-
--- Busca de colunas pendentes de enriquecimento
-CREATE INDEX idx_column_metadata_enrichment_status 
-ON column_metadata(enrichment_status) 
-WHERE enrichment_status IN ('pending', 'pending_enrichment');
-
--- Busca de colunas enumeráveis
-CREATE INDEX idx_column_metadata_enumerable 
-ON column_metadata(is_enumerable) 
-WHERE is_enumerable = true;
+-- ColumnMetadata
+CREATE INDEX ix_column_metadata_source_id ON column_metadata(source_id);
+CREATE INDEX ix_column_metadata_inferred_type ON column_metadata(inferred_type);
+CREATE INDEX ix_column_metadata_is_enumerable ON column_metadata(is_enumerable);
+CREATE INDEX ix_column_metadata_enrichment_status ON column_metadata(enrichment_status);
 ```
 
 ---
@@ -249,150 +305,20 @@ WHERE is_enumerable = true;
 
 ### ExternalSource
 
-```json
-{
-  "id": "550e8400-e29b-41d4-a716-446655440000",
-  "db_name": "card_account_authorization",
-  "table_name": "account_main",
-  "created_at": "2026-01-29T10:00:00Z",
-  "updated_at": "2026-01-29T10:05:00Z",
-  "extraction_status": "completed",
-  "total_columns": 35,
-  "enriched_columns": 32
-}
-```
+| id | db_name | table_name | cataloged_at | document_count |
+|----|---------|------------|--------------|----------------|
+| 1 | card_account_authorization | account_main | 2026-01-30 10:00:00 | 500 |
+| 2 | card_account_authorization | card_main | 2026-01-30 10:01:00 | 500 |
+| 3 | credit | invoice | 2026-01-30 10:02:00 | 500 |
+| 4 | credit | closed_invoice | 2026-01-30 10:03:00 | 500 |
 
-### ColumnMetadata
+### ColumnMetadata (amostra para account_main)
 
-```json
-[
-  {
-    "id": "660e8400-e29b-41d4-a716-446655440001",
-    "source_id": "550e8400-e29b-41d4-a716-446655440000",
-    "column_name": "status",
-    "column_path": "status",
-    "inferred_type": "string",
-    "is_required": true,
-    "is_enumerable": true,
-    "enumerable_values": ["A", "B", "C", "I"],
-    "semantic_description": "Status da conta: A (Ativa), B (Bloqueada), C (Cancelada), I (Inativa)",
-    "enrichment_status": "enriched",
-    "sample_values": ["A", "A", "B", "A", "C"],
-    "parent_path": null,
-    "depth": 1,
-    "occurrence_rate": 1.0000,
-    "created_at": "2026-01-29T10:00:00Z",
-    "updated_at": "2026-01-29T10:05:00Z"
-  },
-  {
-    "id": "660e8400-e29b-41d4-a716-446655440002",
-    "source_id": "550e8400-e29b-41d4-a716-446655440000",
-    "column_name": "type",
-    "column_path": "product_data.type",
-    "inferred_type": "string",
-    "is_required": true,
-    "is_enumerable": true,
-    "enumerable_values": ["HYBRID_LEVERAGED", "PURE_CREDIT", "DEBIT"],
-    "semantic_description": "Tipo de produto do cartão: alavancado híbrido, crédito puro ou débito",
-    "enrichment_status": "enriched",
-    "sample_values": ["HYBRID_LEVERAGED", "HYBRID_LEVERAGED", "PURE_CREDIT"],
-    "parent_path": "product_data",
-    "depth": 2,
-    "occurrence_rate": 0.9800,
-    "created_at": "2026-01-29T10:00:00Z",
-    "updated_at": "2026-01-29T10:05:00Z"
-  },
-  {
-    "id": "660e8400-e29b-41d4-a716-446655440003",
-    "source_id": "550e8400-e29b-41d4-a716-446655440000",
-    "column_name": "annual_fee",
-    "column_path": "annual_fee",
-    "inferred_type": "number",
-    "is_required": false,
-    "is_enumerable": false,
-    "enumerable_values": null,
-    "semantic_description": null,
-    "enrichment_status": "pending_enrichment",
-    "sample_values": [null, null, 99.90, null, 149.90],
-    "parent_path": null,
-    "depth": 1,
-    "occurrence_rate": 0.1200,
-    "created_at": "2026-01-29T10:00:00Z",
-    "updated_at": "2026-01-29T10:05:00Z"
-  }
-]
-```
-
----
-
-## Migration Script
-
-```sql
--- Migration: 001_create_catalog_tables.sql
-
-CREATE TYPE extraction_status AS ENUM (
-    'pending', 'in_progress', 'completed', 'failed'
-);
-
-CREATE TYPE enrichment_status AS ENUM (
-    'pending', 'enriched', 'pending_enrichment', 'skipped'
-);
-
-CREATE TABLE external_sources (
-    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    db_name VARCHAR(100) NOT NULL,
-    table_name VARCHAR(100) NOT NULL,
-    created_at TIMESTAMP NOT NULL DEFAULT NOW(),
-    updated_at TIMESTAMP NOT NULL DEFAULT NOW(),
-    extraction_status extraction_status NOT NULL DEFAULT 'pending',
-    total_columns INTEGER NOT NULL DEFAULT 0,
-    enriched_columns INTEGER NOT NULL DEFAULT 0,
-    UNIQUE(db_name, table_name)
-);
-
-CREATE TABLE column_metadata (
-    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    source_id UUID NOT NULL REFERENCES external_sources(id) ON DELETE CASCADE,
-    column_name VARCHAR(200) NOT NULL,
-    column_path VARCHAR(500) NOT NULL,
-    inferred_type VARCHAR(50) NOT NULL,
-    is_required BOOLEAN NOT NULL DEFAULT true,
-    is_enumerable BOOLEAN NOT NULL DEFAULT false,
-    enumerable_values JSONB,
-    semantic_description TEXT,
-    enrichment_status enrichment_status NOT NULL DEFAULT 'pending',
-    sample_values JSONB,
-    parent_path VARCHAR(500),
-    depth INTEGER NOT NULL DEFAULT 1,
-    occurrence_rate DECIMAL(5,4) NOT NULL DEFAULT 1.0000,
-    created_at TIMESTAMP NOT NULL DEFAULT NOW(),
-    updated_at TIMESTAMP NOT NULL DEFAULT NOW(),
-    UNIQUE(source_id, column_path)
-);
-
--- Indexes
-CREATE INDEX idx_external_sources_status ON external_sources(extraction_status);
-CREATE INDEX idx_column_metadata_source_id ON column_metadata(source_id);
-CREATE INDEX idx_column_metadata_path ON column_metadata(column_path);
-CREATE INDEX idx_column_metadata_enrichment_status ON column_metadata(enrichment_status) 
-    WHERE enrichment_status IN ('pending', 'pending_enrichment');
-CREATE INDEX idx_column_metadata_enumerable ON column_metadata(is_enumerable) 
-    WHERE is_enumerable = true;
-
--- Trigger para updated_at
-CREATE OR REPLACE FUNCTION update_updated_at_column()
-RETURNS TRIGGER AS $$
-BEGIN
-    NEW.updated_at = NOW();
-    RETURN NEW;
-END;
-$$ language 'plpgsql';
-
-CREATE TRIGGER update_external_sources_updated_at
-    BEFORE UPDATE ON external_sources
-    FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
-
-CREATE TRIGGER update_column_metadata_updated_at
-    BEFORE UPDATE ON column_metadata
-    FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
-```
+| id | source_id | column_name | column_path | inferred_type | is_required | is_enumerable | unique_values |
+|----|-----------|-------------|-------------|---------------|-------------|---------------|---------------|
+| 1 | 1 | _id | _id | objectid | true | false | null |
+| 2 | 1 | consumer_id | consumer_id | string | true | false | null |
+| 3 | 1 | status | status | string | true | true | ["A", "B", "C"] |
+| 4 | 1 | issuer | issuer | string | true | true | ["PICPAY", "VISA"] |
+| 5 | 1 | type | product_data.type | string | false | true | ["HYBRID_LEVERAGED", "STANDARD"] |
+| 6 | 1 | enabled | guaranteed_limit.enabled | boolean | false | true | [false, true] |
