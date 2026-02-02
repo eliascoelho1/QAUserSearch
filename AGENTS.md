@@ -33,7 +33,7 @@ uv run pytest --cov=src                 # With coverage
 uv run ruff check src/ tests/           # Lint
 uv run ruff check src/ tests/ --fix     # Auto-fix lint issues
 uv run black src/ tests/                # Format
-uv run mypy src/                        # Type check (strict)
+uv run mypy src/ tests/                 # Type check (strict)
 ```
 
 ### Database & Docker
