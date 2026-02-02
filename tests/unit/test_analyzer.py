@@ -156,7 +156,7 @@ class TestAnalyzeCardinality:
         """Test cardinality analysis with no values."""
         from src.services.schema_extraction.analyzer import analyze_cardinality
 
-        field_data = {
+        field_data: dict[str, list[object]] = {
             "values": [],
         }
         cardinality_limit = 50

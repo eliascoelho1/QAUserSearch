@@ -1,5 +1,6 @@
 """Integration tests for schema extraction and persistence."""
 
+from typing import Any
 from pathlib import Path
 
 import pytest
@@ -11,7 +12,7 @@ class TestSchemaExtractionIntegration:
     """Integration tests for complete schema extraction flow."""
 
     @pytest.fixture
-    def sample_documents(self) -> list[dict]:
+    def sample_documents(self) -> list[dict[str, Any]]:
         """Sample documents for testing."""
         return [
             {
@@ -46,7 +47,7 @@ class TestSchemaExtractionIntegration:
             },
         ]
 
-    def test_full_extraction_flow(self, sample_documents: list[dict]) -> None:
+    def test_full_extraction_flow(self, sample_documents: list[dict[str, Any]]) -> None:
         """Test complete extraction from documents to analyzed schema."""
         from src.services.schema_extraction.analyzer import SchemaAnalyzer
         from src.services.schema_extraction.extractor import SchemaExtractor
@@ -113,7 +114,7 @@ class TestSchemaExtractionIntegration:
         from src.services.schema_extraction.analyzer import SchemaAnalyzer
         from src.services.schema_extraction.extractor import SchemaExtractor
 
-        documents = [
+        documents: list[dict[str, Any]] = [
             {"name": "John", "age": 30},
             {"name": "Jane"},  # missing age
             {"name": "Bob", "age": 25},
@@ -136,7 +137,7 @@ class TestSchemaExtractionIntegration:
         from src.services.schema_extraction.analyzer import SchemaAnalyzer
         from src.services.schema_extraction.extractor import SchemaExtractor
 
-        documents = [
+        documents: list[dict[str, Any]] = [
             {"field": "value1"},
             {"field": None},
             {"field": "value2"},

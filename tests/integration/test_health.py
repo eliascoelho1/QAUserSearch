@@ -6,14 +6,12 @@ from httpx import AsyncClient
 
 @pytest.mark.asyncio
 async def test_root_endpoint(async_client: AsyncClient) -> None:
-    """Test root endpoint returns API info."""
+    """Test root endpoint returns Swagger UI docs."""
     response = await async_client.get("/")
 
     assert response.status_code == 200
-    data = response.json()
-    assert data["name"] == "QAUserSearch API"
-    assert data["version"] == "0.1.0"
-    assert data["docs_url"] == "/docs"
+    assert "text/html" in response.headers["content-type"]
+    assert "swagger" in response.text.lower()
 
 
 @pytest.mark.asyncio

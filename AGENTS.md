@@ -53,10 +53,13 @@ docker compose -f docker/docker-compose.yml up -d db   # Start database
 ### Formatting
 - Line length: 88 chars (Black), double quotes, trailing commas, 4-space indent
 
-### Type Annotations (mypy strict)
-- All functions must have type hints
+### Type Annotations (mypy strict + extra checks)
+- All functions must have type hints (including tests)
 - Modern syntax: `list[str]`, `dict[str, Any]`, `X | None`
 - Use `Annotated` for FastAPI dependencies
+- **No implicit Any**: Always specify generic type parameters (`dict[str, Any]` not `dict`)
+- **No untyped decorators**: Custom decorators must be fully typed
+- Tests require full type annotations (same rules as src/)
 
 ### Naming Conventions
 - Classes: `PascalCase` | Functions/variables: `snake_case`
@@ -127,9 +130,10 @@ tests/
 ## Testing Patterns
 
 - Test classes: `class TestTypeName:`
-- Test methods: `def test_behavior(self) -> None:`
+- Test methods: `def test_behavior(self) -> None:` (return type required)
 - Async tests auto-detected (asyncio_mode = "auto")
 - Use `AsyncClient` with `ASGITransport` for API tests
+- **All test functions must be fully typed** (same mypy rules as production code)
 
 ## Environment Variables
 

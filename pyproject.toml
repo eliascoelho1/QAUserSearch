@@ -77,9 +77,17 @@ warn_redundant_casts = true
 warn_unused_ignores = true
 plugins = ["pydantic.mypy"]
 
+# Extra strict settings for maximum type safety
+disallow_any_generics = true
+disallow_subclassing_any = true
+disallow_untyped_calls = true
+disallow_untyped_decorators = true
+strict_equality = true
+extra_checks = true
+
 [[tool.mypy.overrides]]
-module = ["tests.*"]
-disallow_untyped_defs = false
+module = ["motor.*"]
+ignore_missing_imports = true
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
@@ -103,4 +111,5 @@ exclude_lines = [
 [dependency-groups]
 dev = [
     "types-aiofiles>=25.1.0.20251011",
+    "types-psycopg2>=2.9.21.20251012",
 ]

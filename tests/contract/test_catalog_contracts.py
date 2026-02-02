@@ -129,7 +129,7 @@ class TestExtractionRequestSchema:
         from src.schemas.catalog import ExtractionRequest
 
         with pytest.raises(ValidationError):
-            ExtractionRequest(table_name="test_table")
+            ExtractionRequest(table_name="test_table")  # type: ignore[call-arg]
 
     def test_extraction_request_missing_table_name(self) -> None:
         """Missing table_name should raise validation error."""
@@ -138,7 +138,7 @@ class TestExtractionRequestSchema:
         from src.schemas.catalog import ExtractionRequest
 
         with pytest.raises(ValidationError):
-            ExtractionRequest(db_name="test_db")
+            ExtractionRequest(db_name="test_db")  # type: ignore[call-arg]
 
     def test_extraction_request_sample_size_too_large(self) -> None:
         """Sample size > 10000 should raise validation error."""

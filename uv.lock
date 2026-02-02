@@ -1097,6 +1097,7 @@ dev = [
 [package.dev-dependencies]
 dev = [
     { name = "types-aiofiles" },
+    { name = "types-psycopg2" },
 ]
 
 [package.metadata]
@@ -1124,7 +1125,10 @@ requires-dist = [
 provides-extras = ["dev"]
 
 [package.metadata.requires-dev]
-dev = [{ name = "types-aiofiles", specifier = ">=25.1.0.20251011" }]
+dev = [
+    { name = "types-aiofiles", specifier = ">=25.1.0.20251011" },
+    { name = "types-psycopg2", specifier = ">=2.9.21.20251012" },
+]
 
 [[package]]
 name = "ruff"
@@ -1289,6 +1293,15 @@ source = { registry = "https://pypi.org/simple" }
 sdist = { url = "https://files.pythonhosted.org/packages/84/6c/6d23908a8217e36704aa9c79d99a620f2fdd388b66a4b7f72fbc6b6ff6c6/types_aiofiles-25.1.0.20251011.tar.gz", hash = "sha256:1c2b8ab260cb3cd40c15f9d10efdc05a6e1e6b02899304d80dfa0410e028d3ff", size = 14535, upload-time = "2025-10-11T02:44:51.237Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/71/0f/76917bab27e270bb6c32addd5968d69e558e5b6f7fb4ac4cbfa282996a96/types_aiofiles-25.1.0.20251011-py3-none-any.whl", hash = "sha256:8ff8de7f9d42739d8f0dadcceeb781ce27cd8d8c4152d4a7c52f6b20edb8149c", size = 14338, upload-time = "2025-10-11T02:44:50.054Z" },
+]
+
+[[package]]
+name = "types-psycopg2"
+version = "2.9.21.20251012"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/9b/b3/2d09eaf35a084cffd329c584970a3fa07101ca465c13cad1576d7c392587/types_psycopg2-2.9.21.20251012.tar.gz", hash = "sha256:4cdafd38927da0cfde49804f39ab85afd9c6e9c492800e42f1f0c1a1b0312935", size = 26710, upload-time = "2025-10-12T02:55:39.5Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/ec/0c/05feaf8cb51159f2c0af04b871dab7e98a2f83a3622f5f216331d2dd924c/types_psycopg2-2.9.21.20251012-py3-none-any.whl", hash = "sha256:712bad5c423fe979e357edbf40a07ca40ef775d74043de72bd4544ca328cc57e", size = 24883, upload-time = "2025-10-12T02:55:38.439Z" },
 ]
 
 [[package]]
