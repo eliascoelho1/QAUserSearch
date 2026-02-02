@@ -59,7 +59,9 @@
             "*.env": "deny",
             "*.env.*": "deny",
             "*.env.example": "allow"
-        }
+        },
+        "edit": "allow",
+        "write": "allow"
     },
     "instructions": [
         "./README.md",

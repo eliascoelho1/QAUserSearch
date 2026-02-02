@@ -8,7 +8,8 @@
     ],
     // Symlink do ambiente virtual para economizar espaço
     "symlinkDirs": [
-      ".venv"
+      ".venv",
+      ".git"
     ],
     // Excluir arquivos temporários e caches
     "exclude": [
