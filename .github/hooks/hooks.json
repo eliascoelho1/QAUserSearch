@@ -4,16 +4,22 @@
     "postToolUse": [
       {
         "type": "command",
-        "bash": "./.github/hooks/scripts/validate-python.sh",
-        "comment": "Run Ruff and mypy on modified Python files",
+        "bash": "./scripts/validate-python.sh --no-block",
+        "comment": "Run Black, Ruff and mypy on modified Python files (non-blocking)",
         "timeoutSec": 60
       }
     ],
     "sessionEnd": [
       {
         "type": "command",
-        "bash": "./.github/hooks/scripts/run-tests.sh",
-        "comment": "Run unit tests at the end of the session",
+        "bash": "./scripts/validate-python.sh --block",
+        "comment": "Final validation of Python files (blocking)",
+        "timeoutSec": 60
+      },
+      {
+        "type": "command",
+        "bash": "./scripts/validate-tests.sh --block",
+        "comment": "Run unit tests at the end of the session (blocking)",
         "timeoutSec": 120
       }
     ]

@@ -36,6 +36,28 @@ uv run black src/ tests/                # Format
 uv run mypy src/ tests/                 # Type check (strict)
 ```
 
+### Validation Scripts
+
+The project includes validation scripts in `scripts/` that can be run manually or are triggered automatically by agent hooks.
+
+#### Python File Validation
+```bash
+./scripts/validate-python.sh <file.py>              # Validate single file (blocking)
+./scripts/validate-python.sh src/*.py               # Validate multiple files
+./scripts/validate-python.sh --no-block <file.py>   # Non-blocking (background)
+./scripts/validate-python.sh --block <file.py>      # Blocking (default)
+```
+Runs Black (formatting), Ruff (linting), and mypy (type checking) on Python files.
+
+#### Test Validation
+```bash
+./scripts/validate-tests.sh                         # Run unit tests (blocking)
+./scripts/validate-tests.sh /path/to/project        # Run in specific directory
+./scripts/validate-tests.sh --no-block              # Non-blocking (background)
+./scripts/validate-tests.sh --block                 # Blocking (default)
+```
+Runs `pytest tests/unit/` with verbose output.
+
 ### Database & Docker
 ```bash
 uv run alembic upgrade head             # Apply migrations
