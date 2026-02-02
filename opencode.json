@@ -8,6 +8,8 @@
     },
     "permission": {
         "bash": {
+            "./specify *": "allow",
+            "./specify*": "allow",
             "git *": "allow",
             "git commit *": "deny",
             "git push *": "deny",
