@@ -67,7 +67,8 @@
     "instructions": [
         "./README.md",
         "./AGENTS.md",
-        "./docs/architecture.md"
+        "./docs/architecture.md",
+        "./.specify/memory/constitution.md"
     ],
     "formatter": {
         "ruff": {
