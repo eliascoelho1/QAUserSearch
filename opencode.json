@@ -54,6 +54,12 @@
         "webfetch": "allow",
         "question": "allow",
         "external_directory": "ask",
+        "read": {
+            "*": "allow",
+            "*.env": "deny",
+            "*.env.*": "deny",
+            "*.env.example": "allow"
+        }
     },
     "instructions": [
         "./README.md",
