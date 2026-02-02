@@ -1,0 +1,31 @@
+{
+  "$schema": "https://registry.kdco.dev/schemas/worktree.json",
+  "sync": {
+    "copyFiles": [
+      ".env",
+      "pyproject.toml",
+      "uv.lock"
+    ],
+    // Symlink do ambiente virtual para economizar espaço
+    "symlinkDirs": [
+      ".venv"
+    ],
+    // Excluir arquivos temporários e caches
+    "exclude": [
+      "**/__pycache__",
+      "**/*.pyc",
+      "**/*.pyo",
+      "**/.pytest_cache",
+      "**/.mypy_cache",
+      "**/.ruff_cache",
+      "**/*.egg-info"
+    ]
+  },
+  "hooks": {
+    // Instalar dependências após criar worktree
+    "postCreate": [
+      "uv sync --all-extras"
+    ],
+    "preDelete": []
+  }
+}
