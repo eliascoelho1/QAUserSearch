@@ -1,0 +1,25 @@
+{
+  "iterations": [
+    {
+      "iteration": 1,
+      "startedAt": "2026-02-02T23:40:25.348Z",
+      "endedAt": "2026-02-02T23:40:45.588Z",
+      "durationMs": 14132,
+      "toolsUsed": {
+        "apply_patch": 2
+      },
+      "filesModified": [
+        ".ralph/"
+      ],
+      "exitCode": 0,
+      "completionDetected": false,
+      "errors": []
+    }
+  ],
+  "totalDurationMs": 14132,
+  "struggleIndicators": {
+    "repeatedErrors": {},
+    "noProgressIterations": 0,
+    "shortIterations": 1
+  }
+}

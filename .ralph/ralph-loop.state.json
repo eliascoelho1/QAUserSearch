@@ -1,0 +1,13 @@
+{
+  "active": true,
+  "iteration": 1,
+  "minIterations": 1,
+  "maxIterations": 0,
+  "completionPromise": "DONE",
+  "tasksMode": true,
+  "taskPromise": "TASK_DONE",
+  "prompt": "/speckit.implement Implemente as phases até o próximo checkpoint. \nOutput <promise>READY_FOR_NEXT_TASK</promise> quando chegar ao checkpoint.\nOutput <promise>DONE</promise> quando completar todas as tarefas",
+  "startedAt": "2026-02-02T23:40:19.257Z",
+  "model": "",
+  "agent": "opencode"
+}
