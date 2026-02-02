@@ -48,8 +48,7 @@
             "which *": "allow",
             "type *": "allow",
             "env *": "ask",
-            "printenv *": "ask",
-            "*": "ask"
+            "printenv *": "ask"
         },
         "lsp": "allow",
         "skill": "allow",
