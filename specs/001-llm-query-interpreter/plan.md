@@ -13,59 +13,47 @@
 
 ## Summary
 
-Implementar um interpretador de linguagem natural que utiliza LLM (OpenAI GPT-4) para converter prompts de usuários QA em queries SQL válidas. O sistema utiliza **CrewAI** para orquestrar agentes especializados (interpretador, validador, refinador) e **WebSocket** para streaming de respostas em tempo real, permitindo feedback progressivo durante a geração da query.
-
-**Integração com Catálogo Existente**: O sistema utiliza o `CatalogService` e os modelos `ExternalSource`/`ColumnMetadata` já existentes para:
-- Validar entidades mencionadas no prompt contra tabelas conhecidas
-- Mapear termos de negócio para colunas reais (`column_name`, `column_path`)
-- Utilizar `inferred_type` para validar tipos de filtros
-- Aproveitar `unique_values` de colunas enumeráveis para sugestões
-
-**Dados do Catálogo para o LLM**:
-| Dado | Fonte | Uso |
-|------|-------|-----|
-| Tabelas disponíveis | `ExternalSource` | Lista de tabelas que podem ser consultadas |
-| Colunas e tipos | `ColumnMetadata.inferred_type` | Validar operadores de filtro |
-| Valores possíveis | `ColumnMetadata.unique_values` | Mapear "bloqueado" → `blocked` |
-| Obrigatoriedade | `ColumnMetadata.is_required` | Informar campos sempre presentes |
-| Volume de dados | `ExternalSource.document_count` | Expectativa de resultados |
+Implementar um interpretador que utiliza LLM (OpenAI GPT-4o via CrewAI) para converter prompts em linguagem natural em queries SQL para busca de massas de dados em ambiente de QA. Utiliza arquitetura multi-agent com CrewAI (3 agentes: Interpretador, Validador, Refinador), WebSocket para streaming de feedback, e structured output via `response_format` com Pydantic para garantir respostas tipadas e validadas.
 
 ## Technical Context
 
 **Language/Version**: Python 3.11  
-**Primary Dependencies**: FastAPI, CrewAI, OpenAI SDK, SQLAlchemy (async), Pydantic  
-**Storage**: PostgreSQL (via asyncpg) para dados de QA, logs de auditoria em banco existente  
-**Testing**: pytest, pytest-asyncio, pytest-cov (cobertura ≥80%)  
-**Target Platform**: Linux server (Docker)  
-**Project Type**: single (backend API)  
-**Performance Goals**: p95 < 2s queries simples, p95 < 5s queries complexas, timeout LLM 15s  
-**Constraints**: <512MB RAM, 50 usuários simultâneos, 100 resultados máximo por query  
-**Scale/Scope**: 50 usuários simultâneos, catálogo de metadados existente
+**Primary Dependencies**: FastAPI, CrewAI (1.9.3), Pydantic, SQLAlchemy async  
+**Storage**: PostgreSQL (catálogo de metadados), MongoDB (dados de QA externos)  
+**Testing**: pytest, pytest-asyncio, pytest-cov  
+**Target Platform**: Linux server (Docker/Kubernetes)  
+**Project Type**: web (backend API com frontend existente)  
+**Performance Goals**: p95 < 2s para queries simples, p95 < 15s para interpretação LLM  
+**Constraints**: Timeout LLM 15s, retry 3x, apenas SELECT permitido (blacklist de INSERT/UPDATE/DELETE/DROP/TRUNCATE/ALTER)  
+**Scale/Scope**: 50 usuários simultâneos, catálogo com ~4 tabelas (~300k documentos total)
+
+### Principais Decisões Técnicas (do research.md)
+
+1. **CrewAI com `response_format`**: Usar classe `LLM` do CrewAI (não OpenAI SDK diretamente) com `response_format=PydanticModel` para outputs estruturados e tipados
+2. **Tasks com `output_pydantic`**: Cada task do CrewAI define seu output via modelo Pydantic
+3. **WebSocket com ConnectionManager**: Streaming de feedback progressivo ao usuário
+4. **Integração com Catálogo existente**: Usar `CatalogService`, `ExternalSource`, `ColumnMetadata` já implementados
 
 ## Constitution Check
 
 *GATE: Must pass before Phase 0 research. Re-check after Phase 1 design.*
 
-| Princípio | Requisito | Status | Evidência |
-|-----------|-----------|--------|-----------|
-| I. Qualidade de Código | Legibilidade, Simplicidade, SRP | ✅ PASS | Arquitetura modular com serviços isolados |
-| I. Qualidade de Código | Arquivos ≤300 linhas | ✅ PASS | Dividido em módulos: agents/, services/, api/ |
-| I. Qualidade de Código | Linting obrigatório | ✅ PASS | ruff + black configurados em pyproject.toml |
-| II. TDD | Ciclo Red-Green-Refactor | ✅ PASS | Testes primeiro para cada componente |
-| II. TDD | Cobertura ≥80% negócio | ✅ PASS | pytest-cov configurado |
-| II. TDD | 100% lógica crítica | ✅ PASS | Validação SQL, parsing, autenticação |
-| II. TDD | Testes de contrato | ✅ PASS | Contratos OpenAPI definidos em contracts/ |
-| III. UX | Feedback <100ms | ✅ PASS | WebSocket para streaming progressivo |
-| III. UX | Erros em português | ✅ PASS | Mensagens localizadas para usuários |
-| IV. Performance | p95 <2s simples | ✅ PASS | Cache de metadados, async |
-| IV. Performance | 50 usuários simultâneos | ✅ PASS | ConnectionManager para WebSocket |
-| IV. Performance | Logs estruturados | ✅ PASS | structlog já configurado |
+| Princípio | Status | Evidência |
+|-----------|--------|-----------|
+| **I. Qualidade de Código** | ✅ PASS | Estrutura modular com separação de responsabilidades (agents, services, schemas). Ruff/Black/MyPy configurados |
+| **II. TDD (Não Negociável)** | ✅ PASS | Estrutura tests/unit, tests/integration, tests/contract definida. pytest-asyncio configurado |
+| **III. UX Consistency** | ✅ PASS | WebSocket com streaming para feedback <100ms. Mensagens de erro claras em português |
+| **IV. Performance** | ✅ PASS | Timeout 15s para LLM, limite de 100 resultados, catálogo com métricas de volume |
 
-**Quality Gates Pre-Implementation**:
-- [x] Lint: ruff configurado
-- [x] Testes: pytest-asyncio configurado
-- [x] Build: hatchling configurado
-- [ ] Code Review: será validado no PR
+### Quality Gates Aplicáveis
+
+| Gate | Critério | Aplicação nesta Feature |
+|------|----------|------------------------|
+| Lint | Zero warnings | Ruff/Black obrigatórios |
+| Testes Unitários | ≥80% cobertura | Testar agents, validators, catalog context |
+| Testes Integração | 100% passando | Fluxo completo prompt→query→resultado |
+| Testes Contrato | 100% passando | WebSocket messages, API responses |
+| Code Review | 1 aprovação | PR para main |
 
 ## Project Structure
 
@@ -74,11 +62,10 @@ Implementar um interpretador de linguagem natural que utiliza LLM (OpenAI GPT-4)
 ```text
 specs/001-llm-query-interpreter/
 ├── plan.md              # This file (/speckit.plan command output)
-├── research.md          # Phase 0 output (/speckit.plan command)
-├── data-model.md        # Phase 1 output (/speckit.plan command)
+├── research.md          # Phase 0 output - WebSocket, CrewAI, LLM patterns
+├── data-model.md        # Phase 1 output - Pydantic models para response_format
 ├── quickstart.md        # Phase 1 output (/speckit.plan command)
-├── contracts/           # Phase 1 output (/speckit.plan command)
-│   └── openapi.yaml     # API contracts for WebSocket + REST endpoints
+├── contracts/           # Phase 1 output - WebSocket messages, API schemas
 └── tasks.md             # Phase 2 output (/speckit.tasks command - NOT created by /speckit.plan)
 ```
 
@@ -86,93 +73,49 @@ specs/001-llm-query-interpreter/
 
 ```text
 src/
-├── agents/                      # CrewAI agents para interpretação LLM
-│   ├── __init__.py
-│   ├── config/
-│   │   ├── agents.yaml          # Definições dos agentes (role, goal, backstory)
-│   │   └── tasks.yaml           # Definições das tasks do crew
-│   ├── interpreter_crew.py      # Crew principal de interpretação
-│   ├── prompt_interpreter.py    # Agente interpretador de prompts
-│   ├── query_validator.py       # Agente validador de queries
-│   └── query_refiner.py         # Agente refinador de queries
 ├── api/
 │   └── v1/
-│       ├── endpoints/
-│       │   └── query_interpreter.py  # REST + WebSocket endpoints
-│       └── websocket/
-│           ├── __init__.py
-│           ├── connection_manager.py # Gerenciador de conexões WS
-│           └── handlers.py           # Handlers de mensagens WS
-├── models/
-│   └── query/
-│       ├── __init__.py
-│       ├── interpretation.py    # Modelo de interpretação estruturada
-│       ├── audit_log.py         # Modelo de log de auditoria
-│       └── query_result.py      # Modelo de resultado de query
+│       ├── interpreter.py       # WebSocket endpoint para interpretação
+│       └── ...                   # Endpoints existentes
 ├── services/
-│   ├── llm/
+│   ├── interpreter/             # Novo: Serviços do interpretador LLM
 │   │   ├── __init__.py
-│   │   ├── openai_client.py     # Cliente OpenAI com retry
-│   │   └── streaming.py         # Handlers de streaming
-│   ├── query/
-│   │   ├── __init__.py
-│   │   ├── interpreter_service.py   # Serviço principal de interpretação
-│   │   ├── validator_service.py     # Validação de segurança SQL
-│   │   └── executor_service.py      # Execução de queries
-│   └── audit/
-│       ├── __init__.py
-│       └── audit_service.py     # Serviço de log de auditoria
+│   │   ├── crew.py              # CrewAI Crew com agents e tasks
+│   │   ├── agents.py            # Definição dos 3 agents (ou via YAML)
+│   │   ├── tasks.py             # Tasks com output_pydantic
+│   │   ├── catalog_context.py   # Geração de contexto do catálogo para LLM
+│   │   └── validator.py         # Validação de segurança SQL
+│   ├── catalog_service.py       # Existente: serviço de catálogo
+│   └── ...
 ├── schemas/
-│   └── query/
-│       ├── __init__.py
-│       ├── request.py           # DTOs de request
-│       └── response.py          # DTOs de response
-└── core/
-    └── security/
-        ├── __init__.py
-        └── sql_blacklist.py     # Blacklist de comandos SQL
+│   ├── interpreter.py           # Novo: Pydantic models para response_format
+│   │   # InterpretedQuery, ValidationResult, RefinedQuery, etc.
+│   └── ...                      # Schemas existentes
+├── config/                      # Novo: YAML configs para CrewAI
+│   ├── agents.yaml              # Definição dos agents
+│   └── tasks.yaml               # Definição das tasks
+└── ...                          # Estrutura existente
 
 tests/
 ├── unit/
-│   ├── agents/
-│   │   └── test_interpreter_crew.py
-│   ├── services/
-│   │   ├── test_interpreter_service.py
-│   │   ├── test_validator_service.py
-│   │   └── test_executor_service.py
-│   └── core/
-│       └── test_sql_blacklist.py
+│   └── services/
+│       └── interpreter/
+│           ├── test_validator.py
+│           ├── test_catalog_context.py
+│           └── test_agents.py
 ├── integration/
-│   ├── test_query_flow.py       # Fluxo completo prompt → resultado
-│   └── test_websocket.py        # Testes de WebSocket
+│   └── test_interpreter_flow.py
 └── contract/
-    ├── test_openai_contract.py  # Contrato com OpenAI
-    └── test_database_contract.py # Contrato com banco QA
+    └── test_websocket_messages.py
 ```
 
-**Structure Decision**: Mantida estrutura `src/` existente do projeto. Adicionados módulos `agents/` para CrewAI, `api/v1/websocket/` para WebSocket handlers, e `services/llm/` e `services/query/` para lógica de negócio isolada.
-
-## Constitution Check - Post-Design Validation
-
-*Re-evaluation after Phase 1 design artifacts completed.*
-
-| Princípio | Requisito | Status | Evidência |
-|-----------|-----------|--------|-----------|
-| I. Qualidade de Código | SRP | ✅ PASS | Cada serviço tem responsabilidade única (interpreter, validator, executor) |
-| I. Qualidade de Código | Arquivos ≤300 linhas | ✅ PASS | Arquitetura modular evita arquivos grandes |
-| II. TDD | Testes de contrato | ✅ PASS | `test_openai_contract.py`, `test_database_contract.py` planejados |
-| II. TDD | Testes de integração | ✅ PASS | `test_query_flow.py`, `test_websocket.py` planejados |
-| III. UX | Feedback <100ms | ✅ PASS | WebSocket streaming permite feedback instantâneo |
-| III. UX | Erros em português | ✅ PASS | Schemas de erro com mensagens localizadas |
-| IV. Performance | p95 <2s | ✅ PASS | Async em toda stack, cache de catálogo |
-| IV. Performance | Logs estruturados | ✅ PASS | structlog + AuditLog para queries bloqueadas |
-
-**Artifacts Delivered**:
-- ✅ `research.md` - Decisões técnicas documentadas
-- ✅ `data-model.md` - Entidades, schemas, state transitions
-- ✅ `contracts/openapi.yaml` - API REST + WebSocket spec
-- ✅ `quickstart.md` - Guia de uso e testes
+**Structure Decision**: Seguir estrutura existente (single project) adicionando `src/services/interpreter/` para a nova feature. Configurações YAML do CrewAI em `src/config/`.
 
 ## Complexity Tracking
 
-> **No violations identified.** Design segue princípios da constituição sem exceções.
+> **Fill ONLY if Constitution Check has violations that must be justified**
+
+| Violation | Why Needed | Simpler Alternative Rejected Because |
+|-----------|------------|-------------------------------------|
+| [e.g., 4th project] | [current need] | [why 3 projects insufficient] |
+| [e.g., Repository pattern] | [specific problem] | [why direct DB access insufficient] |

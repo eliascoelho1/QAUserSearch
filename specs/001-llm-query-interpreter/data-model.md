@@ -132,6 +132,159 @@ GeneratedQuery 1──────0..1 AuditLog (apenas se bloqueada)
 
 ## Schemas Pydantic
 
+### CrewAI `response_format` Models
+
+Modelos Pydantic usados como `response_format` na classe `LLM` do CrewAI ou `output_pydantic` nas Tasks para garantir outputs estruturados e tipados.
+
+```python
+from pydantic import BaseModel, Field
+
+
+class QueryFilter(BaseModel):
+    """Filtro individual extraído do prompt."""
+    column: str = Field(..., description="Nome da coluna no banco de dados")
+    operator: str = Field(..., description="Operador SQL: =, !=, >, <, >=, <=, LIKE, IN, BETWEEN")
+    value: str | int | float | list | None = Field(..., description="Valor do filtro")
+    is_temporal: bool = Field(default=False, description="Se é uma condição temporal (ex: últimos 30 dias)")
+
+
+class InterpretedQuery(BaseModel):
+    """
+    Structured output do Interpreter Agent.
+    Usado como response_format na LLM do CrewAI.
+    """
+    target_tables: list[str] = Field(
+        ..., 
+        min_length=1,
+        description="Tabelas identificadas no formato db_name.table_name"
+    )
+    filters: list[QueryFilter] = Field(
+        default_factory=list,
+        description="Filtros extraídos do prompt"
+    )
+    select_columns: list[str] = Field(
+        default_factory=lambda: ["*"],
+        description="Colunas a selecionar (default: todas)"
+    )
+    joins: list[dict] | None = Field(
+        default=None,
+        description="JOINs necessários entre tabelas"
+    )
+    natural_explanation: str = Field(
+        ..., 
+        description="Explicação em linguagem natural da interpretação"
+    )
+    confidence: float = Field(
+        ..., 
+        ge=0.0, 
+        le=1.0,
+        description="Confiança da interpretação (0.0 a 1.0)"
+    )
+    ambiguities: list[str] = Field(
+        default_factory=list,
+        description="Ambiguidades detectadas no prompt"
+    )
+
+
+class ValidationResult(BaseModel):
+    """
+    Structured output do Validator Agent.
+    Usado como output_pydantic na Task de validação.
+    """
+    is_valid: bool = Field(..., description="Se a query é segura para execução")
+    blocked_commands: list[str] = Field(
+        default_factory=list,
+        description="Comandos SQL bloqueados encontrados"
+    )
+    security_warnings: list[str] = Field(
+        default_factory=list,
+        description="Avisos de segurança (não bloqueantes)"
+    )
+    catalog_validation: dict = Field(
+        default_factory=dict,
+        description="Validação contra o catálogo: tabelas e colunas existentes"
+    )
+
+
+class RefinedQuery(BaseModel):
+    """
+    Structured output do Refiner Agent.
+    Usado como output_pydantic na Task de refinamento.
+    """
+    sql_query: str = Field(..., description="Query SQL final otimizada")
+    explanation: str = Field(..., description="Explicação das otimizações aplicadas")
+    applied_optimizations: list[str] = Field(
+        default_factory=list,
+        description="Lista de otimizações aplicadas"
+    )
+    estimated_rows: int | None = Field(
+        default=None,
+        description="Estimativa de linhas retornadas"
+    )
+    warnings: list[str] = Field(
+        default_factory=list,
+        description="Avisos sobre a query (ex: resultado parcial)"
+    )
+    suggested_limit: int = Field(
+        default=100,
+        ge=1,
+        le=1000,
+        description="Limite sugerido de resultados"
+    )
+
+
+class InterpreterCrewOutput(BaseModel):
+    """
+    Output final do Crew de interpretação.
+    Combina os outputs dos 3 agents.
+    """
+    interpretation: InterpretedQuery
+    validation: ValidationResult
+    refined_query: RefinedQuery
+    status: str = Field(..., description="Status final: ready, blocked, error")
+```
+
+### Exemplo de Uso com CrewAI LLM
+
+```python
+from crewai import LLM
+
+# LLM com response_format para output estruturado
+interpreter_llm = LLM(
+    model="openai/gpt-4o",
+    temperature=0.3,
+    timeout=15.0,
+    max_retries=3,
+    response_format=InterpretedQuery  # Garante output tipado
+)
+
+# Resultado é InterpretedQuery, não string
+result = interpreter_llm.call(prompt_with_catalog_context)
+print(result.target_tables)      # ["credit.invoice"]
+print(result.filters[0].column)  # "status"
+print(result.confidence)         # 0.85
+```
+
+### Exemplo de Uso com CrewAI Task
+
+```python
+from crewai import Task
+
+interpret_task = Task(
+    description="Interprete o prompt: {user_prompt}",
+    expected_output="Estrutura com tabelas, filtros e explicação",
+    agent=interpreter_agent,
+    output_pydantic=InterpretedQuery  # Structured output garantido
+)
+
+# Após crew.kickoff()
+result = crew.kickoff(inputs={"user_prompt": "..."})
+print(result.pydantic.target_tables)  # Acesso tipado via .pydantic
+print(result["confidence"])           # Acesso dict-style também funciona
+```
+
+---
+
 ### Request Schemas
 
 ```python

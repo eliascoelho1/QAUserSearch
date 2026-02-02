@@ -46,11 +46,12 @@ class ConnectionManager:
 ## 2. CrewAI para Encadeamento de Agentes
 
 ### Decision
-Utilizar CrewAI com processo sequencial e 3 agentes especializados: Interpretador, Validador e Refinador.
+Utilizar CrewAI com processo sequencial, 3 agentes especializados e **structured output via `response_format`** com modelos Pydantic.
 
 ### Rationale
 - CrewAI permite definir agentes com roles claros (role, goal, backstory)
 - Processo sequencial garante que cada etapa depende da anterior
+- **`response_format` com Pydantic** garante saídas tipadas e validadas automaticamente
 - Separação de responsabilidades:
   - **Interpretador**: Converte linguagem natural → estrutura de query
   - **Validador**: Verifica segurança (blacklist) e conformidade com catálogo
@@ -62,7 +63,128 @@ Utilizar CrewAI com processo sequencial e 3 agentes especializados: Interpretado
 2. **Agente único com prompt longo**: Difícil debug, sem separação de responsabilidades
 3. **Pipeline manual com funções**: Menos estruturado, harder to test
 
-### Implementation Pattern
+### Implementation Pattern - LLM Client com `response_format`
+
+A partir da documentação oficial do CrewAI, a criação do client LLM deve usar a classe `LLM` do CrewAI (não OpenAI SDK diretamente) com o parâmetro `response_format` para outputs estruturados:
+
+```python
+from crewai import LLM
+from pydantic import BaseModel
+
+
+# Modelos Pydantic para structured output
+class InterpretedQuery(BaseModel):
+    """Resultado da interpretação do prompt pelo LLM."""
+    target_table: str
+    filters: list[dict]
+    select_columns: list[str]
+    explanation: str
+    confidence: float
+
+
+class ValidationResult(BaseModel):
+    """Resultado da validação de segurança."""
+    is_valid: bool
+    blocked_command: str | None = None
+    security_notes: list[str]
+
+
+class RefinedQuery(BaseModel):
+    """Query refinada e otimizada."""
+    sql_query: str
+    explanation: str
+    estimated_rows: int | None = None
+    warnings: list[str]
+
+
+# Criação do LLM Client com response_format
+llm = LLM(
+    model="openai/gpt-4o",
+    api_key="your-api-key",        # Via env var OPENAI_API_KEY
+    temperature=0.3,                # Baixo para consistência
+    timeout=15.0,                   # 15s conforme spec
+    max_retries=3,                  # 3 tentativas conforme spec
+    max_tokens=4000,
+    response_format=InterpretedQuery  # Structured output via Pydantic
+)
+
+# Chamada direta ao LLM com output tipado
+response = llm.call(
+    "Usuários com cartão de crédito ativo e fatura vencida há mais de 30 dias"
+)
+# response é do tipo InterpretedQuery com campos validados
+print(response.target_table)  # "credit.invoice"
+print(response.filters)       # [{"column": "status", "op": "=", "value": "overdue"}]
+```
+
+### Implementation Pattern - Task com `output_pydantic`
+
+Para Tasks do CrewAI, usar o parâmetro `output_pydantic` ou `output_json`:
+
+```python
+from crewai import Agent, Task, Crew, Process
+from pydantic import BaseModel
+
+
+class QueryInterpretation(BaseModel):
+    """Schema de saída estruturada da task de interpretação."""
+    target_tables: list[str]
+    filters: list[dict]
+    select_columns: list[str]
+    natural_explanation: str
+    suggested_limit: int
+
+
+# Agent com LLM configurado
+interpreter_agent = Agent(
+    role="Interpretador de Linguagem Natural",
+    goal="Converter descrição em linguagem natural para estrutura de query SQL",
+    backstory="""Você é um especialista em processamento de linguagem natural com
+    profundo conhecimento do domínio bancário e de QA. Você entende
+    o catálogo de dados e consegue mapear termos de negócio para
+    entidades técnicas.""",
+    llm="openai/gpt-4o",  # Ou instância LLM com response_format
+    verbose=True
+)
+
+# Task com output estruturado
+interpret_task = Task(
+    description="""Interprete o seguinte prompt do usuário e identifique:
+    1. Quais tabelas devem ser consultadas
+    2. Quais filtros aplicar (coluna, operador, valor)
+    3. Quais colunas selecionar
+    
+    Prompt: {user_prompt}
+    
+    Catálogo disponível:
+    {catalog_context}
+    """,
+    expected_output="Estrutura JSON com tabelas, filtros e colunas identificados",
+    agent=interpreter_agent,
+    output_pydantic=QueryInterpretation  # Structured output garantido
+)
+
+# Crew com tasks estruturadas
+crew = Crew(
+    agents=[interpreter_agent],
+    tasks=[interpret_task],
+    process=Process.sequential,
+    verbose=True
+)
+
+# Execução
+result = crew.kickoff(inputs={
+    "user_prompt": "usuários com cartão bloqueado por fraude",
+    "catalog_context": catalog_markdown
+})
+
+# Acesso aos dados estruturados
+print(result.pydantic.target_tables)  # ["card_account_authorization.card_main"]
+print(result.pydantic.filters)        # [{"column": "block_reason", "op": "=", "value": "fraud"}]
+print(result["natural_explanation"])  # Via dict-style também funciona
+```
+
+### YAML Config (Agents e Tasks)
 
 ```yaml
 # config/agents.yaml
@@ -114,52 +236,95 @@ class InterpreterCrew:
 
 ---
 
-## 3. Integração OpenAI com Streaming
+## 3. Integração LLM via CrewAI (Não OpenAI SDK diretamente)
 
 ### Decision
-Utilizar OpenAI SDK com streaming (`stream=True`) e retry com backoff exponencial (3 tentativas).
+Utilizar **CrewAI LLM class** (não OpenAI SDK diretamente) com `response_format` para structured output e configurações nativas de timeout/retry.
 
 ### Rationale
-- Streaming permite feedback progressivo ao usuário via WebSocket
-- Retry protege contra falhas transitórias da API
-- Timeout de 15 segundos conforme especificação
-- Modelo GPT-4 conforme definido nas clarifications
+- **CrewAI LLM class** encapsula providers (OpenAI, Anthropic, etc.) com API unificada
+- `response_format` com Pydantic garante outputs tipados e validados
+- Retry e timeout são parâmetros nativos da classe LLM do CrewAI
+- Não é necessário gerenciar streaming manualmente - CrewAI faz internamente
+- Modelo GPT-4o conforme definido nas clarifications
 
 ### Implementation Pattern
 
 ```python
-from openai import AsyncOpenAI
-from openai import RateLimitError, APIConnectionError
-import asyncio
+from crewai import LLM
+from pydantic import BaseModel
 
-class OpenAIClient:
-    def __init__(self):
-        self.client = AsyncOpenAI()
-        self.max_retries = 3
-        self.timeout = 15
 
-    async def stream_completion(self, messages: list[dict], on_chunk: callable):
-        retries = 0
-        backoff = 1
+class InterpretedQuery(BaseModel):
+    """Structured output do LLM."""
+    target_table: str
+    filters: list[dict]
+    select_columns: list[str]
+    explanation: str
 
-        while retries < self.max_retries:
-            try:
-                stream = await self.client.chat.completions.create(
-                    model="gpt-4",
-                    messages=messages,
-                    stream=True,
-                    timeout=self.timeout
-                )
-                async for chunk in stream:
-                    if content := chunk.choices[0].delta.content:
-                        await on_chunk(content)
-                return
-            except (RateLimitError, APIConnectionError):
-                retries += 1
-                await asyncio.sleep(backoff)
-                backoff *= 2
-            except Exception as e:
-                raise
+
+# Client LLM via CrewAI - NÃO usar AsyncOpenAI diretamente
+llm = LLM(
+    model="openai/gpt-4o",
+    api_key="your-api-key",           # Via OPENAI_API_KEY env var
+    temperature=0.3,                   # Baixo para consistência em queries
+    timeout=15.0,                      # 15s conforme spec
+    max_retries=3,                     # 3 tentativas com backoff automático
+    max_tokens=4000,
+    response_format=InterpretedQuery   # Structured output via Pydantic!
+)
+
+# Chamada com output estruturado
+result = llm.call(
+    """Contexto do catálogo:
+    ...
+    
+    Prompt do usuário: usuários com cartão bloqueado"""
+)
+
+# result é InterpretedQuery, não string!
+print(result.target_table)  # "card_main"
+print(result.filters)       # [{"column": "card_status", "op": "=", "value": "blocked"}]
+```
+
+### Advanced Configuration
+
+```python
+from crewai import LLM
+
+# Configuração completa conforme documentação CrewAI
+llm = LLM(
+    model="openai/gpt-4o",
+    api_key="your-api-key",
+    base_url="https://api.openai.com/v1",  # Opcional: custom endpoint
+    temperature=0.3,
+    max_tokens=4000,
+    timeout=15.0,                          # Request timeout em segundos
+    max_retries=3,                         # Tentativas com backoff
+    top_p=0.9,
+    frequency_penalty=0.1,
+    presence_penalty=0.1,
+    seed=42,                               # Reproducibilidade
+    response_format=InterpretedQuery       # Pydantic model para structured output
+)
+```
+
+### Nota: Streaming para WebSocket
+
+Para feedback progressivo ao usuário, o streaming deve ser configurado separadamente:
+
+```python
+# LLM com streaming habilitado
+streaming_llm = LLM(
+    model="openai/gpt-4o",
+    stream=True,  # Habilita streaming
+    timeout=15.0,
+    max_retries=3
+)
+
+# Nota: response_format e stream=True podem ter comportamento diferente
+# Para structured output final, use sem streaming
+# Para feedback progressivo, use streaming sem response_format
 ```
 
 ---
@@ -217,16 +382,17 @@ Adicionar as seguintes dependências ao projeto:
 # pyproject.toml
 dependencies = [
     # ... existentes ...
-    "openai>=1.0.0",       # Cliente OpenAI com async support
-    "crewai>=0.80.0",      # Framework multi-agent
-    "websockets>=12.0",    # WebSocket utilities (opcional, FastAPI já inclui)
+    "crewai==1.9.3",       # Framework multi-agent com LLM class e response_format
 ]
 ```
 
 ### Rationale
-- `openai>=1.0.0`: SDK oficial com suporte a async e streaming
-- `crewai>=0.80.0`: Framework estável para multi-agent (YAML config, process types)
-- `websockets`: Já incluído via uvicorn[standard], mas explicitado para clareza
+- `crewai==1.9.3`: Framework estável para multi-agent com:
+  - Classe `LLM` que abstrai providers (OpenAI, Anthropic, etc.)
+  - Suporte a `response_format` com Pydantic para structured output
+  - Timeout e retry nativos
+  - YAML config para agents e tasks
+- **Não é necessário `openai` como dependência direta** - CrewAI já inclui e gerencia
 
 ---
 

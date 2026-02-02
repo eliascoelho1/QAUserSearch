@@ -189,3 +189,10 @@ log.info("Starting extraction")
 class InferredType(str, Enum):
     STRING = "string"
 ```
+
+## Active Technologies
+- Python 3.11 + FastAPI, CrewAI (1.9.3), Pydantic, SQLAlchemy async (001-llm-query-interpreter)
+- PostgreSQL (catálogo de metadados), MongoDB (dados de QA externos) (001-llm-query-interpreter)
+
+## Recent Changes
+- 001-llm-query-interpreter: Added Python 3.11 + FastAPI, CrewAI (1.9.3), Pydantic, SQLAlchemy async
