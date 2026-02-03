@@ -1,9 +1,17 @@
 """Unit tests for catalog CLI commands."""
 
+import re
+
 import pytest
 from typer.testing import CliRunner
 
 from src.cli.catalog import KNOWN_SOURCES, app
+
+
+def strip_ansi_codes(text: str) -> str:
+    """Remove ANSI escape codes from text."""
+    ansi_pattern = re.compile(r"\x1b\[[0-9;]*m")
+    return ansi_pattern.sub("", text)
 
 
 class TestCatalogCLI:
@@ -49,21 +57,20 @@ class TestCatalogCLI:
     def test_extract_help_shows_arguments(self, runner: CliRunner) -> None:
         """extract --help should show required arguments."""
         result = runner.invoke(app, ["extract", "--help"])
+        output = strip_ansi_codes(result.output).lower()
 
         assert result.exit_code == 0
-        assert "db_name" in result.output.lower() or "db-name" in result.output.lower()
-        assert (
-            "table_name" in result.output.lower()
-            or "table-name" in result.output.lower()
-        )
-        assert "sample-size" in result.output.lower()
+        assert "db_name" in output or "db-name" in output
+        assert "table_name" in output or "table-name" in output
+        assert "sample-size" in output
 
     def test_extract_all_help_shows_options(self, runner: CliRunner) -> None:
         """extract-all --help should show options."""
         result = runner.invoke(app, ["extract-all", "--help"])
+        output = strip_ansi_codes(result.output).lower()
 
         assert result.exit_code == 0
-        assert "sample-size" in result.output.lower()
+        assert "sample-size" in output
 
     def test_known_sources_has_expected_entries(self) -> None:
         """KNOWN_SOURCES should contain expected sources."""
