@@ -1,14 +1,20 @@
 """FastAPI application entry point."""
 
-import time
-from collections.abc import AsyncGenerator
-from contextlib import asynccontextmanager
+# Configure truststore early to use macOS keychain for SSL verification
+# This is needed for corporate proxy environments (e.g., Zscaler)
+import truststore
 
-from fastapi import FastAPI
+truststore.inject_into_ssl()
 
-from src.config import get_settings
-from src.core.database import close_db_manager, init_db_manager
-from src.core.logging import get_logger, setup_logging
+import time  # noqa: E402
+from collections.abc import AsyncGenerator  # noqa: E402
+from contextlib import asynccontextmanager  # noqa: E402
+
+from fastapi import FastAPI  # noqa: E402
+
+from src.config import get_settings  # noqa: E402
+from src.core.database import close_db_manager, init_db_manager  # noqa: E402
+from src.core.logging import get_logger, setup_logging  # noqa: E402
 
 # Application start time for uptime calculation
 _start_time: float = 0.0
@@ -68,12 +74,17 @@ def create_app() -> FastAPI:
 
     # Register routers
     from src.api.v1.catalog import router as catalog_router
+    from src.api.v1.endpoints.interpreter import router as interpreter_router
     from src.api.v1.health import router as health_router
     from src.api.v1.root import router as root_router
+    from src.api.v1.websocket.interpreter_ws import router as ws_interpreter_router
 
     app.include_router(root_router)
     app.include_router(health_router)
     app.include_router(catalog_router, prefix="/api/v1")
+    app.include_router(interpreter_router, prefix="/api/v1")
+    # WebSocket routes (no prefix - path is /ws/query/interpret)
+    app.include_router(ws_interpreter_router)
 
     return app
 

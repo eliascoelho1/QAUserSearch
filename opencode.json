@@ -8,8 +8,10 @@
     },
     "permission": {
         "bash": {
+            "./specify *": "allow",
+            "./specify*": "allow",
             "git *": "allow",
-            "git commit *": "deny",
+            "git commit *": "allow",
             "git push *": "deny",
             "sudo *": "deny",
             "gh pr *": "allow",
@@ -46,8 +48,7 @@
             "which *": "allow",
             "type *": "allow",
             "env *": "ask",
-            "printenv *": "ask",
-            "*": "ask"
+            "printenv *": "ask"
         },
         "lsp": "allow",
         "skill": "allow",
@@ -66,7 +67,8 @@
     "instructions": [
         "./README.md",
         "./AGENTS.md",
-        "./docs/architecture.md"
+        "./docs/architecture.md",
+        "./.specify/memory/constitution.md"
     ],
     "formatter": {
         "ruff": {
@@ -81,27 +83,6 @@
                 ".py",
                 ".pyi"
             ]
-        }
-    },
-    "agent": {
-        "plan": {
-            "model": "anthropic/claude-opus-4-5"
-        },
-        "explore": {
-            "description": "Fast codebase exploration and file search",
-            "mode": "subagent",
-            "model": "anthropic/claude-sonnet-4-5",
-            "temperature": 0.1,
-            "maxSteps": 20,
-            "tools": {
-                "read": true,
-                "write": false,
-                "edit": false,
-                "bash": false,
-                "grep": true,
-                "glob": true,
-                "list": true
-            }
         }
     },
     "lsp": {

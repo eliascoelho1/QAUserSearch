@@ -65,6 +65,14 @@ uv run alembic revision -m "desc"       # Create migration
 docker compose -f docker/docker-compose.yml up -d db   # Start database
 ```
 
+## Zero Error Policy (LSP)
+
+**CRITICAL**: This project follows a strict **zero errors policy**.
+
+- **Always check LSP diagnostics** after any code change (basedpyright is configured in `opencode.json`)
+- **No unresolved errors allowed** - Code is not complete until all LSP errors are fixed
+- **Fix before committing** - All issues must be resolved before creating commits
+
 ## Code Style Guidelines
 
 ### Imports
@@ -189,3 +197,10 @@ log.info("Starting extraction")
 class InferredType(str, Enum):
     STRING = "string"
 ```
+
+## Active Technologies
+- Python 3.11 + FastAPI, CrewAI (1.9.3), Pydantic, SQLAlchemy async (001-llm-query-interpreter)
+- PostgreSQL (catálogo de metadados), MongoDB (dados de QA externos) (001-llm-query-interpreter)
+
+## Recent Changes
+- 001-llm-query-interpreter: Added Python 3.11 + FastAPI, CrewAI (1.9.3), Pydantic, SQLAlchemy async

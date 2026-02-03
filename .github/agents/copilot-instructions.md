@@ -15,6 +15,8 @@ QAUserSearch is a Python FastAPI application for searching user data in QA envir
 ## Active Technologies
 - Python 3.11 + FastAPI 0.115+, Pydantic 2.10+, SQLAlchemy 2.0+ (asyncio), asyncpg 0.30+, structlog 24.4+ (001-external-schema-extraction)
 - PostgreSQL (catálogo de schemas via SQLAlchemy async), arquivos JSON (amostras MOCK em `res/db/`) (001-external-schema-extraction)
+- Python 3.11 + FastAPI, CrewAI, OpenAI SDK, SQLAlchemy (async), Pydantic (001-llm-query-interpreter)
+- PostgreSQL (via asyncpg) para dados de QA, logs de auditoria em banco existente (001-llm-query-interpreter)
 
 - **Language**: Python 3.11+ (LTS)
 - **Framework**: FastAPI, Pydantic, SQLAlchemy, Alembic, uvicorn
@@ -86,10 +88,10 @@ Keep files under 300 lines. Split into modules if larger.
 - Use Google-style docstrings
 
 ## Recent Changes
+- 001-llm-query-interpreter: Added Python 3.11 + FastAPI, CrewAI, OpenAI SDK, SQLAlchemy (async), Pydantic
 - 001-external-schema-extraction: Added Python 3.11 + FastAPI 0.115+, Pydantic 2.10+, SQLAlchemy 2.0+ (asyncio), asyncpg 0.30+, structlog 24.4+
 - 001-external-schema-extraction: Added Python 3.11 + FastAPI, Pydantic 2.x, SQLAlchemy 2.x (async), asyncpg, structlog, OpenAI SDK
 
-- 001-project-foundation: Added Python 3.11 (LTS) + FastAPI, Pydantic, SQLAlchemy, Alembic, uvicorn
 
 <!-- MANUAL ADDITIONS START -->
 <!-- MANUAL ADDITIONS END -->

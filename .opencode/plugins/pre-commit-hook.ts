@@ -37,19 +37,20 @@ export const PreCommitHook: Plugin = async ({ $, directory }) => {
         console.log("[pre-commit] Running: uv run ruff check --fix");
         try {
           const ruffResult =
-            await $`uv run ruff check ${files.join(" ")} --fix`.quiet();
+            await $`uv run ruff check ${files} --fix`.quiet();
           console.log("[pre-commit] Ruff check passed");
 
           // Check if ruff modified any files
           const modifiedResult =
-            await $`git diff --name-only -- ${files.join(" ")}`.quiet();
+            await $`git diff --name-only -- ${files}`.quiet();
           const modifiedFiles = modifiedResult.stdout.toString().trim();
 
           if (modifiedFiles) {
             console.log(
               "[pre-commit] Ruff fixed some issues. Re-staging modified files...",
             );
-            await $`git add ${modifiedFiles.split("\n").join(" ")}`;
+            const filesToStage = modifiedFiles.split("\n").filter(Boolean);
+            await $`git add ${filesToStage}`;
           }
         } catch (error: unknown) {
           const errorMessage =

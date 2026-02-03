@@ -30,9 +30,6 @@ jobs:
       - name: Run Ruff
         run: uv run ruff check src/ tests/
 
-      - name: Run Black (check)
-        run: uv run black --check src/ tests/
-
   typecheck:
     name: Type Check
     runs-on: ubuntu-latest

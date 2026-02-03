@@ -1,5 +1,7 @@
 """Unit tests for configuration."""
 
+from pathlib import Path
+
 import pytest
 from pydantic import ValidationError
 
@@ -10,9 +12,23 @@ from src.schemas.enums import Environment, LogLevel
 class TestSettings:
     """Tests for Settings class."""
 
-    def test_default_values(self) -> None:
+    def test_default_values(
+        self, monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+    ) -> None:
         """Test that default values are set correctly."""
-        settings = Settings(database_url="postgresql+asyncpg://user:pass@localhost/db")
+        # Clear environment variables that could override defaults
+        monkeypatch.delenv("LOG_LEVEL", raising=False)
+        monkeypatch.delenv("DEBUG", raising=False)
+        monkeypatch.delenv("ENVIRONMENT", raising=False)
+        monkeypatch.delenv("APP_NAME", raising=False)
+        monkeypatch.delenv("VERSION", raising=False)
+
+        # Change to a temp directory without .env file
+        monkeypatch.chdir(tmp_path)
+
+        settings = Settings(
+            database_url="postgresql+asyncpg://user:pass@localhost/db",
+        )
 
         assert settings.app_name == "qausersearch"
         assert settings.version == "0.1.0"

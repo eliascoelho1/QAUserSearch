@@ -1,0 +1,368 @@
+openapi: 3.1.0
+info:
+  title: QAUserSearch - LLM Query Interpreter API
+  version: 1.0.0
+  description: |
+    API para interpretação de prompts em linguagem natural e geração de queries SQL
+    para busca de massas de dados em ambiente de QA.
+
+servers:
+  - url: /api/v1
+    description: API v1
+
+tags:
+  - name: Query Interpreter
+    description: Endpoints para interpretação de prompts e execução de queries
+
+paths:
+  /query/interpret:
+    post:
+      tags:
+        - Query Interpreter
+      summary: Interpreta um prompt e gera uma query SQL
+      description: |
+        Recebe um prompt em linguagem natural e retorna a interpretação estruturada
+        junto com a query SQL gerada. Use o endpoint WebSocket para streaming.
+      operationId: interpretPrompt
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/InterpretPromptRequest'
+      responses:
+        '200':
+          description: Interpretação e query geradas com sucesso
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InterpretationWithQueryResponse'
+        '400':
+          description: Prompt inválido ou não interpretável
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '422':
+          description: Erro de validação
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidationErrorResponse'
+        '503':
+          description: Serviço LLM indisponível
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /query/{query_id}/execute:
+    post:
+      tags:
+        - Query Interpreter
+      summary: Executa uma query previamente gerada
+      description: |
+        Executa a query SQL gerada e retorna os resultados.
+        Limitado a 100 registros por padrão.
+      operationId: executeQuery
+      parameters:
+        - name: query_id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ExecuteQueryRequest'
+      responses:
+        '200':
+          description: Query executada com sucesso
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/QueryResultResponse'
+        '400':
+          description: Query inválida ou bloqueada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Query não encontrada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /query/{query_id}:
+    get:
+      tags:
+        - Query Interpreter
+      summary: Obtém detalhes de uma query gerada
+      operationId: getQuery
+      parameters:
+        - name: query_id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Detalhes da query
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/QueryResponse'
+        '404':
+          description: Query não encontrada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+components:
+  schemas:
+    InterpretPromptRequest:
+      type: object
+      required:
+        - prompt
+      properties:
+        prompt:
+          type: string
+          maxLength: 2000
+          description: Prompt em linguagem natural descrevendo os dados desejados
+          example: "usuários com cartão de crédito ativo e fatura vencida há mais de 30 dias"
+
+    ExecuteQueryRequest:
+      type: object
+      properties:
+        limit:
+          type: integer
+          minimum: 1
+          maximum: 1000
+          default: 100
+          description: Número máximo de registros a retornar
+
+    InterpretationResponse:
+      type: object
+      required:
+        - id
+        - status
+        - summary
+        - entities
+        - filters
+        - confidence
+      properties:
+        id:
+          type: string
+          format: uuid
+        status:
+          $ref: '#/components/schemas/InterpretationStatus'
+        summary:
+          type: string
+          description: Resumo da interpretação em linguagem natural para o usuário
+          example: "Buscarei usuários onde: cartão de crédito = ativo E fatura = vencida E dias de atraso > 30"
+        entities:
+          type: array
+          items:
+            $ref: '#/components/schemas/EntityResponse'
+        filters:
+          type: array
+          items:
+            $ref: '#/components/schemas/FilterResponse'
+        confidence:
+          type: number
+          minimum: 0
+          maximum: 1
+          description: Confiança da interpretação (0-1)
+
+    InterpretationWithQueryResponse:
+      allOf:
+        - $ref: '#/components/schemas/InterpretationResponse'
+        - type: object
+          required:
+            - query
+          properties:
+            query:
+              $ref: '#/components/schemas/QueryResponse'
+
+    EntityResponse:
+      type: object
+      required:
+        - name
+        - table_name
+      properties:
+        name:
+          type: string
+          description: Nome da entidade identificada
+          example: "usuário"
+        table_name:
+          type: string
+          description: Tabela correspondente no banco
+          example: "users"
+        alias:
+          type: string
+          description: Alias usado na query
+
+    FilterResponse:
+      type: object
+      required:
+        - field
+        - operator
+        - value
+      properties:
+        field:
+          type: string
+          description: Campo do filtro
+          example: "credit_card_status"
+        operator:
+          $ref: '#/components/schemas/FilterOperator'
+        value:
+          description: Valor do filtro
+          example: "active"
+        is_temporal:
+          type: boolean
+          default: false
+          description: Se é uma condição temporal
+
+    QueryResponse:
+      type: object
+      required:
+        - id
+        - sql
+        - is_valid
+      properties:
+        id:
+          type: string
+          format: uuid
+        sql:
+          type: string
+          description: Query SQL gerada
+          example: "SELECT * FROM users u JOIN credit_cards cc ON u.id = cc.user_id WHERE cc.status = 'active' LIMIT 100"
+        is_valid:
+          type: boolean
+          description: Se a query passou na validação de segurança
+        validation_errors:
+          type: array
+          items:
+            type: string
+          description: Erros de validação, se houver
+
+    QueryResultResponse:
+      type: object
+      required:
+        - query_id
+        - rows
+        - row_count
+        - is_partial
+        - execution_time_ms
+      properties:
+        query_id:
+          type: string
+          format: uuid
+        rows:
+          type: array
+          items:
+            type: object
+            additionalProperties: true
+          description: Dados retornados
+        row_count:
+          type: integer
+          minimum: 0
+          description: Quantidade de registros retornados
+        is_partial:
+          type: boolean
+          description: Se o resultado foi truncado (mais de 100 registros)
+        execution_time_ms:
+          type: integer
+          minimum: 0
+          description: Tempo de execução em milissegundos
+
+    InterpretationStatus:
+      type: string
+      enum:
+        - pending
+        - interpreting
+        - validating
+        - refining
+        - ready
+        - blocked
+        - error
+
+    FilterOperator:
+      type: string
+      enum:
+        - "="
+        - "!="
+        - ">"
+        - ">="
+        - "<"
+        - "<="
+        - "LIKE"
+        - "IN"
+        - "BETWEEN"
+        - "IS NULL"
+        - "IS NOT NULL"
+
+    ErrorResponse:
+      type: object
+      required:
+        - code
+        - message
+      properties:
+        code:
+          type: string
+          description: Código do erro
+          example: "SQL_COMMAND_BLOCKED"
+        message:
+          type: string
+          description: Mensagem de erro em português
+          example: "Comando DELETE não é permitido. Apenas consultas SELECT são aceitas."
+        details:
+          type: object
+          additionalProperties: true
+          description: Detalhes adicionais do erro
+        suggestions:
+          type: array
+          items:
+            type: string
+          description: Sugestões de como corrigir o problema
+
+    ValidationErrorResponse:
+      type: object
+      required:
+        - detail
+      properties:
+        detail:
+          type: array
+          items:
+            type: object
+            properties:
+              loc:
+                type: array
+                items:
+                  type: string
+              msg:
+                type: string
+              type:
+                type: string
+
+# WebSocket endpoint documentation (não suportado diretamente pelo OpenAPI 3.1)
+# Documentado aqui para referência:
+#
+# WebSocket: /ws/query/interpret
+#
+# Client -> Server Messages:
+#   { "type": "interpret", "prompt": "usuários com cartão ativo" }
+#
+# Server -> Client Messages:
+#   { "type": "status", "data": { "status": "interpreting", "message": "Analisando prompt..." } }
+#   { "type": "chunk", "data": { "content": "Identificando", "agent": "interpreter" } }
+#   { "type": "interpretation", "data": { ... InterpretationResponse ... } }
+#   { "type": "query", "data": { ... QueryResponse ... } }
+#   { "type": "error", "data": { ... ErrorResponse ... } }
