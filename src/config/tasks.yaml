@@ -1,0 +1,100 @@
+# CrewAI Tasks Configuration
+# Defines the sequential tasks for the LLM Query Interpreter
+
+interpret_task:
+  description: |
+    Analise o seguinte prompt do usuário e identifique os elementos para construir uma query SQL:
+    
+    **Prompt do Usuário:**
+    {user_prompt}
+    
+    **Catálogo de Dados Disponível:**
+    {catalog_context}
+    
+    **Instruções:**
+    1. Identifique quais tabelas do catálogo são relevantes para esta busca
+    2. Extraia os filtros mencionados (ex: "ativo", "vencido", "últimos 30 dias")
+    3. Mapeie termos de negócio para valores técnicos usando os "Valores Possíveis" do catálogo
+    4. Identifique ambiguidades ou termos não reconhecidos
+    5. Forneça uma explicação em linguagem natural da interpretação
+    
+    **Exemplos de Mapeamento:**
+    - "cartão bloqueado" → card_status = 'blocked'
+    - "fatura vencida" → status = 'overdue'
+    - "últimos 30 dias" → timestamp >= NOW() - INTERVAL '30 days'
+    
+    Retorne a interpretação estruturada conforme o schema esperado.
+  expected_output: |
+    Uma estrutura JSON com:
+    - target_tables: lista de tabelas identificadas (ex: ["credit.invoice"])
+    - filters: lista de filtros com coluna, operador e valor
+    - select_columns: colunas a selecionar (use ["*"] se não especificado)
+    - natural_explanation: explicação em português do que será buscado
+    - confidence: nível de confiança (0.0 a 1.0)
+    - ambiguities: lista de termos ambíguos ou não reconhecidos
+  agent: interpreter
+
+validate_task:
+  description: |
+    Valide a query interpretada pelo agente anterior quanto à segurança e conformidade:
+    
+    **Interpretação Recebida:**
+    {interpretation}
+    
+    **Catálogo de Dados:**
+    {catalog_context}
+    
+    **Verificações Obrigatórias:**
+    1. Nenhum comando proibido: INSERT, UPDATE, DELETE, DROP, TRUNCATE, ALTER
+    2. Todas as tabelas referenciadas existem no catálogo
+    3. Todas as colunas referenciadas existem nas respectivas tabelas
+    4. Não há tentativas de SQL injection (múltiplas queries, comentários suspeitos)
+    
+    **Resultado:**
+    - Se válida: is_valid = true
+    - Se inválida: is_valid = false com blocked_commands preenchido
+    - Sempre inclua catalog_validation com resultado da verificação de tabelas/colunas
+  expected_output: |
+    Uma estrutura JSON com:
+    - is_valid: boolean indicando se a query é segura
+    - blocked_commands: lista de comandos bloqueados encontrados
+    - security_warnings: avisos não bloqueantes
+    - catalog_validation: resultado da validação de tabelas e colunas
+  agent: validator
+  context:
+    - interpret_task
+
+refine_task:
+  description: |
+    Refine e otimize a query SQL final baseada na interpretação validada:
+    
+    **Interpretação Validada:**
+    {interpretation}
+    
+    **Resultado da Validação:**
+    {validation}
+    
+    **Regras de Refinamento:**
+    1. Construa a query SQL SELECT completa
+    2. Use aliases apropriados para tabelas
+    3. Adicione LIMIT (padrão 100, máximo 1000)
+    4. Ordene resultados de forma lógica (ex: por timestamp DESC)
+    5. Formate o SQL de forma legível
+    6. Estime o número de linhas que podem ser retornadas
+    
+    **Importante:**
+    - Apenas SELECT é permitido
+    - Sempre inclua LIMIT
+    - Use sintaxe SQL padrão (será executada via MongoDB SQL layer)
+  expected_output: |
+    Uma estrutura JSON com:
+    - sql_query: query SQL final otimizada
+    - explanation: explicação das otimizações aplicadas
+    - applied_optimizations: lista de otimizações aplicadas
+    - estimated_rows: estimativa de linhas retornadas
+    - warnings: avisos sobre a query (ex: resultado pode ser parcial)
+    - suggested_limit: limite sugerido (100 padrão)
+  agent: refiner
+  context:
+    - interpret_task
+    - validate_task

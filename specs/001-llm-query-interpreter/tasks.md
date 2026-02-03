@@ -23,10 +23,10 @@
 
 **Purpose**: Project initialization, dependencies, and basic configuration
 
-- [ ] T001 Add CrewAI dependency (crewai==1.9.3) to pyproject.toml
-- [ ] T002 [P] Create interpreter service directory structure at src/services/interpreter/
-- [ ] T003 [P] Create config directory for CrewAI YAML files at src/config/
-- [ ] T004 [P] Add OPENAI_API_KEY, OPENAI_MODEL, OPENAI_TIMEOUT, OPENAI_MAX_RETRIES to environment configuration in src/config/settings.py
+- [X] T001 Add CrewAI dependency (crewai==1.9.3) to pyproject.toml
+- [X] T002 [P] Create interpreter service directory structure at src/services/interpreter/
+- [X] T003 [P] Create config directory for CrewAI YAML files at src/config/
+- [X] T004 [P] Add OPENAI_API_KEY, OPENAI_MODEL, OPENAI_TIMEOUT, OPENAI_MAX_RETRIES to environment configuration in src/config.py
 
 ---
 
@@ -36,14 +36,14 @@
 
 **CRITICAL**: No user story work can begin until this phase is complete
 
-- [ ] T005 Create Pydantic schemas for interpreter in src/schemas/interpreter.py (FilterOperator enum, InterpretationStatus enum, QueryFilter, InterpretedQuery, ValidationResult, RefinedQuery, InterpreterCrewOutput)
-- [ ] T006 [P] Create WebSocket message schemas in src/schemas/websocket.py (WSMessage, WSStatusMessage, WSChunkMessage, WSInterpretationMessage, WSErrorMessage)
-- [ ] T007 [P] Create request/response schemas in src/schemas/interpreter.py (InterpretPromptRequest, ExecuteQueryRequest, InterpretationResponse, QueryResponse, QueryResultResponse, ErrorResponse)
-- [ ] T008 Create SQL validator service with blacklist (INSERT, UPDATE, DELETE, DROP, TRUNCATE, ALTER) in src/services/interpreter/validator.py
-- [ ] T009 Create AuditLog model for blocked queries in src/models/audit_log.py (id, blocked_query, original_prompt, blocked_command, timestamp, reason - NO user identification per FR-008)
-- [ ] T010 [P] Create Alembic migration for audit_log table with indexes (timestamp DESC, blocked_command)
-- [ ] T011 Create ConnectionManager for WebSocket connections in src/api/v1/websocket/connection_manager.py
-- [ ] T012 Create CatalogContext service for building LLM context from existing CatalogService in src/services/interpreter/catalog_context.py (get_available_tables, get_table_schema, build_llm_context)
+- [X] T005 Create Pydantic schemas for interpreter in src/schemas/interpreter.py (FilterOperator enum, InterpretationStatus enum, QueryFilter, InterpretedQuery, ValidationResult, RefinedQuery, InterpreterCrewOutput)
+- [X] T006 [P] Create WebSocket message schemas in src/schemas/websocket.py (WSMessage, WSStatusMessage, WSChunkMessage, WSInterpretationMessage, WSErrorMessage)
+- [X] T007 [P] Create request/response schemas in src/schemas/interpreter.py (InterpretPromptRequest, ExecuteQueryRequest, InterpretationResponse, QueryResponse, QueryResultResponse, ErrorResponse)
+- [X] T008 Create SQL validator service with blacklist (INSERT, UPDATE, DELETE, DROP, TRUNCATE, ALTER) in src/services/interpreter/validator.py
+- [X] T009 Create AuditLog model for blocked queries in src/models/audit_log.py (id, blocked_query, original_prompt, blocked_command, timestamp, reason - NO user identification per FR-008)
+- [X] T010 [P] Create Alembic migration for audit_log table with indexes (timestamp DESC, blocked_command)
+- [X] T011 Create ConnectionManager for WebSocket connections in src/api/v1/websocket/connection_manager.py
+- [X] T012 Create CatalogContext service for building LLM context from existing CatalogService in src/services/interpreter/catalog_context.py (get_available_tables, get_table_schema, build_llm_context)
 
 **Checkpoint**: Foundation ready - user story implementation can now begin
 
@@ -57,18 +57,18 @@
 
 ### Implementation for User Story 1
 
-- [ ] T013 [P] [US1] Create CrewAI agents YAML configuration in src/config/agents.yaml (interpreter, validator, refiner agents with roles, goals, backstories)
-- [ ] T014 [P] [US1] Create CrewAI tasks YAML configuration in src/config/tasks.yaml (interpret_task, validate_task, refine_task with descriptions and output_pydantic)
-- [ ] T015 [US1] Implement InterpreterCrew class using CrewBase decorator in src/services/interpreter/crew.py (load YAML configs, sequential process, kickoff method)
-- [ ] T016 [US1] Configure LLM instance with response_format for structured output in src/services/interpreter/crew.py (model=openai/gpt-4o, timeout=15, max_retries=3, temperature=0.3)
-- [ ] T017 [US1] Implement interpret_prompt method in InterpreterService in src/services/interpreter/service.py (receive prompt, build catalog context, call crew, return InterpretedQuery)
-- [ ] T018 [US1] Implement query execution service in src/services/interpreter/query_executor.py (execute validated SQL against MongoDB external sources, apply limit, return QueryResult)
-- [ ] T019 [US1] Create REST endpoint POST /api/v1/query/interpret in src/api/v1/endpoints/interpreter.py (accept InterpretPromptRequest, return InterpretationWithQueryResponse)
-- [ ] T020 [US1] Create REST endpoint POST /api/v1/query/{query_id}/execute in src/api/v1/endpoints/interpreter.py (accept ExecuteQueryRequest, return QueryResultResponse)
-- [ ] T021 [US1] Create REST endpoint GET /api/v1/query/{query_id} in src/api/v1/endpoints/interpreter.py (return QueryResponse)
-- [ ] T022 [US1] Register interpreter router in main FastAPI application in src/api/v1/router.py
-- [ ] T023 [US1] Implement SQL validation before execution in query_executor.py using validator.py (block forbidden commands, log to audit_log if blocked)
-- [ ] T024 [US1] Implement result limiting (default 100, max 1000) and is_partial flag when results exceed limit in src/services/interpreter/query_executor.py
+- [X] T013 [P] [US1] Create CrewAI agents YAML configuration in src/config/agents.yaml (interpreter, validator, refiner agents with roles, goals, backstories)
+- [X] T014 [P] [US1] Create CrewAI tasks YAML configuration in src/config/tasks.yaml (interpret_task, validate_task, refine_task with descriptions and output_pydantic)
+- [X] T015 [US1] Implement InterpreterCrew class using CrewBase decorator in src/services/interpreter/crew.py (load YAML configs, sequential process, kickoff method)
+- [X] T016 [US1] Configure LLM instance with response_format for structured output in src/services/interpreter/crew.py (model=openai/gpt-4o, timeout=15, max_retries=3, temperature=0.3)
+- [X] T017 [US1] Implement interpret_prompt method in InterpreterService in src/services/interpreter/service.py (receive prompt, build catalog context, call crew, return InterpretedQuery)
+- [X] T018 [US1] Implement query execution service in src/services/interpreter/query_executor.py (execute validated SQL against MongoDB external sources, apply limit, return QueryResult)
+- [X] T019 [US1] Create REST endpoint POST /api/v1/query/interpret in src/api/v1/endpoints/interpreter.py (accept InterpretPromptRequest, return InterpretationWithQueryResponse)
+- [X] T020 [US1] Create REST endpoint POST /api/v1/query/{query_id}/execute in src/api/v1/endpoints/interpreter.py (accept ExecuteQueryRequest, return QueryResultResponse)
+- [X] T021 [US1] Create REST endpoint GET /api/v1/query/{query_id} in src/api/v1/endpoints/interpreter.py (return QueryResponse)
+- [ ] T022 [US1] Register interpreter router in main FastAPI application in src/main.py
+- [X] T023 [US1] Implement SQL validation before execution in query_executor.py using validator.py (block forbidden commands, log to audit_log if blocked)
+- [X] T024 [US1] Implement result limiting (default 100, max 1000) and is_partial flag when results exceed limit in src/services/interpreter/query_executor.py
 
 **Checkpoint**: User Story 1 complete - QA testers can submit natural language prompts via REST API and receive SQL query results
 

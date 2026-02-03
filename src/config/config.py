@@ -67,6 +67,48 @@ class Settings(BaseSettings):
         description="MongoDB connection URI for PROD environment",
     )
 
+    # OpenAI / LLM Configuration
+    openai_api_key: str = Field(
+        default="",
+        description="OpenAI API key for LLM interpreter",
+    )
+    openai_model: str = Field(
+        default="gpt-4o",
+        description="OpenAI model to use for interpretation",
+    )
+    openai_timeout: int = Field(
+        default=15,
+        ge=5,
+        le=60,
+        description="Timeout in seconds for OpenAI API calls",
+    )
+    openai_max_retries: int = Field(
+        default=3,
+        ge=1,
+        le=10,
+        description="Maximum retries for OpenAI API calls",
+    )
+    openai_temperature: float = Field(
+        default=0.3,
+        ge=0.0,
+        le=2.0,
+        description="Temperature for LLM responses (lower = more deterministic)",
+    )
+
+    # Query Interpreter Configuration
+    query_result_limit_default: int = Field(
+        default=100,
+        ge=1,
+        le=1000,
+        description="Default limit for query results",
+    )
+    query_result_limit_max: int = Field(
+        default=1000,
+        ge=100,
+        le=10000,
+        description="Maximum limit for query results",
+    )
+
     @field_validator("debug", mode="after")
     @classmethod
     def validate_debug_production(cls, v: bool, info: Any) -> bool:
