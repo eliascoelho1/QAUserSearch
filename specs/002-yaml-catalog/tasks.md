@@ -26,19 +26,19 @@
 
 ---
 
-## Phase 1: Setup (Shared Infrastructure)
+## Phase 1: Setup (Shared Infrastructure) ✅ COMPLETED
 
 **Purpose**: Inicialização do projeto e estrutura básica para catálogo YAML
 
-- [ ] T001 Adicionar dependência jsonschema ao pyproject.toml com `uv add jsonschema`
-- [ ] T002 [P] Adicionar dependência dev types-jsonschema com `uv add --dev types-jsonschema`
-- [ ] T003 [P] Criar estrutura de diretórios catalog/schema/ e catalog/sources/ na raiz do repositório
-- [ ] T004 [P] Copiar JSON Schema de contracts/source.schema.json para catalog/schema/source.schema.json
-- [ ] T005 Adicionar configurações CATALOG_PATH e CATALOG_CACHE_TTL_SECONDS em src/config.py
+- [x] T001 Adicionar dependência jsonschema ao pyproject.toml com `uv add jsonschema`
+- [x] T002 [P] Adicionar dependência dev types-jsonschema com `uv add --dev types-jsonschema`
+- [x] T003 [P] Criar estrutura de diretórios catalog/schema/ e catalog/sources/ na raiz do repositório
+- [x] T004 [P] Copiar JSON Schema de contracts/source.schema.json para catalog/schema/source.schema.json
+- [x] T005 Adicionar configurações CATALOG_PATH e CATALOG_CACHE_TTL_SECONDS em src/config.py
 
 ---
 
-## Phase 2: Foundational (Blocking Prerequisites)
+## Phase 2: Foundational (Blocking Prerequisites) ✅ COMPLETED
 
 **Purpose**: Core infrastructure que DEVE estar completa antes de QUALQUER user story ser implementada
 
@@ -46,28 +46,28 @@
 
 ### Schemas e Modelos Base
 
-- [ ] T006 [P] Criar enum EnrichmentStatus em src/schemas/enums.py (not_enriched, pending_enrichment, enriched)
-- [ ] T007 [P] Criar schemas ColumnMetadataYaml e SourceMetadataYaml em src/schemas/catalog_yaml.py com métodos to_yaml_dict() e from_yaml_dict()
-- [ ] T008 [P] Criar schemas IndexEntry e CatalogIndex em src/schemas/catalog_yaml.py para o índice global
-- [ ] T009 Criar dataclass CacheEntry[T] em src/repositories/catalog/cache.py para gerenciamento de cache
+- [x] T006 [P] Criar enum EnrichmentStatus em src/schemas/enums.py (not_enriched, pending_enrichment, enriched) - já existia
+- [x] T007 [P] Criar schemas ColumnMetadataYaml e SourceMetadataYaml em src/schemas/catalog_yaml.py com métodos to_yaml_dict() e from_yaml_dict()
+- [x] T008 [P] Criar schemas IndexEntry e CatalogIndex em src/schemas/catalog_yaml.py para o índice global
+- [x] T009 Criar dataclass CacheEntry[T] em src/repositories/catalog/cache.py para gerenciamento de cache
 
 ### Cache e Protocol
 
-- [ ] T010 Implementar AsyncTTLCache com dual-lock pattern (threading.Lock + asyncio.Lock) em src/repositories/catalog/cache.py
-- [ ] T011 Criar CatalogRepositoryProtocol em src/repositories/catalog/protocol.py definindo interface para repositórios de catálogo
+- [x] T010 Implementar AsyncTTLCache com dual-lock pattern (threading.Lock + asyncio.Lock) em src/repositories/catalog/cache.py
+- [x] T011 Criar CatalogRepositoryProtocol em src/repositories/catalog/protocol.py definindo interface para repositórios de catálogo
 
 ### Testes Unitários Foundational
 
-- [ ] T012 [P] Criar testes para ColumnMetadataYaml.to_yaml_dict() e from_yaml_dict() em tests/unit/test_catalog_schemas_yaml.py
-- [ ] T013 [P] Criar testes para SourceMetadataYaml.to_yaml_dict() e from_yaml_dict() em tests/unit/test_catalog_schemas_yaml.py
-- [ ] T014 [P] Criar testes para CatalogIndex.to_yaml_dict() e from_yaml_dict() em tests/unit/test_catalog_schemas_yaml.py
-- [ ] T015 Criar testes para AsyncTTLCache (get_or_load, TTL expiration, thundering herd prevention) em tests/unit/test_async_ttl_cache.py
+- [x] T012 [P] Criar testes para ColumnMetadataYaml.to_yaml_dict() e from_yaml_dict() em tests/unit/test_catalog_schemas_yaml.py
+- [x] T013 [P] Criar testes para SourceMetadataYaml.to_yaml_dict() e from_yaml_dict() em tests/unit/test_catalog_schemas_yaml.py
+- [x] T014 [P] Criar testes para CatalogIndex.to_yaml_dict() e from_yaml_dict() em tests/unit/test_catalog_schemas_yaml.py
+- [x] T015 Criar testes para AsyncTTLCache (get_or_load, TTL expiration, thundering herd prevention) em tests/unit/test_async_ttl_cache.py
 
-**Checkpoint**: Foundation ready - implementação de user stories pode começar
+**Checkpoint**: Foundation ready - implementação de user stories pode começar ✅
 
 ---
 
-## Phase 3: User Story 1 - Consulta de Catálogo via API (Priority: P1) 🎯 MVP
+## Phase 3: User Story 1 - Consulta de Catálogo via API (Priority: P1) 🎯 MVP ✅ COMPLETED
 
 **Goal**: Permitir que a aplicação QAUserSearch consulte o catálogo de metadados de fontes externas via API REST, lendo de arquivos YAML
 
@@ -77,32 +77,34 @@
 
 > **NOTE: Write these tests FIRST, ensure they FAIL before implementation**
 
-- [ ] T016 [P] [US1] Criar testes unitários para CatalogFileRepository.get_source_by_id() em tests/unit/test_catalog_file_repository.py
-- [ ] T017 [P] [US1] Criar testes unitários para CatalogFileRepository.list_sources() em tests/unit/test_catalog_file_repository.py
-- [ ] T018 [P] [US1] Criar testes unitários para CatalogFileRepository.count_sources() em tests/unit/test_catalog_file_repository.py
+- [x] T016 [P] [US1] Criar testes unitários para CatalogFileRepository.get_source_by_id() em tests/unit/test_catalog_file_repository.py
+- [x] T017 [P] [US1] Criar testes unitários para CatalogFileRepository.list_sources() em tests/unit/test_catalog_file_repository.py
+- [x] T018 [P] [US1] Criar testes unitários para CatalogFileRepository.count_sources() em tests/unit/test_catalog_file_repository.py
 - [ ] T019 [P] [US1] Criar testes de contrato para GET /api/v1/catalog/sources em tests/contract/test_catalog_api_contract.py
 - [ ] T020 [P] [US1] Criar testes de contrato para GET /api/v1/catalog/sources/{source_id} em tests/contract/test_catalog_api_contract.py
 - [ ] T021 [P] [US1] Criar testes de contrato para GET /api/v1/catalog/sources/{source_id}/columns em tests/contract/test_catalog_api_contract.py
 
 ### Implementação para User Story 1
 
-- [ ] T022 [US1] Implementar CatalogFileRepository com cache em src/repositories/catalog/file_repository.py
-- [ ] T023 [US1] Implementar método _load_index() para carregar catalog/catalog.yaml em src/repositories/catalog/file_repository.py
-- [ ] T024 [US1] Implementar método _load_source() para carregar arquivos YAML individuais em src/repositories/catalog/file_repository.py
-- [ ] T025 [US1] Implementar get_source_by_id() e get_source_by_identity() em src/repositories/catalog/file_repository.py
-- [ ] T026 [US1] Implementar list_sources() com suporte a filtro por db_name em src/repositories/catalog/file_repository.py
-- [ ] T027 [US1] Implementar count_sources() em src/repositories/catalog/file_repository.py
-- [ ] T028 [US1] Criar factory get_catalog_repository() em src/dependencies/catalog.py retornando CatalogFileRepository
-- [ ] T029 [US1] Atualizar exports em src/repositories/catalog/__init__.py para incluir novas classes
-- [ ] T030 [US1] Modificar endpoint GET /catalog/sources em src/api/v1/catalog.py para usar CatalogFileRepository
-- [ ] T031 [US1] Modificar endpoint GET /catalog/sources/{source_id} em src/api/v1/catalog.py para usar CatalogFileRepository
-- [ ] T032 [US1] Implementar endpoint GET /catalog/sources/{source_id}/columns em src/api/v1/catalog.py com filtros
-- [ ] T033 [US1] Remover endpoint DELETE /catalog/sources/{source_id} em src/api/v1/catalog.py
-- [ ] T034 [US1] Adicionar tratamento de erro 404 quando source não encontrada em src/api/v1/catalog.py
-- [ ] T035 [US1] Adicionar tratamento de erro 500 quando YAML corrompido em src/api/v1/catalog.py
-- [ ] T036 [US1] Adicionar logging estruturado para operações de catálogo em src/api/v1/catalog.py
+- [x] T022 [US1] Implementar CatalogFileRepository com cache em src/repositories/catalog/file_repository.py
+- [x] T023 [US1] Implementar método _load_index() para carregar catalog/catalog.yaml em src/repositories/catalog/file_repository.py
+- [x] T024 [US1] Implementar método _load_source() para carregar arquivos YAML individuais em src/repositories/catalog/file_repository.py
+- [x] T025 [US1] Implementar get_source_by_id() e get_source_by_identity() em src/repositories/catalog/file_repository.py
+- [x] T026 [US1] Implementar list_sources() com suporte a filtro por db_name em src/repositories/catalog/file_repository.py
+- [x] T027 [US1] Implementar count_sources() em src/repositories/catalog/file_repository.py
+- [x] T028 [US1] Criar factory get_catalog_repository() em src/dependencies/catalog.py retornando CatalogFileRepository
+- [x] T029 [US1] Atualizar exports em src/repositories/catalog/__init__.py para incluir novas classes
+- [x] T030 [US1] Modificar endpoint GET /catalog/sources em src/api/v1/catalog.py para usar CatalogFileRepository
+- [x] T031 [US1] Modificar endpoint GET /catalog/sources/{source_id} em src/api/v1/catalog.py para usar CatalogFileRepository
+- [x] T032 [US1] Implementar endpoint GET /catalog/sources/{source_id}/columns em src/api/v1/catalog.py com filtros
+- [x] T033 [US1] Remover endpoint DELETE /catalog/sources/{source_id} em src/api/v1/catalog.py
+- [x] T034 [US1] Adicionar tratamento de erro 404 quando source não encontrada em src/api/v1/catalog.py
+- [x] T035 [US1] Adicionar tratamento de erro 500 quando YAML corrompido em src/api/v1/catalog.py
+- [x] T036 [US1] Adicionar logging estruturado para operações de catálogo em src/api/v1/catalog.py
 
-**Checkpoint**: User Story 1 deve estar funcional e testável independentemente. API de consulta funciona sem PostgreSQL.
+**Checkpoint**: User Story 1 deve estar funcional e testável independentemente. API de consulta funciona sem PostgreSQL. ✅
+
+> **Note**: Testes de contrato (T019-T021) pendentes - podem ser adicionados posteriormente.
 
 ---
 
