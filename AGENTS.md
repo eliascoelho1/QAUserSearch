@@ -201,6 +201,8 @@ class InferredType(str, Enum):
 ## Active Technologies
 - Python 3.11 + FastAPI, CrewAI (1.9.3), Pydantic, SQLAlchemy async (001-llm-query-interpreter)
 - PostgreSQL (catálogo de metadados), MongoDB (dados de QA externos) (001-llm-query-interpreter)
+- Python 3.11+ + FastAPI 0.115+, Pydantic 2.10+, PyYAML 6.0+, structlog 24.4+ (002-yaml-catalog)
+- YAML files (catalog/sources/{db_name}/{table_name}.yaml) + JSON Schema para validação (002-yaml-catalog)
 
 ## Recent Changes
 - 001-llm-query-interpreter: Added Python 3.11 + FastAPI, CrewAI (1.9.3), Pydantic, SQLAlchemy async
