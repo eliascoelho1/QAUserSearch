@@ -82,13 +82,13 @@
 
 ### Implementation for User Story 2
 
-- [ ] T025 [US2] Create WebSocket endpoint /ws/query/interpret in src/api/v1/websocket/interpreter_ws.py (accept WebSocket connection, handle interpret messages)
-- [ ] T026 [US2] Implement streaming status updates via WebSocket in src/api/v1/websocket/interpreter_ws.py (send WSStatusMessage for interpreting, validating, refining, ready states)
-- [ ] T027 [US2] Implement chunk streaming for LLM processing feedback in src/api/v1/websocket/interpreter_ws.py (send WSChunkMessage with partial content and agent name)
-- [ ] T028 [US2] Send WSInterpretationMessage with summary and entities/filters before query execution in src/api/v1/websocket/interpreter_ws.py
-- [ ] T029 [US2] Implement natural_explanation field generation in interpreter agent (human-readable summary of interpretation criteria)
-- [ ] T030 [US2] Add confidence score display in interpretation response (0.0-1.0 range indicating interpretation certainty)
-- [ ] T031 [US2] Implement session context preservation for prompt refinement (allow user to modify prompt without losing previous context)
+- [X] T025 [US2] Create WebSocket endpoint /ws/query/interpret in src/api/v1/websocket/interpreter_ws.py (accept WebSocket connection, handle interpret messages)
+- [X] T026 [US2] Implement streaming status updates via WebSocket in src/api/v1/websocket/interpreter_ws.py (send WSStatusMessage for interpreting, validating, refining, ready states)
+- [X] T027 [US2] Implement chunk streaming for LLM processing feedback in src/api/v1/websocket/interpreter_ws.py (send WSChunkMessage with partial content and agent name)
+- [X] T028 [US2] Send WSInterpretationMessage with summary and entities/filters before query execution in src/api/v1/websocket/interpreter_ws.py
+- [X] T029 [US2] Implement natural_explanation field generation in interpreter agent (human-readable summary of interpretation criteria)
+- [X] T030 [US2] Add confidence score display in interpretation response (0.0-1.0 range indicating interpretation certainty)
+- [X] T031 [US2] Implement session context preservation for prompt refinement (allow user to modify prompt without losing previous context)
 
 **Checkpoint**: User Story 2 complete - QA testers can see real-time interpretation feedback via WebSocket before query execution
 

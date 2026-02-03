@@ -16,12 +16,23 @@ interpret_task:
     2. Extraia os filtros mencionados (ex: "ativo", "vencido", "últimos 30 dias")
     3. Mapeie termos de negócio para valores técnicos usando os "Valores Possíveis" do catálogo
     4. Identifique ambiguidades ou termos não reconhecidos
-    5. Forneça uma explicação em linguagem natural da interpretação
+    5. Forneça uma explicação em linguagem natural da interpretação (IMPORTANTE!)
     
     **Exemplos de Mapeamento:**
     - "cartão bloqueado" → card_status = 'blocked'
     - "fatura vencida" → status = 'overdue'
     - "últimos 30 dias" → timestamp >= NOW() - INTERVAL '30 days'
+    
+    **IMPORTANTE - Explicação em Linguagem Natural (natural_explanation):**
+    Crie um resumo claro e amigável em português que explique EXATAMENTE o que será buscado.
+    O formato deve ser: "Buscarei [entidade] onde: [condição1] E [condição2] E ..."
+    
+    Exemplos de boas explicações:
+    - "Buscarei usuários onde: cartão de crédito = ativo E tipo = crédito"
+    - "Buscarei faturas onde: status = vencida E data de vencimento < 30 dias atrás"
+    - "Buscarei contas onde: status = bloqueado E motivo = fraude"
+    
+    Esta explicação será mostrada ao usuário para confirmação antes da execução.
     
     Retorne a interpretação estruturada conforme o schema esperado.
   expected_output: |
@@ -29,8 +40,13 @@ interpret_task:
     - target_tables: lista de tabelas identificadas (ex: ["credit.invoice"])
     - filters: lista de filtros com coluna, operador e valor
     - select_columns: colunas a selecionar (use ["*"] se não especificado)
-    - natural_explanation: explicação em português do que será buscado
+    - natural_explanation: OBRIGATÓRIO - resumo em português claro para o usuário
+      Formato: "Buscarei [entidade] onde: [lista de critérios em linguagem natural]"
     - confidence: nível de confiança (0.0 a 1.0)
+      - 0.9+ : interpretação muito clara, todos os termos reconhecidos
+      - 0.7-0.9: boa interpretação, alguns termos podem ter múltiplos significados
+      - 0.5-0.7: interpretação parcial, alguns termos não reconhecidos
+      - <0.5: interpretação incerta, muitas ambiguidades
     - ambiguities: lista de termos ambíguos ou não reconhecidos
   agent: interpreter
 

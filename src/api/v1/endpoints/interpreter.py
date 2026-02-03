@@ -83,9 +83,9 @@ async def interpret_prompt(
                     "Use termos relacionados aos dados disponíveis no catálogo",
                 ],
             },
-        )
+        ) from e
 
-    except TimeoutError:
+    except TimeoutError as e:
         raise HTTPException(
             status_code=503,
             detail={
@@ -97,7 +97,7 @@ async def interpret_prompt(
                     "Tente novamente em alguns segundos",
                 ],
             },
-        )
+        ) from e
 
     except Exception as e:
         raise HTTPException(
@@ -110,7 +110,7 @@ async def interpret_prompt(
                     "Verifique se os termos usados existem no catálogo",
                 ],
             },
-        )
+        ) from e
 
 
 @router.post(
@@ -174,7 +174,7 @@ async def execute_query(
                 "code": "EXECUTION_ERROR",
                 "message": str(e),
             },
-        )
+        ) from e
 
     except RuntimeError as e:
         raise HTTPException(
@@ -187,7 +187,7 @@ async def execute_query(
                     "Tente novamente em alguns segundos",
                 ],
             },
-        )
+        ) from e
 
 
 @router.get(

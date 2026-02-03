@@ -101,7 +101,7 @@ class QueryExecutor:
 
         except Exception as e:
             log.error("Query execution failed", error=str(e))
-            raise RuntimeError(f"Query execution failed: {str(e)}")
+            raise RuntimeError(f"Query execution failed: {str(e)}") from e
 
     def _get_effective_limit(self, requested_limit: int | None) -> int:
         """Get the effective limit for a query.
