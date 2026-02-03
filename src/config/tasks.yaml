@@ -52,10 +52,9 @@ interpret_task:
 
 validate_task:
   description: |
-    Valide a query interpretada pelo agente anterior quanto à segurança e conformidade:
+    Valide a query interpretada pelo agente anterior quanto à segurança e conformidade.
     
-    **Interpretação Recebida:**
-    {interpretation}
+    A interpretação da task anterior está disponível no contexto.
     
     **Catálogo de Dados:**
     {catalog_context}
@@ -82,13 +81,9 @@ validate_task:
 
 refine_task:
   description: |
-    Refine e otimize a query SQL final baseada na interpretação validada:
+    Refine e otimize a query SQL final baseada na interpretação validada.
     
-    **Interpretação Validada:**
-    {interpretation}
-    
-    **Resultado da Validação:**
-    {validation}
+    A interpretação e o resultado da validação das tasks anteriores estão disponíveis no contexto.
     
     **Regras de Refinamento:**
     1. Construa a query SQL SELECT completa
