@@ -1,5 +1,11 @@
 """FastAPI application entry point."""
 
+# Configure truststore early to use macOS keychain for SSL verification
+# This is needed for corporate proxy environments (e.g., Zscaler)
+import truststore
+
+truststore.inject_into_ssl()
+
 import time
 from collections.abc import AsyncGenerator
 from contextlib import asynccontextmanager
