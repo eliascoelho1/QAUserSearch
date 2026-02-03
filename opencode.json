@@ -6,30 +6,6 @@
             "enabled": true
         }
     },
-    "provider": {
-        "github-models": {
-            "name": "GitHub Models",
-            "models": {
-                "claude-sonnet-4-5": {
-                    "name": "Claude Sonnet 4.5"
-                },
-                "claude-opus-4-5": {
-                    "name": "Claude Opus 4.5"
-                }
-            }
-        },
-        "github-copilot": {
-            "name": "GitHub Copilot",
-            "models": {
-                "claude-sonnet-4-5": {
-                    "name": "Claude Sonnet 4.5"
-                },
-                "claude-opus-4-5": {
-                    "name": "Claude Opus 4.5"
-                }
-            }
-        }
-    },
     "permission": {
         "bash": {
             "./specify *": "allow",
@@ -107,30 +83,6 @@
                 ".py",
                 ".pyi"
             ]
-        }
-    },
-    "agent": {
-        "plan": {
-            "model": "github-copilot/claude-opus-4-5"
-        },
-        "build": {
-            "model": "github-copilot/claude-opus-4-5"
-        },
-        "explore": {
-            "description": "Fast codebase exploration and file search",
-            "mode": "subagent",
-            "model": "github-copilot/claude-sonnet-4-5",
-            "temperature": 0.1,
-            "maxSteps": 20,
-            "tools": {
-                "read": true,
-                "write": false,
-                "edit": false,
-                "bash": false,
-                "grep": true,
-                "glob": true,
-                "list": true
-            }
         }
     },
     "lsp": {
