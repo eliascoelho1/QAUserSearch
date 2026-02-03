@@ -6,7 +6,7 @@ This module contains:
 - Enums for filter operators and interpretation status
 """
 
-from datetime import datetime
+from datetime import UTC, datetime
 from enum import Enum
 from typing import Any
 from uuid import UUID, uuid4
@@ -83,7 +83,7 @@ class InterpretedQuery(BaseModel):
         description="Tabelas identificadas no formato db_name.table_name",
     )
     filters: list[QueryFilter] = Field(
-        default_factory=list,
+        default_factory=list[QueryFilter],
         description="Filtros extraídos do prompt",
     )
     select_columns: list[str] = Field(
@@ -228,10 +228,10 @@ class InterpretationResponse(BaseModel):
         ..., description="Resumo da interpretação em linguagem natural"
     )
     entities: list[EntityResponse] = Field(
-        default_factory=list, description="Entidades identificadas"
+        default_factory=list[EntityResponse], description="Entidades identificadas"
     )
     filters: list[FilterResponse] = Field(
-        default_factory=list, description="Filtros extraídos"
+        default_factory=list[FilterResponse], description="Filtros extraídos"
     )
     confidence: float = Field(..., ge=0.0, le=1.0, description="Confiança (0-1)")
 
@@ -284,6 +284,11 @@ class ErrorResponse(BaseModel):
 # =============================================================================
 
 
+def _utc_now() -> datetime:
+    """Return current UTC time with timezone info."""
+    return datetime.now(UTC)
+
+
 class StoredInterpretation(BaseModel):
     """Internal model for storing interpretations in memory/cache."""
 
@@ -293,7 +298,7 @@ class StoredInterpretation(BaseModel):
     validation: ValidationResult
     refined_query: RefinedQuery | None = None
     status: InterpretationStatus = InterpretationStatus.PENDING
-    created_at: datetime = Field(default_factory=datetime.utcnow)
+    created_at: datetime = Field(default_factory=_utc_now)
 
 
 class StoredQuery(BaseModel):
@@ -304,5 +309,5 @@ class StoredQuery(BaseModel):
     sql: str
     is_valid: bool
     validation_errors: list[str] = Field(default_factory=list)
-    created_at: datetime = Field(default_factory=datetime.utcnow)
+    created_at: datetime = Field(default_factory=_utc_now)
     execution_limit: int = 100

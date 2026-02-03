@@ -123,9 +123,9 @@ async def interpret_prompt(
 )
 async def execute_query(
     query_id: UUID,
+    service: Annotated[InterpreterService, Depends(get_interpreter_service)],
+    executor: Annotated[QueryExecutor, Depends(get_query_executor)],
     request: ExecuteQueryRequest | None = None,
-    service: InterpreterService = Depends(get_interpreter_service),
-    executor: QueryExecutor = Depends(get_query_executor),
 ) -> QueryResultResponse:
     """Execute a previously generated query.
 

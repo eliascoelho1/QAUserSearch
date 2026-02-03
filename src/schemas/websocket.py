@@ -4,7 +4,7 @@ This module defines the message types for WebSocket streaming
 during the interpretation process.
 """
 
-from datetime import datetime
+from datetime import UTC, datetime
 from typing import Any, Literal
 
 from pydantic import BaseModel, Field
@@ -12,12 +12,17 @@ from pydantic import BaseModel, Field
 from src.schemas.interpreter import ErrorResponse, InterpretationResponse, QueryResponse
 
 
+def _utc_now() -> datetime:
+    """Return current UTC time with timezone info."""
+    return datetime.now(UTC)
+
+
 class WSMessage(BaseModel):
     """Base WebSocket message."""
 
     type: str = Field(..., description="Message type identifier")
     data: dict[str, Any] = Field(default_factory=dict, description="Message payload")
-    timestamp: datetime = Field(default_factory=datetime.now)
+    timestamp: datetime = Field(default_factory=_utc_now)
 
 
 class WSStatusMessage(BaseModel):
@@ -28,7 +33,7 @@ class WSStatusMessage(BaseModel):
         ...,
         description="Status data with 'status' and 'message' keys",
     )
-    timestamp: datetime = Field(default_factory=datetime.now)
+    timestamp: datetime = Field(default_factory=_utc_now)
 
     @classmethod
     def create(cls, status: str, message: str) -> "WSStatusMessage":
@@ -44,7 +49,7 @@ class WSChunkMessage(BaseModel):
         ...,
         description="Chunk data with 'content' and 'agent' keys",
     )
-    timestamp: datetime = Field(default_factory=datetime.now)
+    timestamp: datetime = Field(default_factory=_utc_now)
 
     @classmethod
     def create(cls, content: str, agent: str) -> "WSChunkMessage":
@@ -57,7 +62,7 @@ class WSInterpretationMessage(BaseModel):
 
     type: Literal["interpretation"] = "interpretation"
     data: InterpretationResponse = Field(..., description="Interpretation result")
-    timestamp: datetime = Field(default_factory=datetime.now)
+    timestamp: datetime = Field(default_factory=_utc_now)
 
 
 class WSQueryMessage(BaseModel):
@@ -65,7 +70,7 @@ class WSQueryMessage(BaseModel):
 
     type: Literal["query"] = "query"
     data: QueryResponse = Field(..., description="Generated query")
-    timestamp: datetime = Field(default_factory=datetime.now)
+    timestamp: datetime = Field(default_factory=_utc_now)
 
 
 class WSErrorMessage(BaseModel):
@@ -73,7 +78,7 @@ class WSErrorMessage(BaseModel):
 
     type: Literal["error"] = "error"
     data: ErrorResponse = Field(..., description="Error details")
-    timestamp: datetime = Field(default_factory=datetime.now)
+    timestamp: datetime = Field(default_factory=_utc_now)
 
     @classmethod
     def create(
