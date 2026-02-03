@@ -184,10 +184,10 @@ class InterpreterService:
             # Generate suggestions for unrecognized terms
             all_suggestions: list[str] = []
             for table in unrecognized_tables:
-                result = await self._suggestion_service.generate_suggestions_for_term(
-                    table
+                suggestion_result = (
+                    await self._suggestion_service.generate_suggestions_for_term(table)
                 )
-                all_suggestions.extend(result.suggestions)
+                all_suggestions.extend(suggestion_result.suggestions)
 
             raise InterpretationException(
                 InterpretationError(
@@ -212,10 +212,12 @@ class InterpreterService:
             )
             all_suggestions = []
             for col_info in unrecognized_columns:
-                result = await self._suggestion_service.generate_suggestions_for_term(
-                    col_info["column"]
+                suggestion_result = (
+                    await self._suggestion_service.generate_suggestions_for_term(
+                        col_info["column"]
+                    )
                 )
-                all_suggestions.extend(result.suggestions)
+                all_suggestions.extend(suggestion_result.suggestions)
 
             raise InterpretationException(
                 InterpretationError(
