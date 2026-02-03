@@ -6,15 +6,15 @@ import truststore
 
 truststore.inject_into_ssl()
 
-import time
-from collections.abc import AsyncGenerator
-from contextlib import asynccontextmanager
+import time  # noqa: E402
+from collections.abc import AsyncGenerator  # noqa: E402
+from contextlib import asynccontextmanager  # noqa: E402
 
-from fastapi import FastAPI
+from fastapi import FastAPI  # noqa: E402
 
-from src.config import get_settings
-from src.core.database import close_db_manager, init_db_manager
-from src.core.logging import get_logger, setup_logging
+from src.config import get_settings  # noqa: E402
+from src.core.database import close_db_manager, init_db_manager  # noqa: E402
+from src.core.logging import get_logger, setup_logging  # noqa: E402
 
 # Application start time for uptime calculation
 _start_time: float = 0.0
