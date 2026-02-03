@@ -109,6 +109,18 @@ class Settings(BaseSettings):
         description="Maximum limit for query results",
     )
 
+    # Catalog YAML Storage
+    catalog_path: str = Field(
+        default="catalog",
+        description="Path to catalog YAML files directory",
+    )
+    catalog_cache_ttl_seconds: int = Field(
+        default=60,
+        ge=1,
+        le=3600,
+        description="TTL for catalog cache in seconds",
+    )
+
     @field_validator("debug", mode="after")
     @classmethod
     def validate_debug_production(cls, v: bool, info: Any) -> bool:

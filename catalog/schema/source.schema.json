@@ -1,0 +1,107 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://qausersearch/schemas/source.schema.json",
+  "title": "Source Metadata Schema",
+  "description": "JSON Schema for validating catalog source YAML files",
+  "type": "object",
+  "required": ["db_name", "table_name", "document_count", "extracted_at", "columns"],
+  "additionalProperties": false,
+  "properties": {
+    "db_name": {
+      "type": "string",
+      "minLength": 1,
+      "pattern": "^[a-zA-Z_][a-zA-Z0-9_]*$",
+      "description": "Nome do banco de dados"
+    },
+    "table_name": {
+      "type": "string",
+      "minLength": 1,
+      "pattern": "^[a-zA-Z_][a-zA-Z0-9_]*$",
+      "description": "Nome da tabela/collection"
+    },
+    "document_count": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "Quantidade de documentos amostrados"
+    },
+    "extracted_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Timestamp da extração (ISO 8601)"
+    },
+    "updated_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Timestamp da última atualização (ISO 8601)"
+    },
+    "columns": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "$ref": "#/$defs/column"
+      },
+      "description": "Lista de colunas/campos"
+    }
+  },
+  "$defs": {
+    "column": {
+      "type": "object",
+      "required": ["path", "name", "type", "required", "nullable", "enumerable", "presence_ratio", "sample_values"],
+      "additionalProperties": false,
+      "properties": {
+        "path": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Caminho completo do campo (dot notation)"
+        },
+        "name": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Nome do campo (última parte do path)"
+        },
+        "type": {
+          "type": "string",
+          "enum": ["string", "integer", "number", "boolean", "datetime", "objectid", "array", "object", "null", "unknown"],
+          "description": "Tipo inferido do campo"
+        },
+        "required": {
+          "type": "boolean",
+          "description": "Se o campo está presente em >= 95% dos documentos"
+        },
+        "nullable": {
+          "type": "boolean",
+          "description": "Se o campo pode ser null"
+        },
+        "enumerable": {
+          "type": "boolean",
+          "description": "Se tem cardinalidade baixa (< 50 valores únicos)"
+        },
+        "presence_ratio": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1,
+          "description": "Percentual de presença (0.0 a 1.0)"
+        },
+        "sample_values": {
+          "type": "array",
+          "maxItems": 10,
+          "description": "Valores de exemplo (até 10)"
+        },
+        "unique_values": {
+          "type": "array",
+          "description": "Valores únicos (se enumerable)"
+        },
+        "description": {
+          "type": ["string", "null"],
+          "description": "Descrição manual do campo"
+        },
+        "enrichment_status": {
+          "type": "string",
+          "enum": ["not_enriched", "pending_enrichment", "enriched"],
+          "default": "not_enriched",
+          "description": "Status de enriquecimento LLM"
+        }
+      }
+    }
+  }
+}
