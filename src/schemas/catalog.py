@@ -8,23 +8,6 @@ from pydantic import BaseModel, ConfigDict, Field
 from src.schemas.enums import EnrichmentStatus, InferredType
 
 
-# Request schemas
-class ExtractionRequest(BaseModel):
-    """Request to extract schema from an external source."""
-
-    model_config = ConfigDict(strict=True)
-
-    db_name: str = Field(
-        ..., min_length=1, max_length=100, description="External database name"
-    )
-    table_name: str = Field(
-        ..., min_length=1, max_length=100, description="Table/collection name"
-    )
-    sample_size: int = Field(
-        default=500, ge=1, le=10000, description="Number of documents to sample"
-    )
-
-
 # Response schemas
 class SourceSummary(BaseModel):
     """Summary of an external source for list views."""
@@ -99,58 +82,6 @@ class SourceDetailResponse(BaseModel):
     updated_at: datetime
     columns: list[ColumnDetail]
     stats: SourceStats
-
-
-class ExtractionTaskResponse(BaseModel):
-    """Response for extraction task creation."""
-
-    task_id: str
-    status: str = "pending"
-    message: str = "Extração iniciada com sucesso"
-    created_at: datetime
-
-
-class ExtractionProgress(BaseModel):
-    """Progress information for extraction."""
-
-    current: int
-    total: int
-
-
-class ExtractionResult(BaseModel):
-    """Result of a completed extraction."""
-
-    source_id: int
-    columns_extracted: int
-    enumerable_columns: int
-
-
-class ExtractionStatusResponse(BaseModel):
-    """Status of an extraction task."""
-
-    task_id: str
-    status: str
-    progress: ExtractionProgress | None = None
-    result: ExtractionResult | None = None
-    error: str | None = None
-    started_at: datetime | None = None
-    completed_at: datetime | None = None
-
-
-class BatchExtractionTask(BaseModel):
-    """Individual task in a batch extraction."""
-
-    task_id: str
-    db_name: str
-    table_name: str
-
-
-class BatchExtractionResponse(BaseModel):
-    """Response for batch extraction."""
-
-    batch_id: str
-    tasks: list[BatchExtractionTask]
-    total_tasks: int
 
 
 class ErrorResponse(BaseModel):
