@@ -57,6 +57,21 @@ uv run pytest tests/unit/         # Unit tests only
 uv run pytest --cov=src           # With coverage
 ```
 
+### Catalog Extraction CLI
+
+Extract schema metadata from external data sources:
+
+```bash
+# Extract from a single source
+uv run qa-catalog extract credit invoice --sample-size 500
+
+# Extract from all known sources
+uv run qa-catalog extract-all
+
+# List available known sources
+uv run qa-catalog list-known
+```
+
 ### Code Quality
 
 ```bash
@@ -84,6 +99,7 @@ docker compose -f docker/docker-compose.yml down
 ```
 ├── src/
 │   ├── api/v1/          # API endpoints
+│   ├── cli/             # CLI commands
 │   ├── core/            # Cross-cutting concerns (logging, database)
 │   ├── models/          # SQLAlchemy models
 │   ├── schemas/         # Pydantic schemas
