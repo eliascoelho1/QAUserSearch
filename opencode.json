@@ -11,7 +11,7 @@
             "./specify *": "allow",
             "./specify*": "allow",
             "git *": "allow",
-            "git commit *": "deny",
+            "git commit *": "allow",
             "git push *": "deny",
             "sudo *": "deny",
             "gh pr *": "allow",
