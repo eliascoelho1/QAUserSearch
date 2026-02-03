@@ -66,7 +66,7 @@
 - [X] T019 [US1] Create REST endpoint POST /api/v1/query/interpret in src/api/v1/endpoints/interpreter.py (accept InterpretPromptRequest, return InterpretationWithQueryResponse)
 - [X] T020 [US1] Create REST endpoint POST /api/v1/query/{query_id}/execute in src/api/v1/endpoints/interpreter.py (accept ExecuteQueryRequest, return QueryResultResponse)
 - [X] T021 [US1] Create REST endpoint GET /api/v1/query/{query_id} in src/api/v1/endpoints/interpreter.py (return QueryResponse)
-- [ ] T022 [US1] Register interpreter router in main FastAPI application in src/main.py
+- [X] T022 [US1] Register interpreter router in main FastAPI application in src/main.py
 - [X] T023 [US1] Implement SQL validation before execution in query_executor.py using validator.py (block forbidden commands, log to audit_log if blocked)
 - [X] T024 [US1] Implement result limiting (default 100, max 1000) and is_partial flag when results exceed limit in src/services/interpreter/query_executor.py
 

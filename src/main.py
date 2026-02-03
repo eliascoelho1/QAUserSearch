@@ -68,12 +68,14 @@ def create_app() -> FastAPI:
 
     # Register routers
     from src.api.v1.catalog import router as catalog_router
+    from src.api.v1.endpoints.interpreter import router as interpreter_router
     from src.api.v1.health import router as health_router
     from src.api.v1.root import router as root_router
 
     app.include_router(root_router)
     app.include_router(health_router)
     app.include_router(catalog_router, prefix="/api/v1")
+    app.include_router(interpreter_router, prefix="/api/v1")
 
     return app
 
