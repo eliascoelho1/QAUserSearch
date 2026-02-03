@@ -11,13 +11,17 @@ from src.core.database import get_db_manager
 from src.schemas.interpreter import (
     ErrorResponse,
     ExecuteQueryRequest,
+    InterpretationStatus,
     InterpretationWithQueryResponse,
     InterpretPromptRequest,
     QueryResponse,
     QueryResultResponse,
 )
-from src.services.interpreter.query_executor import QueryExecutor
-from src.services.interpreter.service import InterpreterService
+from src.services.interpreter.query_executor import QueryExecutionError, QueryExecutor
+from src.services.interpreter.service import (
+    InterpretationException,
+    InterpreterService,
+)
 
 router = APIRouter(prefix="/query", tags=["query-interpreter"])
 
@@ -47,7 +51,7 @@ async def get_query_executor(
     "/interpret",
     response_model=InterpretationWithQueryResponse,
     responses={
-        400: {"model": ErrorResponse, "description": "Invalid prompt"},
+        400: {"model": ErrorResponse, "description": "Invalid prompt or blocked query"},
         422: {"description": "Validation error"},
         503: {"model": ErrorResponse, "description": "LLM service unavailable"},
     },
@@ -69,7 +73,37 @@ async def interpret_prompt(
     """
     try:
         result = await service.interpret_prompt(request.prompt)
+
+        # Check if the query was blocked (return 200 but with blocked status)
+        if result.status == InterpretationStatus.BLOCKED:
+            # Return the result with blocked status - the client can handle this
+            # The query validation_errors will contain the blocked commands
+            return result
+
         return result
+
+    except InterpretationException as e:
+        # Map error codes to appropriate HTTP status codes
+        status_code_map = {
+            "INVALID_PROMPT": 400,
+            "PROMPT_TOO_LONG": 400,
+            "UNRECOGNIZED_TABLES": 400,
+            "UNRECOGNIZED_COLUMNS": 400,
+            "AMBIGUOUS_PROMPT": 400,
+            "LLM_TIMEOUT": 503,
+            "INTERPRETATION_ERROR": 500,
+        }
+        status_code = status_code_map.get(e.error.code, 500)
+
+        raise HTTPException(
+            status_code=status_code,
+            detail={
+                "code": e.error.code,
+                "message": e.error.message,
+                "details": e.error.details,
+                "suggestions": e.error.suggestions or [],
+            },
+        ) from e
 
     except ValueError as e:
         raise HTTPException(
@@ -154,10 +188,28 @@ async def execute_query(
             detail={
                 "code": "QUERY_BLOCKED",
                 "message": "Esta query foi bloqueada por questões de segurança",
-                "details": {"validation_errors": stored_query.validation_errors},
+                "details": {
+                    "validation_errors": stored_query.validation_errors,
+                    "blocked_commands": [
+                        cmd
+                        for cmd in stored_query.validation_errors
+                        if any(
+                            dangerous in cmd.upper()
+                            for dangerous in [
+                                "DELETE",
+                                "DROP",
+                                "UPDATE",
+                                "INSERT",
+                                "TRUNCATE",
+                                "ALTER",
+                            ]
+                        )
+                    ],
+                },
                 "suggestions": [
                     "Reformule seu pedido para buscar dados em vez de modificá-los",
                     "Use apenas consultas de leitura (SELECT)",
+                    "Não é permitido modificar, deletar ou alterar dados",
                 ],
             },
         )
@@ -166,6 +218,26 @@ async def execute_query(
         limit = request.limit if request else None
         result = await executor.execute_query(stored_query, limit)
         return result
+
+    except QueryExecutionError as e:
+        # Map error codes to appropriate HTTP status codes
+        status_code_map = {
+            "INVALID_QUERY": 400,
+            "SQL_COMMAND_BLOCKED": 400,
+            "EXECUTION_ERROR": 500,
+            "CONNECTION_ERROR": 503,
+        }
+        status_code = status_code_map.get(e.code, 500)
+
+        raise HTTPException(
+            status_code=status_code,
+            detail={
+                "code": e.code,
+                "message": e.message,
+                "details": e.details,
+                "suggestions": e.suggestions or [],
+            },
+        ) from e
 
     except ValueError as e:
         raise HTTPException(

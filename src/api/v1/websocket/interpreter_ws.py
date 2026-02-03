@@ -34,6 +34,7 @@ from src.schemas.websocket import (
 )
 from src.services.interpreter.catalog_context import CatalogContext
 from src.services.interpreter.crew import get_interpreter_crew
+from src.services.interpreter.service import InterpretationException
 from src.services.interpreter.validator import get_sql_validator
 
 logger = structlog.get_logger(__name__)
@@ -130,7 +131,7 @@ class WebSocketInterpreterHandler:
         details: dict[str, Any] | None = None,
         suggestions: list[str] | None = None,
     ) -> None:
-        """Send error message."""
+        """Send error message with suggestions."""
         msg = WSErrorMessage.create(
             code=code,
             message=message,
@@ -138,6 +139,15 @@ class WebSocketInterpreterHandler:
             suggestions=suggestions,
         )
         await self._connection_manager.send_message(self._session_id, msg)
+
+    async def send_interpretation_error(self, error: InterpretationException) -> None:
+        """Send an InterpretationException as an error message."""
+        await self.send_error(
+            code=error.error.code,
+            message=error.error.message,
+            details=error.error.details,
+            suggestions=error.error.suggestions,
+        )
 
     async def process_interpret_request(self, prompt: str) -> None:
         """Process an interpretation request with streaming feedback.
@@ -319,6 +329,15 @@ class WebSocketInterpreterHandler:
                 confidence=crew_output.interpretation.confidence,
             )
 
+        except InterpretationException as e:
+            # Handle known interpretation errors with detailed suggestions
+            log.warning(
+                "Interpretation error",
+                error_code=e.error.code,
+                message=e.error.message,
+            )
+            await self.send_interpretation_error(e)
+
         except TimeoutError:
             log.error("LLM timeout during interpretation")
             await self.send_error(
@@ -327,6 +346,7 @@ class WebSocketInterpreterHandler:
                 suggestions=[
                     "Simplifique seu prompt",
                     "Divida em buscas menores",
+                    "Tente novamente em alguns segundos",
                 ],
             )
 
@@ -338,6 +358,7 @@ class WebSocketInterpreterHandler:
                 suggestions=[
                     "Tente reformular o prompt",
                     "Verifique se os termos usados existem no catálogo",
+                    "Use termos mais simples e diretos",
                 ],
             )
 
@@ -458,11 +479,38 @@ async def websocket_interpret(websocket: WebSocket) -> None:
                     suggestions=["Verifique o formato da mensagem"],
                 )
 
-    except WebSocketDisconnect:
-        log.info("WebSocket client disconnected")
+    except WebSocketDisconnect as e:
+        # Handle graceful disconnection
+        log.info(
+            "WebSocket client disconnected",
+            close_code=getattr(e, "code", None),
+        )
+
+    except Exception as e:
+        # Handle unexpected errors during WebSocket communication
+        log.error(
+            "Unexpected WebSocket error",
+            error=str(e),
+            error_type=type(e).__name__,
+        )
+        # Try to send error message before disconnecting
+        try:
+            handler = WebSocketInterpreterHandler(session_id, websocket)
+            await handler.send_error(
+                code="CONNECTION_ERROR",
+                message="Erro inesperado na conexão WebSocket",
+                suggestions=[
+                    "Tente reconectar",
+                    "Se o problema persistir, recarregue a página",
+                ],
+            )
+        except Exception:
+            # Connection may already be closed
+            pass
 
     finally:
         await connection_manager.disconnect(session_id)
+        log.debug("WebSocket connection cleanup completed")
 
 
 # Export router
