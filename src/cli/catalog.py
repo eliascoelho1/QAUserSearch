@@ -7,12 +7,14 @@ is required for catalog operations.
 
 import asyncio
 import sys
+from pathlib import Path
 from typing import Annotated
 
 import structlog
 import typer
 
 from src.config import get_settings
+from src.services.catalog_validator import CatalogValidator
 from src.services.catalog_yaml_extractor import CatalogYamlExtractor
 
 logger = structlog.get_logger(__name__)
@@ -169,6 +171,129 @@ async def _extract_all(sample_size: int, *, merge: bool = True) -> None:
 
     if error_count > 0:
         sys.exit(1)
+
+
+@app.command()
+def validate(
+    path: Annotated[
+        Path | None,
+        typer.Argument(help="Path to specific YAML file to validate (optional)"),
+    ] = None,
+    verbose: Annotated[
+        bool, typer.Option("--verbose", "-v", help="Show detailed validation output")
+    ] = False,
+) -> None:
+    """Validate catalog YAML files against the JSON Schema.
+
+    If no path is provided, validates all YAML files in the catalog/sources directory.
+    If a path is provided, validates only that specific file.
+
+    Examples:
+        qa-catalog validate                           # Validate all files
+        qa-catalog validate catalog/sources/credit/invoice.yaml  # Validate single file
+        qa-catalog validate -v                        # Verbose output
+    """
+    settings = get_settings()
+
+    try:
+        validator = CatalogValidator(catalog_path=settings.catalog_path)
+    except FileNotFoundError as e:
+        typer.echo(f"Erro: {e}", err=True)
+        sys.exit(1)
+
+    if path is not None:
+        # Validate single file
+        _validate_single_file(validator, path, verbose)
+    else:
+        # Validate all files
+        _validate_all_files(validator, verbose)
+
+
+def _validate_single_file(
+    validator: CatalogValidator, path: Path, verbose: bool
+) -> None:
+    """Validate a single YAML file.
+
+    Args:
+        validator: The CatalogValidator instance.
+        path: Path to the YAML file.
+        verbose: Whether to show detailed output.
+    """
+    log = logger.bind(file=str(path))
+
+    if verbose:
+        typer.echo(f"Validando arquivo: {path}")
+
+    try:
+        errors = validator.validate_file(path)
+    except FileNotFoundError:
+        typer.echo(f"Erro: Arquivo não encontrado: {path}", err=True)
+        sys.exit(1)
+    except Exception as e:
+        log.error("Validation error", error=str(e))
+        typer.echo(f"Erro ao validar arquivo: {e}", err=True)
+        sys.exit(1)
+
+    if not errors:
+        typer.echo(f"✓ {path}: válido")
+        sys.exit(0)
+
+    typer.echo(f"✗ {path}: {len(errors)} erro(s) encontrado(s)", err=True)
+    for error in errors:
+        if verbose:
+            typer.echo(f"  - Campo: {error.field}", err=True)
+            typer.echo(f"    Mensagem: {error.message}", err=True)
+        else:
+            typer.echo(f"  - {error.field}: {error.message}", err=True)
+
+    sys.exit(1)
+
+
+def _validate_all_files(validator: CatalogValidator, verbose: bool) -> None:
+    """Validate all YAML files in the catalog.
+
+    Args:
+        validator: The CatalogValidator instance.
+        verbose: Whether to show detailed output.
+    """
+    settings = get_settings()
+
+    if verbose:
+        typer.echo(f"Validando todos os arquivos em: {settings.catalog_path}/sources")
+
+    errors = validator.validate_all()
+
+    if not errors:
+        typer.echo("✓ Todos os arquivos de catálogo são válidos")
+        sys.exit(0)
+
+    # Group errors by file
+    errors_by_file: dict[Path, list[str]] = {}
+    for error in errors:
+        file_path = error.file_path or Path("unknown")
+        if file_path not in errors_by_file:
+            errors_by_file[file_path] = []
+        errors_by_file[file_path].append(f"{error.field}: {error.message}")
+
+    typer.echo(
+        f"✗ Validação falhou: {len(errors)} erro(s) em {len(errors_by_file)} arquivo(s)",
+        err=True,
+    )
+    typer.echo("", err=True)
+
+    for file_path, file_errors in errors_by_file.items():
+        typer.echo(f"Arquivo: {file_path}", err=True)
+        for err_msg in file_errors:
+            if verbose:
+                typer.echo(f"  - {err_msg}", err=True)
+            else:
+                # Truncate long messages in non-verbose mode
+                if len(err_msg) > 80:
+                    err_msg = err_msg[:77] + "..."
+                typer.echo(f"  - {err_msg}", err=True)
+        typer.echo("", err=True)
+
+    sys.exit(1)
 
 
 if __name__ == "__main__":

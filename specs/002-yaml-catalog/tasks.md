@@ -140,7 +140,7 @@
 
 ---
 
-## Phase 5: User Story 3 - Edição Manual de Metadados (Priority: P3)
+## Phase 5: User Story 3 - Edição Manual de Metadados (Priority: P3) ✅ COMPLETED
 
 **Goal**: Permitir que QAs editem manualmente descrições e enriquecimentos nos arquivos YAML
 
@@ -150,21 +150,21 @@
 
 > **NOTE: Write these tests FIRST, ensure they FAIL before implementation**
 
-- [ ] T051 [P] [US3] Criar teste unitário verificando que cache invalida após TTL em tests/unit/test_catalog_file_repository.py
-- [ ] T052 [US3] Criar teste de integração para fluxo edit YAML → cache expire → API retorna novo valor em tests/integration/test_catalog_yaml_flow.py
+- [x] T051 [P] [US3] Criar teste unitário verificando que cache invalida após TTL em tests/unit/test_catalog_file_repository.py
+- [x] T052 [US3] Criar teste de integração para fluxo edit YAML → cache expire → API retorna novo valor em tests/integration/test_catalog_yaml_flow.py
 
 ### Implementação para User Story 3
 
-- [ ] T053 [US3] Verificar que ColumnMetadataYaml.from_yaml_dict() carrega description corretamente em src/schemas/catalog_yaml.py
-- [ ] T054 [US3] Verificar que ColumnMetadataYaml.from_yaml_dict() carrega enrichment_status corretamente em src/schemas/catalog_yaml.py
-- [ ] T055 [US3] Documentar campos editáveis manualmente no header dos arquivos YAML gerados em src/services/catalog_file_writer.py
-- [ ] T056 [US3] Adicionar teste E2E: editar YAML manualmente → re-extract → campos preservados em tests/integration/test_catalog_yaml_flow.py
+- [x] T053 [US3] Verificar que ColumnMetadataYaml.from_yaml_dict() carrega description corretamente em src/schemas/catalog_yaml.py (already covered by test_from_yaml_dict_full)
+- [x] T054 [US3] Verificar que ColumnMetadataYaml.from_yaml_dict() carrega enrichment_status corretamente em src/schemas/catalog_yaml.py (already covered by test_from_yaml_dict_full)
+- [x] T055 [US3] Documentar campos editáveis manualmente no header dos arquivos YAML gerados em src/services/catalog_file_writer.py
+- [x] T056 [US3] Adicionar teste E2E: editar YAML manualmente → re-extract → campos preservados em tests/integration/test_catalog_yaml_flow.py (already exists as test_extract_preserves_manual_fields_on_reextract)
 
-**Checkpoint**: User Story 3 deve estar funcional. Edições manuais são preservadas e visíveis via API.
+**Checkpoint**: User Story 3 deve estar funcional. Edições manuais são preservadas e visíveis via API. ✅
 
 ---
 
-## Phase 6: User Story 4 - Validação de Arquivos YAML (Priority: P4)
+## Phase 6: User Story 4 - Validação de Arquivos YAML (Priority: P4) ✅ COMPLETED
 
 **Goal**: Permitir que desenvolvedores validem arquivos YAML do catálogo antes de commitar
 
@@ -174,21 +174,21 @@
 
 > **NOTE: Write these tests FIRST, ensure they FAIL before implementation**
 
-- [ ] T057 [P] [US4] Criar testes de contrato para CatalogValidator.validate() com YAML válido em tests/contract/test_catalog_json_schema.py
-- [ ] T058 [P] [US4] Criar testes de contrato para CatalogValidator.validate() com campo obrigatório faltando em tests/contract/test_catalog_json_schema.py
-- [ ] T059 [P] [US4] Criar testes de contrato para CatalogValidator.validate() com tipo incorreto em tests/contract/test_catalog_json_schema.py
+- [x] T057 [P] [US4] Criar testes de contrato para CatalogValidator.validate() com YAML válido em tests/contract/test_catalog_json_schema.py
+- [x] T058 [P] [US4] Criar testes de contrato para CatalogValidator.validate() com campo obrigatório faltando em tests/contract/test_catalog_json_schema.py
+- [x] T059 [P] [US4] Criar testes de contrato para CatalogValidator.validate() com tipo incorreto em tests/contract/test_catalog_json_schema.py
 
 ### Implementação para User Story 4
 
-- [ ] T060 [US4] Implementar CatalogValidator com Draft7Validator em src/services/catalog_validator.py
-- [ ] T061 [US4] Implementar validate() retornando lista de erros formatados em src/services/catalog_validator.py
-- [ ] T062 [US4] Implementar validate_all() para validar todos os arquivos em catalog/sources/ em src/services/catalog_validator.py
-- [ ] T063 [US4] Implementar comando CLI `qa-catalog validate` em src/cli/catalog.py
-- [ ] T064 [US4] Implementar comando CLI `qa-catalog validate <path>` para arquivo específico em src/cli/catalog.py
-- [ ] T065 [US4] Adicionar mensagens de erro em português indicando arquivo, campo e problema em src/services/catalog_validator.py
-- [ ] T066 [US4] Adicionar flag --verbose para mostrar detalhes de validação em src/cli/catalog.py
+- [x] T060 [US4] Implementar CatalogValidator com Draft7Validator em src/services/catalog_validator.py
+- [x] T061 [US4] Implementar validate() retornando lista de erros formatados em src/services/catalog_validator.py
+- [x] T062 [US4] Implementar validate_all() para validar todos os arquivos em catalog/sources/ em src/services/catalog_validator.py
+- [x] T063 [US4] Implementar comando CLI `qa-catalog validate` em src/cli/catalog.py
+- [x] T064 [US4] Implementar comando CLI `qa-catalog validate <path>` para arquivo específico em src/cli/catalog.py
+- [x] T065 [US4] Adicionar mensagens de erro em português indicando arquivo, campo e problema em src/services/catalog_validator.py
+- [x] T066 [US4] Adicionar flag --verbose para mostrar detalhes de validação em src/cli/catalog.py
 
-**Checkpoint**: User Story 4 deve estar funcional. Validação funciona para arquivos individuais e em lote.
+**Checkpoint**: User Story 4 deve estar funcional. Validação funciona para arquivos individuais e em lote. ✅
 
 ---
 

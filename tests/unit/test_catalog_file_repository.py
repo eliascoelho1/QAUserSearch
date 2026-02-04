@@ -554,6 +554,126 @@ class TestInvalidateCache:
         assert repository._source_cache.size() == 0
 
 
+class TestCacheTTLExpiration:
+    """Tests for cache TTL expiration behavior in CatalogFileRepository."""
+
+    @pytest.mark.asyncio
+    async def test_cache_invalidates_after_ttl(self) -> None:
+        """Test that cache entries expire after TTL and return updated data.
+
+        This test verifies that when a YAML file is modified and the TTL expires,
+        the repository returns the new data instead of stale cached data.
+        """
+        with tempfile.TemporaryDirectory() as tmpdir:
+            base_path = Path(tmpdir)
+            create_test_catalog_structure(base_path)
+
+            # Create repository with short TTL (100ms)
+            repo = CatalogFileRepository(catalog_path=base_path, cache_ttl_seconds=0.1)
+
+            # First read - caches the data
+            source1 = await repo.get_source_by_id("credit.invoice")
+            assert source1 is not None
+            assert source1.document_count == 1000
+
+            # Modify the YAML file with new data
+            invoice_path = base_path / "sources" / "credit" / "invoice.yaml"
+            with invoice_path.open("r", encoding="utf-8") as f:
+                data: dict[str, Any] = yaml.safe_load(f)
+            data["document_count"] = 2000
+            with invoice_path.open("w", encoding="utf-8") as f:
+                yaml.dump(data, f, allow_unicode=True)
+
+            # Immediately read again - should still return cached value
+            source2 = await repo.get_source_by_id("credit.invoice")
+            assert source2 is not None
+            assert source2.document_count == 1000  # Still cached
+
+            # Wait for TTL to expire (100ms + buffer)
+            import asyncio
+
+            await asyncio.sleep(0.15)
+
+            # Read again - should return updated value
+            source3 = await repo.get_source_by_id("credit.invoice")
+            assert source3 is not None
+            assert source3.document_count == 2000  # New value after TTL expired
+
+    @pytest.mark.asyncio
+    async def test_index_cache_invalidates_after_ttl(self) -> None:
+        """Test that index cache also expires after TTL.
+
+        When a new source is added to the catalog index file and the TTL expires,
+        the repository should return the updated list of sources.
+        """
+        with tempfile.TemporaryDirectory() as tmpdir:
+            base_path = Path(tmpdir)
+            create_test_catalog_structure(base_path)
+
+            # Create repository with short TTL
+            repo = CatalogFileRepository(catalog_path=base_path, cache_ttl_seconds=0.1)
+
+            # First read - caches the index
+            sources1 = await repo.list_sources()
+            assert len(sources1) == 3
+
+            # Add a new source to the index
+            index_path = base_path / "catalog.yaml"
+            with index_path.open("r", encoding="utf-8") as f:
+                index_data: dict[str, Any] = yaml.safe_load(f)
+
+            index_data["sources"].append(
+                {
+                    "db_name": "new_db",
+                    "table_name": "new_table",
+                    "last_extracted": "2025-01-15T11:00:00+00:00",
+                    "file_path": "sources/new_db/new_table.yaml",
+                }
+            )
+
+            with index_path.open("w", encoding="utf-8") as f:
+                yaml.dump(index_data, f, allow_unicode=True)
+
+            # Create the source file
+            (base_path / "sources" / "new_db").mkdir(parents=True, exist_ok=True)
+            new_source_data: dict[str, Any] = {
+                "db_name": "new_db",
+                "table_name": "new_table",
+                "document_count": 100,
+                "extracted_at": "2025-01-15T11:00:00+00:00",
+                "updated_at": "2025-01-15T11:00:00+00:00",
+                "columns": [
+                    {
+                        "path": "_id",
+                        "name": "_id",
+                        "type": "string",
+                        "required": True,
+                        "nullable": False,
+                        "enumerable": False,
+                        "presence_ratio": 1.0,
+                        "sample_values": ["id1"],
+                    }
+                ],
+            }
+            with (base_path / "sources" / "new_db" / "new_table.yaml").open(
+                "w", encoding="utf-8"
+            ) as f:
+                yaml.dump(new_source_data, f, allow_unicode=True)
+
+            # Immediately read - should still show 3 sources (cached)
+            sources2 = await repo.list_sources()
+            assert len(sources2) == 3
+
+            # Wait for TTL to expire
+            import asyncio
+
+            await asyncio.sleep(0.15)
+
+            # Read again - should show 4 sources
+            sources3 = await repo.list_sources()
+            assert len(sources3) == 4
+
+
 class TestCorruptedYaml:
     """Tests for handling corrupted YAML files."""
 
