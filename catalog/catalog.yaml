@@ -1,0 +1,19 @@
+version: '1.0'
+generated_at: '2026-02-04T15:38:52.536251+00:00'
+sources:
+- db_name: card_account_authorization
+  table_name: account_main
+  last_extracted: '2026-02-04T15:38:51.808187+00:00'
+  file_path: sources/card_account_authorization/account_main.yaml
+- db_name: card_account_authorization
+  table_name: card_main
+  last_extracted: '2026-02-04T15:38:52.212151+00:00'
+  file_path: sources/card_account_authorization/card_main.yaml
+- db_name: credit
+  table_name: invoice
+  last_extracted: '2026-02-04T15:38:52.254197+00:00'
+  file_path: sources/credit/invoice.yaml
+- db_name: credit
+  table_name: closed_invoice
+  last_extracted: '2026-02-04T15:38:52.478175+00:00'
+  file_path: sources/credit/closed_invoice.yaml

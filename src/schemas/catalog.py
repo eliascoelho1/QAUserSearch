@@ -14,7 +14,7 @@ class SourceSummary(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
-    id: int
+    id: str = Field(..., description="Source ID in format db_name.table_name")
     db_name: str
     table_name: str
     column_count: int = Field(default=0)
@@ -37,7 +37,7 @@ class ColumnDetail(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
-    id: int
+    id: str = Field(..., description="Column ID in format source_id.column_path")
     column_name: str
     column_path: str
     inferred_type: InferredType
@@ -74,7 +74,7 @@ class SourceDetailResponse(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
-    id: int
+    id: str = Field(..., description="Source ID in format db_name.table_name")
     db_name: str
     table_name: str
     document_count: int
