@@ -1,18 +1,19 @@
-"""CLI commands for catalog schema extraction."""
+"""CLI commands for catalog schema extraction.
+
+This CLI extracts schema metadata from external MongoDB sources and writes
+directly to YAML files in the catalog directory. No PostgreSQL connection
+is required for catalog operations.
+"""
 
 import asyncio
 import sys
-from collections.abc import AsyncGenerator
-from contextlib import asynccontextmanager
 from typing import Annotated
 
 import structlog
 import typer
-from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.config import get_settings
-from src.core.database import DatabaseManager
-from src.services.catalog_service import CatalogService
+from src.services.catalog_yaml_extractor import CatalogYamlExtractor
 
 logger = structlog.get_logger(__name__)
 
@@ -36,17 +37,23 @@ def extract(
     db_name: Annotated[str, typer.Argument(help="Database name")],
     table_name: Annotated[str, typer.Argument(help="Table/collection name")],
     sample_size: Annotated[int, typer.Option(help="Documents to sample")] = 500,
+    no_merge: Annotated[
+        bool, typer.Option(help="Don't merge manual fields from existing file")
+    ] = False,
 ) -> None:
-    """Extract schema from a single external source."""
-    asyncio.run(_extract_single(db_name, table_name, sample_size))
+    """Extract schema from a single external source and save to YAML."""
+    asyncio.run(_extract_single(db_name, table_name, sample_size, merge=not no_merge))
 
 
 @app.command()
 def extract_all(
     sample_size: Annotated[int, typer.Option(help="Documents to sample")] = 500,
+    no_merge: Annotated[
+        bool, typer.Option(help="Don't merge manual fields from existing files")
+    ] = False,
 ) -> None:
-    """Extract schemas from all known sources."""
-    asyncio.run(_extract_all(sample_size))
+    """Extract schemas from all known sources and save to YAML files."""
+    asyncio.run(_extract_all(sample_size, merge=not no_merge))
 
 
 @app.command()
@@ -57,50 +64,46 @@ def list_known() -> None:
         typer.echo(f"  - {db_name}.{table_name}")
 
 
-@asynccontextmanager
-async def _get_db_session() -> AsyncGenerator[AsyncSession, None]:
-    """Create a database session for CLI commands.
+async def _extract_single(
+    db_name: str,
+    table_name: str,
+    sample_size: int,
+    *,
+    merge: bool = True,
+) -> None:
+    """Internal async implementation for single extraction.
 
-    Yields:
-        An async database session.
+    Args:
+        db_name: External database name.
+        table_name: External table/collection name.
+        sample_size: Number of documents to sample.
+        merge: Whether to preserve manual fields from existing YAML file.
     """
-    settings = get_settings()
-    db_manager = DatabaseManager(
-        database_url=settings.database_url,
-        echo=settings.debug,
-    )
-    try:
-        async with db_manager.session() as session:
-            yield session
-    finally:
-        await db_manager.close()
-
-
-async def _extract_single(db_name: str, table_name: str, sample_size: int) -> None:
-    """Internal async implementation for single extraction."""
     settings = get_settings()
     log = logger.bind(db_name=db_name, table_name=table_name, sample_size=sample_size)
 
-    log.info("Starting extraction")
+    log.info("Starting YAML extraction")
     typer.echo(f"Extracting schema from {db_name}.{table_name}...")
 
     try:
-        async with _get_db_session() as session:
-            service = CatalogService(
-                session=session,
-                sample_size=sample_size,
-                cardinality_limit=settings.enumerable_cardinality_limit,
-            )
-            result = await service.extract_and_persist(
-                db_name=db_name,
-                table_name=table_name,
-                sample_size=sample_size,
-            )
+        extractor = CatalogYamlExtractor(
+            catalog_path=settings.catalog_path,
+            sample_size=sample_size,
+            cardinality_limit=settings.enumerable_cardinality_limit,
+        )
+
+        result = await extractor.extract_to_yaml(
+            db_name=db_name,
+            table_name=table_name,
+            sample_size=sample_size,
+            merge_manual_fields=merge,
+        )
 
         typer.echo("Extraction completed successfully:")
         typer.echo(f"  - Source ID: {result['source_id']}")
         typer.echo(f"  - Columns extracted: {result['columns_extracted']}")
         typer.echo(f"  - Enumerable columns: {result['enumerable_columns']}")
+        typer.echo(f"  - File: {result['file_path']}")
 
     except Exception as e:
         log.error("Extraction failed", error=str(e))
@@ -108,58 +111,63 @@ async def _extract_single(db_name: str, table_name: str, sample_size: int) -> No
         sys.exit(1)
 
 
-async def _extract_all(sample_size: int) -> None:
-    """Internal async implementation for batch extraction."""
+async def _extract_all(sample_size: int, *, merge: bool = True) -> None:
+    """Internal async implementation for batch extraction.
+
+    Args:
+        sample_size: Number of documents to sample per source.
+        merge: Whether to preserve manual fields from existing YAML files.
+    """
     settings = get_settings()
     log = logger.bind(sample_size=sample_size)
 
-    log.info("Starting batch extraction")
-    typer.echo(f"Extracting schemas from {len(KNOWN_SOURCES)} known sources...")
+    log.info("Starting batch YAML extraction")
+    total_sources = len(KNOWN_SOURCES)
+    typer.echo(f"Extracting schemas from {total_sources} known sources...")
+    typer.echo(f"Output directory: {settings.catalog_path}")
+    typer.echo("")
 
     success_count = 0
     error_count = 0
 
-    try:
-        async with _get_db_session() as session:
-            service = CatalogService(
-                session=session,
+    extractor = CatalogYamlExtractor(
+        catalog_path=settings.catalog_path,
+        sample_size=sample_size,
+        cardinality_limit=settings.enumerable_cardinality_limit,
+    )
+
+    for idx, (db_name, table_name) in enumerate(KNOWN_SOURCES, start=1):
+        progress = f"[{idx}/{total_sources}]"
+        typer.echo(f"{progress} Extracting {db_name}.{table_name}...")
+
+        try:
+            result = await extractor.extract_to_yaml(
+                db_name=db_name,
+                table_name=table_name,
                 sample_size=sample_size,
-                cardinality_limit=settings.enumerable_cardinality_limit,
+                merge_manual_fields=merge,
             )
+            typer.echo(f"  - Columns: {result['columns_extracted']}")
+            typer.echo(f"  - Enumerable: {result['enumerable_columns']}")
+            typer.echo(f"  - File: {result['file_path']}")
+            success_count += 1
 
-            for db_name, table_name in KNOWN_SOURCES:
-                typer.echo(f"\nExtracting {db_name}.{table_name}...")
+        except Exception as e:
+            log.error(
+                "Extraction failed",
+                db_name=db_name,
+                table_name=table_name,
+                error=str(e),
+            )
+            typer.echo(f"  - Error: {e}", err=True)
+            error_count += 1
 
-                try:
-                    result = await service.extract_and_persist(
-                        db_name=db_name,
-                        table_name=table_name,
-                        sample_size=sample_size,
-                    )
-                    typer.echo(f"  - Source ID: {result['source_id']}")
-                    typer.echo(f"  - Columns: {result['columns_extracted']}")
-                    success_count += 1
+    typer.echo("")
+    typer.echo("Batch extraction completed:")
+    typer.echo(f"  - Successful: {success_count}")
+    typer.echo(f"  - Failed: {error_count}")
 
-                except Exception as e:
-                    log.error(
-                        "Extraction failed",
-                        db_name=db_name,
-                        table_name=table_name,
-                        error=str(e),
-                    )
-                    typer.echo(f"  - Error: {e}", err=True)
-                    error_count += 1
-
-        typer.echo("\nBatch extraction completed:")
-        typer.echo(f"  - Successful: {success_count}")
-        typer.echo(f"  - Failed: {error_count}")
-
-        if error_count > 0:
-            sys.exit(1)
-
-    except Exception as e:
-        log.error("Batch extraction failed", error=str(e))
-        typer.echo(f"Fatal error: {e}", err=True)
+    if error_count > 0:
         sys.exit(1)
 
 

@@ -80,9 +80,9 @@
 - [x] T016 [P] [US1] Criar testes unitários para CatalogFileRepository.get_source_by_id() em tests/unit/test_catalog_file_repository.py
 - [x] T017 [P] [US1] Criar testes unitários para CatalogFileRepository.list_sources() em tests/unit/test_catalog_file_repository.py
 - [x] T018 [P] [US1] Criar testes unitários para CatalogFileRepository.count_sources() em tests/unit/test_catalog_file_repository.py
-- [ ] T019 [P] [US1] Criar testes de contrato para GET /api/v1/catalog/sources em tests/contract/test_catalog_api_contract.py
-- [ ] T020 [P] [US1] Criar testes de contrato para GET /api/v1/catalog/sources/{source_id} em tests/contract/test_catalog_api_contract.py
-- [ ] T021 [P] [US1] Criar testes de contrato para GET /api/v1/catalog/sources/{source_id}/columns em tests/contract/test_catalog_api_contract.py
+- [x] T019 [P] [US1] Criar testes de contrato para GET /api/v1/catalog/sources em tests/contract/test_catalog_api_contract.py
+- [x] T020 [P] [US1] Criar testes de contrato para GET /api/v1/catalog/sources/{source_id} em tests/contract/test_catalog_api_contract.py
+- [x] T021 [P] [US1] Criar testes de contrato para GET /api/v1/catalog/sources/{source_id}/columns em tests/contract/test_catalog_api_contract.py
 
 ### Implementação para User Story 1
 
@@ -118,25 +118,25 @@
 
 > **NOTE: Write these tests FIRST, ensure they FAIL before implementation**
 
-- [ ] T037 [P] [US2] Criar testes unitários para CatalogFileWriter.write_source() em tests/unit/test_catalog_file_writer.py
-- [ ] T038 [P] [US2] Criar testes unitários para CatalogFileWriter.update_index() em tests/unit/test_catalog_file_writer.py
-- [ ] T039 [P] [US2] Criar testes unitários para CatalogFileWriter._merge_manual_fields() em tests/unit/test_catalog_file_writer.py
-- [ ] T040 [US2] Criar teste de integração para fluxo CLI extract → YAML → API em tests/integration/test_catalog_yaml_flow.py
+- [x] T037 [P] [US2] Criar testes unitários para CatalogFileWriter.write_source() em tests/unit/test_catalog_file_writer.py
+- [x] T038 [P] [US2] Criar testes unitários para CatalogFileWriter.update_index() em tests/unit/test_catalog_file_writer.py
+- [x] T039 [P] [US2] Criar testes unitários para CatalogFileWriter._merge_manual_fields() em tests/unit/test_catalog_file_writer.py
+- [x] T040 [US2] Criar teste de integração para fluxo CLI extract → YAML → API em tests/integration/test_catalog_yaml_flow.py
 
 ### Implementação para User Story 2
 
-- [ ] T041 [US2] Implementar CatalogFileWriter em src/services/catalog_file_writer.py
-- [ ] T042 [US2] Implementar write_source() para gerar arquivo YAML em src/services/catalog_file_writer.py
-- [ ] T043 [US2] Implementar _merge_manual_fields() para preservar description e enrichment_status em src/services/catalog_file_writer.py
-- [ ] T044 [US2] Implementar update_index() para atualizar catalog/catalog.yaml em src/services/catalog_file_writer.py
-- [ ] T045 [US2] Implementar _ensure_directories() para criar estrutura de diretórios em src/services/catalog_file_writer.py
-- [ ] T046 [US2] Modificar CatalogService.extract_source() para usar CatalogFileWriter em src/services/catalog_service.py
-- [ ] T047 [US2] Modificar comando CLI `extract` para gerar YAML em vez de salvar no banco em src/cli/catalog.py
-- [ ] T048 [US2] Modificar comando CLI `extract-all` para gerar todos os YAMLs e atualizar índice em src/cli/catalog.py
-- [ ] T049 [US2] Adicionar feedback de progresso durante extração via CLI em src/cli/catalog.py
-- [ ] T050 [US2] Adicionar tratamento de erro quando extração falha no meio (rollback) em src/services/catalog_file_writer.py
+- [x] T041 [US2] Implementar CatalogFileWriter em src/services/catalog_file_writer.py
+- [x] T042 [US2] Implementar write_source() para gerar arquivo YAML em src/services/catalog_file_writer.py
+- [x] T043 [US2] Implementar _merge_manual_fields() para preservar description e enrichment_status em src/services/catalog_file_writer.py
+- [x] T044 [US2] Implementar update_index() para atualizar catalog/catalog.yaml em src/services/catalog_file_writer.py
+- [x] T045 [US2] Implementar _ensure_directories() para criar estrutura de diretórios em src/services/catalog_file_writer.py
+- [x] T046 [US2] ~~Modificar CatalogService.extract_source() para usar CatalogFileWriter em src/services/catalog_service.py~~ CANCELLED: Created CatalogYamlExtractor instead
+- [x] T047 [US2] Modificar comando CLI `extract` para gerar YAML em vez de salvar no banco em src/cli/catalog.py
+- [x] T048 [US2] Modificar comando CLI `extract-all` para gerar todos os YAMLs e atualizar índice em src/cli/catalog.py
+- [x] T049 [US2] Adicionar feedback de progresso durante extração via CLI em src/cli/catalog.py
+- [x] T050 [US2] Adicionar tratamento de erro quando extração falha no meio (rollback) em src/services/catalog_file_writer.py
 
-**Checkpoint**: User Story 2 deve estar funcional. CLI gera arquivos YAML corretamente preservando campos manuais.
+**Checkpoint**: User Story 2 deve estar funcional. CLI gera arquivos YAML corretamente preservando campos manuais. ✅
 
 ---
 
