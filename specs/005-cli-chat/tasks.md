@@ -340,16 +340,16 @@
 
 ### Chat Loop
 
-- [ ] T133 Implementar `run_chat()` em `src/cli/chat/__init__.py`
-- [ ] T134 Implementar welcome screen display
-- [ ] T135 Implementar input loop com prompt interativo
-- [ ] T136 Implementar detecção de comando vs query
-- [ ] T137 Implementar processamento de query (client → handler → renderer)
-- [ ] T138 Implementar Ctrl+C handling gracioso
-- [ ] T139 Implementar session history update após cada query
-- [ ] T140 Implementar toggle entre mock e real client via /mock
+- [x] T133 Implementar `run_chat()` em `src/cli/chat/__init__.py`
+- [x] T134 Implementar welcome screen display
+- [x] T135 Implementar input loop com prompt interativo
+- [x] T136 Implementar detecção de comando vs query
+- [x] T137 Implementar processamento de query (client → handler → renderer)
+- [x] T138 Implementar Ctrl+C handling gracioso
+- [x] T139 Implementar session history update após cada query
+- [x] T140 Implementar toggle entre mock e real client via /mock
 
-**Checkpoint Integration**: Chat loop completo funcionando
+**Checkpoint Integration**: Chat loop completo funcionando ✅
 
 ---
 

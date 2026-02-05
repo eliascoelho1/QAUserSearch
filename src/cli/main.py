@@ -9,6 +9,8 @@ Example usage:
     qa catalog extract ... # Run catalog extraction commands
 """
 
+import asyncio
+
 import typer
 
 from src.cli.catalog import app as catalog_app
@@ -50,20 +52,10 @@ def chat(
         qa chat --mock              # Start in mock mode
         qa chat --server ws://...   # Connect to custom server
     """
-    from src.cli.chat.session import ChatSession
+    from src.cli.chat import run_chat
 
-    # Create session with initial settings
-    session = ChatSession(mock_mode=mock)
-
-    if mock:
-        typer.echo("Starting chat in mock mode...")
-    else:
-        typer.echo(f"Connecting to server: {server}")
-
-    # TODO: T133-T140 will implement the full chat loop
-    # For now, just show that the command works
-    typer.echo(f"Chat session initialized (mock_mode={session.mock_mode})")
-    typer.echo("Full chat loop will be implemented in Phase 9 (T133-T140).")
+    # Run the async chat loop
+    asyncio.run(run_chat(mock_mode=mock, server_url=server))
 
 
 if __name__ == "__main__":
