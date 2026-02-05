@@ -27,9 +27,9 @@
 
 **Purpose**: Criar estrutura de diretórios e arquivos base
 
-- [ ] T001 Criar estrutura `src/cli/shared/` com `__init__.py` em cada nível
-- [ ] T002 [P] Criar estrutura `tests/unit/cli/shared/` com `__init__.py`
-- [ ] T003 [P] Criar `tests/unit/cli/shared/conftest.py` com fixtures de mock
+- [x] T001 Criar estrutura `src/cli/shared/` com `__init__.py` em cada nível
+- [x] T002 [P] Criar estrutura `tests/unit/cli/shared/` com `__init__.py`
+- [x] T003 [P] Criar `tests/unit/cli/shared/conftest.py` com fixtures de mock
 
 **Checkpoint**: Estrutura pronta para implementação
 
