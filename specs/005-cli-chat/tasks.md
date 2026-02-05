@@ -27,12 +27,12 @@
 
 **Purpose**: Criar estrutura de diretórios e arquivos base
 
-- [ ] T001 Criar estrutura `src/cli/chat/` com `__init__.py`
-- [ ] T002 [P] Criar estrutura `src/cli/chat/handlers/` com `__init__.py`
-- [ ] T003 [P] Criar estrutura `tests/unit/cli/chat/` com `__init__.py`
-- [ ] T004 [P] Criar `tests/unit/cli/chat/conftest.py` com fixtures (mock_console, mock_websocket, chat_session, sample_interpretation, sample_query)
+- [x] T001 Criar estrutura `src/cli/chat/` com `__init__.py`
+- [x] T002 [P] Criar estrutura `src/cli/chat/handlers/` com `__init__.py`
+- [x] T003 [P] Criar estrutura `tests/unit/cli/chat/` com `__init__.py`
+- [x] T004 [P] Criar `tests/unit/cli/chat/conftest.py` com fixtures (mock_console, mock_websocket, chat_session, sample_interpretation, sample_query)
 
-**Checkpoint**: Estrutura pronta para implementação
+**Checkpoint**: Estrutura pronta para implementação ✅
 
 ---
 
