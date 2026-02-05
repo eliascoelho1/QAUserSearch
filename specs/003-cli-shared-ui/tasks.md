@@ -27,9 +27,9 @@
 
 **Purpose**: Criar estrutura de diretórios e arquivos base
 
-- [ ] T001 Criar estrutura `src/cli/shared/` com `__init__.py` em cada nível
-- [ ] T002 [P] Criar estrutura `tests/unit/cli/shared/` com `__init__.py`
-- [ ] T003 [P] Criar `tests/unit/cli/shared/conftest.py` com fixtures de mock
+- [x] T001 Criar estrutura `src/cli/shared/` com `__init__.py` em cada nível
+- [x] T002 [P] Criar estrutura `tests/unit/cli/shared/` com `__init__.py`
+- [x] T003 [P] Criar `tests/unit/cli/shared/conftest.py` com fixtures de mock
 
 **Checkpoint**: Estrutura pronta para implementação
 
@@ -49,24 +49,24 @@
 
 #### Testes TDD (RED)
 
-- [ ] T004 [P] [US5] Criar teste `test_colors_constants_exist` em `tests/unit/cli/shared/test_theme.py`
-- [ ] T005 [P] [US5] Criar teste `test_colors_are_valid_hex` em `tests/unit/cli/shared/test_theme.py`
-- [ ] T006 [P] [US5] Criar teste `test_get_icon_unicode` em `tests/unit/cli/shared/test_theme.py`
-- [ ] T007 [P] [US5] Criar teste `test_get_icon_ascii_fallback` em `tests/unit/cli/shared/test_theme.py`
-- [ ] T008 [P] [US5] Criar teste `test_get_rich_theme_returns_theme` em `tests/unit/cli/shared/test_theme.py`
-- [ ] T009 [P] [US5] Criar teste `test_get_questionary_style_returns_style` em `tests/unit/cli/shared/test_theme.py`
+- [x] T004 [P] [US5] Criar teste `test_colors_constants_exist` em `tests/unit/cli/shared/test_theme.py`
+- [x] T005 [P] [US5] Criar teste `test_colors_are_valid_hex` em `tests/unit/cli/shared/test_theme.py`
+- [x] T006 [P] [US5] Criar teste `test_get_icon_unicode` em `tests/unit/cli/shared/test_theme.py`
+- [x] T007 [P] [US5] Criar teste `test_get_icon_ascii_fallback` em `tests/unit/cli/shared/test_theme.py`
+- [x] T008 [P] [US5] Criar teste `test_get_rich_theme_returns_theme` em `tests/unit/cli/shared/test_theme.py`
+- [x] T009 [P] [US5] Criar teste `test_get_questionary_style_returns_style` em `tests/unit/cli/shared/test_theme.py`
 
 #### Implementação (GREEN)
 
-- [ ] T010 [US5] Implementar `COLORS` namespace em `src/cli/shared/ui/theme.py`
-- [ ] T011 [US5] Implementar `IconType` enum e mapeamentos `ICONS_EMOJI`/`ICONS_ASCII`
-- [ ] T012 [US5] Implementar `get_icon(icon_type, use_unicode)` em `src/cli/shared/ui/theme.py`
-- [ ] T013 [US5] Implementar `get_rich_theme()` em `src/cli/shared/ui/theme.py`
-- [ ] T014 [US5] Implementar `get_questionary_style()` em `src/cli/shared/ui/theme.py`
+- [x] T010 [US5] Implementar `COLORS` namespace em `src/cli/shared/ui/theme.py`
+- [x] T011 [US5] Implementar `IconType` enum e mapeamentos `ICONS_EMOJI`/`ICONS_ASCII`
+- [x] T012 [US5] Implementar `get_icon(icon_type, use_unicode)` em `src/cli/shared/ui/theme.py`
+- [x] T013 [US5] Implementar `get_rich_theme()` em `src/cli/shared/ui/theme.py`
+- [x] T014 [US5] Implementar `get_questionary_style()` em `src/cli/shared/ui/theme.py`
 
 #### Refactor
 
-- [ ] T015 [US5] Verificar testes passam e refatorar se necessário
+- [x] T015 [US5] Verificar testes passam e refatorar se necessário
 
 **Checkpoint US5**: `from src.cli.shared.ui.theme import COLORS, get_rich_theme` funciona
 
@@ -80,23 +80,23 @@
 
 #### Testes TDD (RED)
 
-- [ ] T016 [P] [US6] Criar teste `test_supports_color_no_color_env` em `tests/unit/cli/shared/test_terminal.py`
-- [ ] T017 [P] [US6] Criar teste `test_supports_color_force_color_env` em `tests/unit/cli/shared/test_terminal.py`
-- [ ] T018 [P] [US6] Criar teste `test_supports_unicode_windows_no_wt` em `tests/unit/cli/shared/test_terminal.py`
-- [ ] T019 [P] [US6] Criar teste `test_is_interactive_tty` em `tests/unit/cli/shared/test_terminal.py`
-- [ ] T020 [P] [US6] Criar teste `test_is_interactive_pipe` em `tests/unit/cli/shared/test_terminal.py`
-- [ ] T021 [P] [US6] Criar teste `test_get_terminal_size_fallback` em `tests/unit/cli/shared/test_terminal.py`
+- [x] T016 [P] [US6] Criar teste `test_supports_color_no_color_env` em `tests/unit/cli/shared/test_terminal.py`
+- [x] T017 [P] [US6] Criar teste `test_supports_color_force_color_env` em `tests/unit/cli/shared/test_terminal.py`
+- [x] T018 [P] [US6] Criar teste `test_supports_unicode_windows_no_wt` em `tests/unit/cli/shared/test_terminal.py`
+- [x] T019 [P] [US6] Criar teste `test_is_interactive_tty` em `tests/unit/cli/shared/test_terminal.py`
+- [x] T020 [P] [US6] Criar teste `test_is_interactive_pipe` em `tests/unit/cli/shared/test_terminal.py`
+- [x] T021 [P] [US6] Criar teste `test_get_terminal_size_fallback` em `tests/unit/cli/shared/test_terminal.py`
 
 #### Implementação (GREEN)
 
-- [ ] T022 [US6] Implementar `get_terminal_size()` em `src/cli/shared/utils/terminal.py`
-- [ ] T023 [US6] Implementar `supports_color()` com lógica NO_COLOR/FORCE_COLOR
-- [ ] T024 [US6] Implementar `supports_unicode()` com detecção Windows/Unix
-- [ ] T025 [US6] Implementar `is_interactive()` com isatty checks
+- [x] T022 [US6] Implementar `get_terminal_size()` em `src/cli/shared/utils/terminal.py`
+- [x] T023 [US6] Implementar `supports_color()` com lógica NO_COLOR/FORCE_COLOR
+- [x] T024 [US6] Implementar `supports_unicode()` com detecção Windows/Unix
+- [x] T025 [US6] Implementar `is_interactive()` com isatty checks
 
 #### Refactor
 
-- [ ] T026 [US6] Verificar testes passam e refatorar se necessário
+- [x] T026 [US6] Verificar testes passam e refatorar se necessário
 
 **Checkpoint US6**: Detecção de capacidades funciona em diferentes ambientes
 
@@ -110,18 +110,18 @@
 
 #### Testes TDD (RED)
 
-- [ ] T027 [P] [US7] Criar teste `test_create_console_default` em `tests/unit/cli/shared/test_terminal.py`
-- [ ] T028 [P] [US7] Criar teste `test_create_console_no_color` em `tests/unit/cli/shared/test_terminal.py`
-- [ ] T029 [P] [US7] Criar teste `test_create_console_no_unicode` em `tests/unit/cli/shared/test_terminal.py`
+- [x] T027 [P] [US7] Criar teste `test_create_console_default` em `tests/unit/cli/shared/test_terminal.py`
+- [x] T028 [P] [US7] Criar teste `test_create_console_no_color` em `tests/unit/cli/shared/test_terminal.py`
+- [x] T029 [P] [US7] Criar teste `test_create_console_no_unicode` em `tests/unit/cli/shared/test_terminal.py`
 
 #### Implementação (GREEN)
 
-- [ ] T030 [US7] Implementar `create_console()` em `src/cli/shared/utils/terminal.py`
-- [ ] T031 [US7] Integrar `get_rich_theme()` no console factory
+- [x] T030 [US7] Implementar `create_console()` em `src/cli/shared/utils/terminal.py`
+- [x] T031 [US7] Integrar `get_rich_theme()` no console factory
 
 #### Refactor
 
-- [ ] T032 [US7] Verificar testes passam e refatorar se necessário
+- [x] T032 [US7] Verificar testes passam e refatorar se necessário
 
 **Checkpoint Foundational**: Base completa - US1, US2, US3, US4 podem iniciar
 
@@ -135,25 +135,25 @@
 
 ### Testes TDD (RED)
 
-- [ ] T033 [P] [US1] Criar teste `test_create_panel_basic` em `tests/unit/cli/shared/test_panels.py`
-- [ ] T034 [P] [US1] Criar teste `test_info_panel_style` em `tests/unit/cli/shared/test_panels.py`
-- [ ] T035 [P] [US1] Criar teste `test_success_panel_style` em `tests/unit/cli/shared/test_panels.py`
-- [ ] T036 [P] [US1] Criar teste `test_warning_panel_style` em `tests/unit/cli/shared/test_panels.py`
-- [ ] T037 [P] [US1] Criar teste `test_error_panel_style` em `tests/unit/cli/shared/test_panels.py`
-- [ ] T038 [P] [US1] Criar teste `test_panel_icon_fallback_ascii` em `tests/unit/cli/shared/test_panels.py`
+- [x] T033 [P] [US1] Criar teste `test_create_panel_basic` em `tests/unit/cli/shared/test_panels.py`
+- [x] T034 [P] [US1] Criar teste `test_info_panel_style` em `tests/unit/cli/shared/test_panels.py`
+- [x] T035 [P] [US1] Criar teste `test_success_panel_style` em `tests/unit/cli/shared/test_panels.py`
+- [x] T036 [P] [US1] Criar teste `test_warning_panel_style` em `tests/unit/cli/shared/test_panels.py`
+- [x] T037 [P] [US1] Criar teste `test_error_panel_style` em `tests/unit/cli/shared/test_panels.py`
+- [x] T038 [P] [US1] Criar teste `test_panel_icon_fallback_ascii` em `tests/unit/cli/shared/test_panels.py`
 
 ### Implementação (GREEN)
 
-- [ ] T039 [US1] Implementar `create_panel()` em `src/cli/shared/ui/panels.py`
-- [ ] T040 [US1] Implementar `info_panel()` com estilo azul e ícone
-- [ ] T041 [US1] Implementar `success_panel()` com estilo verde e ícone
-- [ ] T042 [US1] Implementar `warning_panel()` com estilo âmbar e ícone
-- [ ] T043 [US1] Implementar `error_panel()` com estilo vermelho e ícone
-- [ ] T044 [US1] Implementar fallback ASCII para ícones quando `supports_unicode()=False`
+- [x] T039 [US1] Implementar `create_panel()` em `src/cli/shared/ui/panels.py`
+- [x] T040 [US1] Implementar `info_panel()` com estilo azul e ícone
+- [x] T041 [US1] Implementar `success_panel()` com estilo verde e ícone
+- [x] T042 [US1] Implementar `warning_panel()` com estilo âmbar e ícone
+- [x] T043 [US1] Implementar `error_panel()` com estilo vermelho e ícone
+- [x] T044 [US1] Implementar fallback ASCII para ícones quando `supports_unicode()=False`
 
 ### Refactor
 
-- [ ] T045 [US1] Verificar testes passam e refatorar para reduzir duplicação
+- [x] T045 [US1] Verificar testes passam e refatorar para reduzir duplicação
 
 **Checkpoint US1**: Painéis funcionam com cores e fallback
 
@@ -167,31 +167,31 @@
 
 ### Testes TDD (RED)
 
-- [ ] T046 [P] [US2] Criar teste `test_spinner_context_manager` em `tests/unit/cli/shared/test_progress.py`
-- [ ] T047 [P] [US2] Criar teste `test_spinner_non_interactive_fallback` em `tests/unit/cli/shared/test_progress.py`
-- [ ] T048 [P] [US2] Criar teste `test_phase_dataclass_frozen` em `tests/unit/cli/shared/test_progress.py`
-- [ ] T049 [P] [US2] Criar teste `test_phase_spinner_initial_state` em `tests/unit/cli/shared/test_progress.py`
-- [ ] T050 [P] [US2] Criar teste `test_phase_spinner_advance` em `tests/unit/cli/shared/test_progress.py`
-- [ ] T051 [P] [US2] Criar teste `test_phase_spinner_complete` em `tests/unit/cli/shared/test_progress.py`
-- [ ] T052 [P] [US2] Criar teste `test_phase_spinner_fail` em `tests/unit/cli/shared/test_progress.py`
-- [ ] T053 [P] [US2] Criar teste `test_phase_spinner_no_advance_past_end` em `tests/unit/cli/shared/test_progress.py`
-- [ ] T054 [P] [US2] Criar teste `test_create_bar_progress` em `tests/unit/cli/shared/test_progress.py`
+- [x] T046 [P] [US2] Criar teste `test_spinner_context_manager` em `tests/unit/cli/shared/test_progress.py`
+- [x] T047 [P] [US2] Criar teste `test_spinner_non_interactive_fallback` em `tests/unit/cli/shared/test_progress.py`
+- [x] T048 [P] [US2] Criar teste `test_phase_dataclass_frozen` em `tests/unit/cli/shared/test_progress.py`
+- [x] T049 [P] [US2] Criar teste `test_phase_spinner_initial_state` em `tests/unit/cli/shared/test_progress.py`
+- [x] T050 [P] [US2] Criar teste `test_phase_spinner_advance` em `tests/unit/cli/shared/test_progress.py`
+- [x] T051 [P] [US2] Criar teste `test_phase_spinner_complete` em `tests/unit/cli/shared/test_progress.py`
+- [x] T052 [P] [US2] Criar teste `test_phase_spinner_fail` em `tests/unit/cli/shared/test_progress.py`
+- [x] T053 [P] [US2] Criar teste `test_phase_spinner_no_advance_past_end` em `tests/unit/cli/shared/test_progress.py`
+- [x] T054 [P] [US2] Criar teste `test_create_bar_progress` em `tests/unit/cli/shared/test_progress.py`
 
 ### Implementação (GREEN)
 
-- [ ] T055 [US2] Implementar `Phase` dataclass em `src/cli/shared/ui/progress.py`
-- [ ] T056 [US2] Implementar `create_spinner_progress()` factory
-- [ ] T057 [US2] Implementar `create_bar_progress()` factory com barra, %, tempo
-- [ ] T058 [US2] Implementar `spinner()` context manager com fallback non-interactive
-- [ ] T059 [US2] Implementar `PhaseSpinner.__init__()` com lista de fases
-- [ ] T060 [US2] Implementar `PhaseSpinner.live()` context manager com Rich Live
-- [ ] T061 [US2] Implementar `PhaseSpinner.advance()` e `PhaseSpinner.complete()`
-- [ ] T062 [US2] Implementar `PhaseSpinner.fail()` com mensagem opcional
-- [ ] T063 [US2] Implementar fallback estático para terminais non-interactive
+- [x] T055 [US2] Implementar `Phase` dataclass em `src/cli/shared/ui/progress.py`
+- [x] T056 [US2] Implementar `create_spinner_progress()` factory
+- [x] T057 [US2] Implementar `create_bar_progress()` factory com barra, %, tempo
+- [x] T058 [US2] Implementar `spinner()` context manager com fallback non-interactive
+- [x] T059 [US2] Implementar `PhaseSpinner.__init__()` com lista de fases
+- [x] T060 [US2] Implementar `PhaseSpinner.live()` context manager com Rich Live
+- [x] T061 [US2] Implementar `PhaseSpinner.advance()` e `PhaseSpinner.complete()`
+- [x] T062 [US2] Implementar `PhaseSpinner.fail()` com mensagem opcional
+- [x] T063 [US2] Implementar fallback estático para terminais non-interactive
 
 ### Refactor
 
-- [ ] T064 [US2] Verificar testes passam e refatorar PhaseSpinner se necessário
+- [x] T064 [US2] Verificar testes passam e refatorar PhaseSpinner se necessário
 
 **Checkpoint US2**: Spinners animam, PhaseSpinner gerencia fases corretamente
 
@@ -205,27 +205,27 @@
 
 ### Testes TDD (RED)
 
-- [ ] T065 [P] [US3] Criar teste `test_ask_text_returns_input` em `tests/unit/cli/shared/test_prompts.py`
-- [ ] T066 [P] [US3] Criar teste `test_ask_text_keyboard_interrupt_returns_none` em `tests/unit/cli/shared/test_prompts.py`
-- [ ] T067 [P] [US3] Criar teste `test_ask_confirm_returns_bool` em `tests/unit/cli/shared/test_prompts.py`
-- [ ] T068 [P] [US3] Criar teste `test_ask_confirm_keyboard_interrupt_returns_none` em `tests/unit/cli/shared/test_prompts.py`
-- [ ] T069 [P] [US3] Criar teste `test_ask_select_returns_choice` em `tests/unit/cli/shared/test_prompts.py`
-- [ ] T070 [P] [US3] Criar teste `test_ask_select_keyboard_interrupt_returns_none` em `tests/unit/cli/shared/test_prompts.py`
-- [ ] T071 [P] [US3] Criar teste `test_ask_checkbox_returns_list` em `tests/unit/cli/shared/test_prompts.py`
-- [ ] T072 [P] [US3] Criar teste `test_ask_checkbox_keyboard_interrupt_returns_none` em `tests/unit/cli/shared/test_prompts.py`
-- [ ] T073 [P] [US3] Criar teste `test_prompts_non_interactive_returns_none` em `tests/unit/cli/shared/test_prompts.py`
+- [x] T065 [P] [US3] Criar teste `test_ask_text_returns_input` em `tests/unit/cli/shared/test_prompts.py`
+- [x] T066 [P] [US3] Criar teste `test_ask_text_keyboard_interrupt_returns_none` em `tests/unit/cli/shared/test_prompts.py`
+- [x] T067 [P] [US3] Criar teste `test_ask_confirm_returns_bool` em `tests/unit/cli/shared/test_prompts.py`
+- [x] T068 [P] [US3] Criar teste `test_ask_confirm_keyboard_interrupt_returns_none` em `tests/unit/cli/shared/test_prompts.py`
+- [x] T069 [P] [US3] Criar teste `test_ask_select_returns_choice` em `tests/unit/cli/shared/test_prompts.py`
+- [x] T070 [P] [US3] Criar teste `test_ask_select_keyboard_interrupt_returns_none` em `tests/unit/cli/shared/test_prompts.py`
+- [x] T071 [P] [US3] Criar teste `test_ask_checkbox_returns_list` em `tests/unit/cli/shared/test_prompts.py`
+- [x] T072 [P] [US3] Criar teste `test_ask_checkbox_keyboard_interrupt_returns_none` em `tests/unit/cli/shared/test_prompts.py`
+- [x] T073 [P] [US3] Criar teste `test_prompts_non_interactive_returns_none` em `tests/unit/cli/shared/test_prompts.py`
 
 ### Implementação (GREEN)
 
-- [ ] T074 [US3] Implementar `ask_text()` em `src/cli/shared/ui/prompts.py` com estilo e Ctrl+C handling
-- [ ] T075 [US3] Implementar `ask_confirm()` com estilo e Ctrl+C handling
-- [ ] T076 [US3] Implementar `ask_select()` com estilo, instrução em português e Ctrl+C handling
-- [ ] T077 [US3] Implementar `ask_checkbox()` com estilo, instrução em português e Ctrl+C handling
-- [ ] T078 [US3] Implementar check `is_interactive()` retornando None se não-interativo
+- [x] T074 [US3] Implementar `ask_text()` em `src/cli/shared/ui/prompts.py` com estilo e Ctrl+C handling
+- [x] T075 [US3] Implementar `ask_confirm()` com estilo e Ctrl+C handling
+- [x] T076 [US3] Implementar `ask_select()` com estilo, instrução em português e Ctrl+C handling
+- [x] T077 [US3] Implementar `ask_checkbox()` com estilo, instrução em português e Ctrl+C handling
+- [x] T078 [US3] Implementar check `is_interactive()` retornando None se não-interativo
 
 ### Refactor
 
-- [ ] T079 [US3] Verificar testes passam e extrair decorator para Ctrl+C handling se útil
+- [x] T079 [US3] Verificar testes passam e extrair decorator para Ctrl+C handling se útil
 
 **Checkpoint US3**: Prompts funcionam com estilo e tratam interrupção graciosamente
 
@@ -239,22 +239,22 @@
 
 ### Testes TDD (RED)
 
-- [ ] T080 [P] [US4] Criar teste `test_approval_result_enum_values` em `tests/unit/cli/shared/test_prompts.py`
-- [ ] T081 [P] [US4] Criar teste `test_approval_result_inherits_str` em `tests/unit/cli/shared/test_prompts.py`
-- [ ] T082 [P] [US4] Criar teste `test_ask_approval_all_options` em `tests/unit/cli/shared/test_prompts.py`
-- [ ] T083 [P] [US4] Criar teste `test_ask_approval_no_edit` em `tests/unit/cli/shared/test_prompts.py`
-- [ ] T084 [P] [US4] Criar teste `test_ask_approval_no_skip` em `tests/unit/cli/shared/test_prompts.py`
-- [ ] T085 [P] [US4] Criar teste `test_ask_approval_keyboard_interrupt` em `tests/unit/cli/shared/test_prompts.py`
+- [x] T080 [P] [US4] Criar teste `test_approval_result_enum_values` em `tests/unit/cli/shared/test_prompts.py`
+- [x] T081 [P] [US4] Criar teste `test_approval_result_inherits_str` em `tests/unit/cli/shared/test_prompts.py`
+- [x] T082 [P] [US4] Criar teste `test_ask_approval_all_options` em `tests/unit/cli/shared/test_prompts.py`
+- [x] T083 [P] [US4] Criar teste `test_ask_approval_no_edit` em `tests/unit/cli/shared/test_prompts.py`
+- [x] T084 [P] [US4] Criar teste `test_ask_approval_no_skip` em `tests/unit/cli/shared/test_prompts.py`
+- [x] T085 [P] [US4] Criar teste `test_ask_approval_keyboard_interrupt` em `tests/unit/cli/shared/test_prompts.py`
 
 ### Implementação (GREEN)
 
-- [ ] T086 [US4] Implementar `ApprovalResult` enum em `src/cli/shared/ui/prompts.py`
-- [ ] T087 [US4] Implementar `ask_approval()` com opções condicionais
-- [ ] T088 [US4] Mapear seleção para `ApprovalResult` enum value
+- [x] T086 [US4] Implementar `ApprovalResult` enum em `src/cli/shared/ui/prompts.py`
+- [x] T087 [US4] Implementar `ask_approval()` com opções condicionais
+- [x] T088 [US4] Mapear seleção para `ApprovalResult` enum value
 
 ### Refactor
 
-- [ ] T089 [US4] Verificar testes passam e refatorar se necessário
+- [x] T089 [US4] Verificar testes passam e refatorar se necessário
 
 **Checkpoint US4**: `ask_approval()` pronto para uso em `02P-catalog-ai-enrichment`
 
@@ -264,11 +264,11 @@
 
 **Purpose**: Consolidar exports e verificar integração
 
-- [ ] T090 Criar `src/cli/shared/ui/__init__.py` com todos os exports públicos
-- [ ] T091 Criar `src/cli/shared/utils/__init__.py` com exports de terminal
-- [ ] T092 Criar `src/cli/shared/__init__.py` com re-exports de ui e utils
-- [ ] T093 [P] Criar teste `test_all_exports_importable` em `tests/unit/cli/shared/test_init.py`
-- [ ] T094 Verificar `from src.cli.shared.ui import *` funciona sem erros
+- [x] T090 Criar `src/cli/shared/ui/__init__.py` com todos os exports públicos
+- [x] T091 Criar `src/cli/shared/utils/__init__.py` com exports de terminal
+- [x] T092 Criar `src/cli/shared/__init__.py` com re-exports de ui e utils
+- [x] T093 [P] Criar teste `test_all_exports_importable` em `tests/unit/cli/shared/test_init.py`
+- [x] T094 Verificar `from src.cli.shared.ui import *` funciona sem erros
 
 **Checkpoint**: Todos os componentes importáveis via módulo público
 
@@ -278,17 +278,17 @@
 
 **Purpose**: Qualidade, documentação e verificação manual
 
-- [ ] T095 Executar `uv run ruff check src/cli/shared/ tests/unit/cli/shared/` - zero erros
-- [ ] T096 [P] Executar `uv run mypy src/cli/shared/ tests/unit/cli/shared/` - zero erros
-- [ ] T097 [P] Executar `uv run black src/cli/shared/ tests/unit/cli/shared/` - formatação ok
-- [ ] T098 Executar `uv run pytest tests/unit/cli/shared/ -v` - todos os testes passam
-- [ ] T099 [P] Verificação manual: painéis renderizam corretamente (60+ colunas)
-- [ ] T100 [P] Verificação manual: spinners animam sem flicker
-- [ ] T101 [P] Verificação manual: prompts respondem sem delay
-- [ ] T102 [P] Verificação manual: `NO_COLOR=1` output legível
-- [ ] T103 Atualizar docstrings conforme Google-style onde necessário
+- [x] T095 Executar `uv run ruff check src/cli/shared/ tests/unit/cli/shared/` - zero erros
+- [x] T096 [P] Executar `uv run mypy src/cli/shared/ tests/unit/cli/shared/` - zero erros
+- [x] T097 [P] Executar `uv run black src/cli/shared/ tests/unit/cli/shared/` - formatação ok
+- [x] T098 Executar `uv run pytest tests/unit/cli/shared/ -v` - todos os testes passam
+- [x] T099 [P] Verificação manual: painéis renderizam corretamente (60+ colunas)
+- [x] T100 [P] Verificação manual: spinners animam sem flicker
+- [x] T101 [P] Verificação manual: prompts respondem sem delay
+- [x] T102 [P] Verificação manual: `NO_COLOR=1` output legível
+- [x] T103 Atualizar docstrings conforme Google-style onde necessário
 
-**Checkpoint Final**: Qualidade validada, pronto para merge
+**Checkpoint Final**: Qualidade validada, pronto para merge ✅
 
 ---
 
@@ -389,15 +389,15 @@ Com múltiplos desenvolvedores após Phase 2:
 
 ## Success Criteria (from Spec)
 
-- [ ] **SC-001**: 100% dos componentes importáveis via `from src.cli.shared.ui import *`
-- [ ] **SC-002**: Zero erros de mypy/ruff/black
-- [ ] **SC-003**: Testes unitários cobrem lógica crítica (PhaseSpinner, Ctrl+C)
-- [ ] **SC-004**: Painéis renderizam em terminais 60+ colunas (manual)
-- [ ] **SC-005**: Spinners animam sem flicker (manual)
-- [ ] **SC-006**: Prompts respondem sem delay perceptível (manual)
-- [ ] **SC-007**: Output legível com `NO_COLOR=1` (manual)
-- [ ] **SC-008**: `ask_approval()` usável por plano 02P
-- [ ] **SC-009**: Painéis/spinners usáveis por plano 03P
+- [x] **SC-001**: 100% dos componentes importáveis via `from src.cli.shared.ui import *`
+- [x] **SC-002**: Zero erros de mypy/ruff/black
+- [x] **SC-003**: Testes unitários cobrem lógica crítica (PhaseSpinner, Ctrl+C)
+- [x] **SC-004**: Painéis renderizam em terminais 60+ colunas (manual)
+- [x] **SC-005**: Spinners animam sem flicker (manual)
+- [x] **SC-006**: Prompts respondem sem delay perceptível (manual)
+- [x] **SC-007**: Output legível com `NO_COLOR=1` (manual)
+- [x] **SC-008**: `ask_approval()` usável por plano 02P
+- [x] **SC-009**: Painéis/spinners usáveis por plano 03P
 
 ---
 
