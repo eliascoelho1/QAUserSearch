@@ -127,36 +127,36 @@
 
 #### Testes TDD (RED)
 
-- [ ] T042 [P] [US1] Criar teste `test_render_welcome_returns_panel` em `tests/unit/cli/chat/test_renderer.py`
-- [ ] T043 [P] [US1] Criar teste `test_render_welcome_contains_instructions` em `tests/unit/cli/chat/test_renderer.py`
-- [ ] T044 [P] [US1] Criar teste `test_render_interpretation_returns_panel` em `tests/unit/cli/chat/test_renderer.py`
-- [ ] T045 [P] [US1] Criar teste `test_render_interpretation_contains_summary` em `tests/unit/cli/chat/test_renderer.py`
-- [ ] T046 [P] [US1] Criar teste `test_render_interpretation_contains_entities_table` em `tests/unit/cli/chat/test_renderer.py`
-- [ ] T047 [P] [US1] Criar teste `test_render_interpretation_contains_filters_table` em `tests/unit/cli/chat/test_renderer.py`
-- [ ] T048 [P] [US1] Criar teste `test_render_query_returns_panel` em `tests/unit/cli/chat/test_renderer.py`
-- [ ] T049 [P] [US1] Criar teste `test_render_query_has_sql_syntax_highlight` em `tests/unit/cli/chat/test_renderer.py`
-- [ ] T050 [P] [US1] Criar teste `test_render_confidence_bar_high` em `tests/unit/cli/chat/test_renderer.py`
-- [ ] T051 [P] [US1] Criar teste `test_render_confidence_bar_medium` em `tests/unit/cli/chat/test_renderer.py`
-- [ ] T052 [P] [US1] Criar teste `test_render_confidence_bar_low` em `tests/unit/cli/chat/test_renderer.py`
-- [ ] T053 [P] [US1] Criar teste `test_render_history_returns_table` em `tests/unit/cli/chat/test_renderer.py`
-- [ ] T054 [P] [US1] Criar teste `test_render_help_returns_panel` em `tests/unit/cli/chat/test_renderer.py`
-- [ ] T055 [P] [US1] Criar teste `test_render_error_returns_panel` em `tests/unit/cli/chat/test_renderer.py`
+- [x] T042 [P] [US1] Criar teste `test_render_welcome_returns_panel` em `tests/unit/cli/chat/test_renderer.py`
+- [x] T043 [P] [US1] Criar teste `test_render_welcome_contains_instructions` em `tests/unit/cli/chat/test_renderer.py`
+- [x] T044 [P] [US1] Criar teste `test_render_interpretation_returns_panel` em `tests/unit/cli/chat/test_renderer.py`
+- [x] T045 [P] [US1] Criar teste `test_render_interpretation_contains_summary` em `tests/unit/cli/chat/test_renderer.py`
+- [x] T046 [P] [US1] Criar teste `test_render_interpretation_contains_entities_table` em `tests/unit/cli/chat/test_renderer.py`
+- [x] T047 [P] [US1] Criar teste `test_render_interpretation_contains_filters_table` em `tests/unit/cli/chat/test_renderer.py`
+- [x] T048 [P] [US1] Criar teste `test_render_query_returns_panel` em `tests/unit/cli/chat/test_renderer.py`
+- [x] T049 [P] [US1] Criar teste `test_render_query_has_sql_syntax_highlight` em `tests/unit/cli/chat/test_renderer.py`
+- [x] T050 [P] [US1] Criar teste `test_render_confidence_bar_high` em `tests/unit/cli/chat/test_renderer.py`
+- [x] T051 [P] [US1] Criar teste `test_render_confidence_bar_medium` em `tests/unit/cli/chat/test_renderer.py`
+- [x] T052 [P] [US1] Criar teste `test_render_confidence_bar_low` em `tests/unit/cli/chat/test_renderer.py`
+- [x] T053 [P] [US1] Criar teste `test_render_history_returns_table` em `tests/unit/cli/chat/test_renderer.py`
+- [x] T054 [P] [US1] Criar teste `test_render_help_returns_panel` em `tests/unit/cli/chat/test_renderer.py`
+- [x] T055 [P] [US1] Criar teste `test_render_error_returns_panel` em `tests/unit/cli/chat/test_renderer.py`
 
 #### Implementação (GREEN)
 
-- [ ] T056 [US1] Implementar `render_welcome()` em `src/cli/chat/renderer.py` (banner ASCII, instruções, exemplos)
-- [ ] T057 [US1] Implementar `render_confidence_bar()` em `src/cli/chat/renderer.py` (verde/âmbar/vermelho)
-- [ ] T058 [US1] Implementar `render_interpretation()` em `src/cli/chat/renderer.py` (resumo, confiança, entidades, filtros)
-- [ ] T059 [US1] Implementar `render_query()` em `src/cli/chat/renderer.py` (SQL com syntax highlighting)
-- [ ] T060 [US1] Implementar `render_history()` em `src/cli/chat/renderer.py`
-- [ ] T061 [US1] Implementar `render_help()` em `src/cli/chat/renderer.py`
-- [ ] T062 [US1] Implementar `render_error()` em `src/cli/chat/renderer.py`
+- [x] T056 [US1] Implementar `render_welcome()` em `src/cli/chat/renderer.py` (banner ASCII, instruções, exemplos)
+- [x] T057 [US1] Implementar `render_confidence_bar()` em `src/cli/chat/renderer.py` (verde/âmbar/vermelho)
+- [x] T058 [US1] Implementar `render_interpretation()` em `src/cli/chat/renderer.py` (resumo, confiança, entidades, filtros)
+- [x] T059 [US1] Implementar `render_query()` em `src/cli/chat/renderer.py` (SQL com syntax highlighting)
+- [x] T060 [US1] Implementar `render_history()` em `src/cli/chat/renderer.py`
+- [x] T061 [US1] Implementar `render_help()` em `src/cli/chat/renderer.py`
+- [x] T062 [US1] Implementar `render_error()` em `src/cli/chat/renderer.py`
 
 #### Refactor
 
-- [ ] T063 [US1] Verificar testes passam e refatorar se necessário
+- [x] T063 [US1] Verificar testes passam e refatorar se necessário
 
-**Checkpoint US1 Renderer**: Painéis renderizam corretamente
+**Checkpoint US1 Renderer**: Painéis renderizam corretamente ✅
 
 ---
 

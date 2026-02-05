@@ -24,6 +24,15 @@ from src.cli.chat.commands import (
     is_command,
     parse_command,
 )
+from src.cli.chat.renderer import (
+    render_confidence_bar,
+    render_error,
+    render_help,
+    render_history,
+    render_interpretation,
+    render_query,
+    render_welcome,
+)
 from src.cli.chat.session import ChatSession, QueryRecord
 
 __all__ = [
@@ -34,4 +43,11 @@ __all__ = [
     "execute_command",
     "is_command",
     "parse_command",
+    "render_confidence_bar",
+    "render_error",
+    "render_help",
+    "render_history",
+    "render_interpretation",
+    "render_query",
+    "render_welcome",
 ]
