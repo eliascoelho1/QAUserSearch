@@ -2,7 +2,10 @@
 
 **Data**: 2026-02-04  
 **Status**: Draft  
-**Autor**: Claude (AI Assistant)
+**Autor**: Claude (AI Assistant)  
+**Depende de**: [`00-cli-shared-ui.md`](./00-cli-shared-ui.md)
+
+---
 
 ## Objetivo
 
@@ -14,11 +17,12 @@ Criar um CLI chat moderno, visualmente impactante e intuitivo que permita aos us
 
 | Componente | Tecnologia | Versão | Justificativa |
 |------------|------------|--------|---------------|
-| **Output Visual** | Rich | ^13.9.0 | Formatação terminal avançada (panels, tables, spinners, markdown) |
-| **Input Interativo** | Questionary | ^2.0.0 | Prompts elegantes com seleção por setas |
+| **UI Compartilhada** | `src/cli/shared/` | - | Tema, componentes e prompts do plano 00 |
 | **WebSocket Client** | websockets | >=12.0 | Já instalado no projeto |
 | **CLI Framework** | Typer | >=0.15.0 | Já instalado, integração nativa com Rich |
 | **Async** | asyncio | stdlib | Necessário para WebSocket |
+
+> **Nota**: Rich e Questionary são gerenciados pelo plano [`00-cli-shared-ui.md`](./00-cli-shared-ui.md).
 
 ---
 
@@ -31,20 +35,24 @@ src/cli/
 ├── __init__.py
 ├── catalog.py              # CLI existente (mantido)
 ├── chat.py                 # Entry point do CLI chat ← NOVO
-├── chat/                   # Módulo do chat ← NOVO
-│   ├── __init__.py
-│   ├── client.py           # WebSocket client async
-│   ├── mock_client.py      # Mock client para desenvolvimento
+├── shared/                 # ← Do plano 00-cli-shared-ui.md
 │   ├── ui/
-│   │   ├── __init__.py
 │   │   ├── theme.py        # Tema de cores e estilos
 │   │   ├── components.py   # Componentes visuais reutilizáveis
-│   │   ├── renderer.py     # Renderiza mensagens do WebSocket
+│   │   ├── panels.py       # Painéis especializados
+│   │   ├── progress.py     # Spinners e barras de progresso
 │   │   └── prompts.py      # Prompts interativos (questionary)
-│   └── handlers/
-│       ├── __init__.py
-│       ├── message_handler.py   # Processa mensagens WS
-│       └── suggestion_handler.py # Processa e exibe sugestões
+│   └── utils/
+│       └── terminal.py     # Utilitários de terminal
+└── chat/                   # Módulo específico do chat ← NOVO
+    ├── __init__.py
+    ├── client.py           # WebSocket client async
+    ├── mock_client.py      # Mock client para desenvolvimento
+    ├── renderer.py         # Renderiza mensagens do WebSocket
+    └── handlers/
+        ├── __init__.py
+        ├── message_handler.py   # Processa mensagens WS
+        └── suggestion_handler.py # Processa e exibe sugestões
 ```
 
 ### Diagrama de Fluxo
@@ -109,35 +117,10 @@ src/cli/
 
 ## Design Visual (UX)
 
-### Paleta de Cores (Tema "Vibrant Modern")
+> **Nota**: A paleta de cores e estilos base estão definidos em [`00-cli-shared-ui.md`](./00-cli-shared-ui.md).
+> Este plano define apenas os componentes visuais específicos do chat.
 
-```python
-THEME = {
-    # Cores primárias
-    "primary": "#7C3AED",      # Roxo vibrante (brand)
-    "secondary": "#06B6D4",    # Cyan (destaques)
-    "accent": "#F59E0B",       # Âmbar (warnings/ênfase)
-    
-    # Status
-    "success": "#10B981",      # Verde esmeralda
-    "error": "#EF4444",        # Vermelho coral
-    "warning": "#F59E0B",      # Âmbar
-    "info": "#3B82F6",         # Azul
-    
-    # Confiança
-    "confidence_high": "#10B981",    # Verde (>70%)
-    "confidence_medium": "#F59E0B",  # Âmbar (50-70%)
-    "confidence_low": "#EF4444",     # Vermelho (<50%)
-    
-    # Neutros
-    "text": "#F9FAFB",         # Branco suave
-    "text_dim": "#9CA3AF",     # Cinza para texto secundário
-    "background": "#111827",   # Fundo escuro
-    "border": "#374151",       # Bordas sutis
-}
-```
-
-### Componentes Visuais
+### Componentes Visuais Específicos do Chat
 
 #### 1. Welcome Screen
 ```
@@ -311,83 +294,60 @@ qa-chat --server ws://localhost:8000/ws/query/interpret
 
 ## Implementação
 
-### Fase 1: Infraestrutura Base
+> **Pré-requisito**: O plano [`00-cli-shared-ui.md`](./00-cli-shared-ui.md) deve ser implementado primeiro.
+
+### Fase 1: WebSocket Client
 **Estimativa**: 2-3 horas
 
-1. **Adicionar dependências** ao `pyproject.toml`:
-   ```toml
-   "rich>=13.9.0",
-   "questionary>=2.0.0",
-   ```
-
-2. **Criar estrutura de diretórios**:
+1. **Criar estrutura de diretórios**:
    ```
    src/cli/chat/
-   src/cli/chat/ui/
    src/cli/chat/handlers/
    ```
 
-3. **Implementar tema** (`ui/theme.py`):
-   - Definir paleta de cores
-   - Criar estilos Rich reutilizáveis
-   - Criar estilo Questionary customizado
-
-4. **Adicionar entry point** no `pyproject.toml`:
+2. **Adicionar entry point** no `pyproject.toml`:
    ```toml
    [project.scripts]
    qa-chat = "src.cli.chat:app"
    ```
 
-### Fase 2: WebSocket Client
-**Estimativa**: 2-3 horas
-
-1. **Implementar `client.py`**:
+3. **Implementar `client.py`**:
    - Classe `WSChatClient` async
    - Métodos: `connect()`, `disconnect()`, `send_prompt()`, `receive_messages()`
    - Callback pattern para processar mensagens
    - Reconnection logic
 
-2. **Implementar `mock_client.py`**:
+4. **Implementar `mock_client.py`**:
    - Classe `MockChatClient` com mesma interface
    - Simula delays realistas
    - Retorna dados mock para cada fase
    - Suporta cenários de erro para testes
 
-### Fase 3: UI Components
-**Estimativa**: 3-4 horas
+### Fase 2: Chat-Specific UI Components
+**Estimativa**: 2-3 horas
 
-1. **Implementar `components.py`**:
-   - `WelcomePanel`: Banner ASCII + instruções
+> Usa componentes base de `src/cli/shared/ui/`
+
+1. **Implementar `renderer.py`**:
+   - `WelcomePanel`: Banner ASCII + instruções (usa `create_panel` do shared)
    - `InterpretationPanel`: Resumo + confiança + entidades + filtros
    - `QueryPanel`: SQL com syntax highlighting
-   - `ErrorPanel`: Erro + sugestões
-   - `ConfidenceBar`: Barra de progresso colorida
-   - `StatusSpinner`: Spinner com fases
+   - `MessageRenderer` class para orquestrar exibição
 
-2. **Implementar `renderer.py`**:
-   - `MessageRenderer` class
-   - Métodos para cada tipo de mensagem WS
-   - Live display com Rich
-
-3. **Implementar `prompts.py`**:
-   - `get_user_input()`: Prompt principal
-   - `show_suggestions()`: Questionary select
-   - `confirm_action()`: Confirmações
-
-### Fase 4: Handlers
+### Fase 3: Handlers
 **Estimativa**: 2-3 horas
 
 1. **Implementar `message_handler.py`**:
    - Processar cada tipo de mensagem WS
-   - Orquestrar atualizações de UI
+   - Orquestrar atualizações de UI (usando componentes shared)
    - Manter estado da sessão
 
 2. **Implementar `suggestion_handler.py`**:
    - Detectar quando mostrar sugestões
-   - Formatar opções para questionary
+   - Usar `ask_select` do shared para opções
    - Processar resposta do usuário
 
-### Fase 5: Entry Point e Integração
+### Fase 4: Entry Point e Integração
 **Estimativa**: 2-3 horas
 
 1. **Implementar `chat.py`**:
