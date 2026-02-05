@@ -214,3 +214,117 @@ class TestGetTerminalSize:
         with patch("shutil.get_terminal_size", side_effect=OSError("Not a terminal")):
             result = get_terminal_size(fallback=(100, 50))
             assert result == (100, 50)
+
+
+class TestCreateConsole:
+    """Tests for create_console factory function - TDD RED phase."""
+
+    def test_create_console_default(self) -> None:
+        """T027: Verify create_console returns a Rich Console with theme applied.
+
+        The factory should create a Console with the application theme
+        and auto-detect terminal capabilities.
+        """
+        from rich.console import Console
+
+        from src.cli.shared.utils.terminal import create_console
+
+        console = create_console()
+
+        # Should return a Rich Console instance
+        assert isinstance(console, Console)
+
+        # Verify theme has our semantic styles by checking style retrieval works
+        # get_style() returns the Style for a style name from the theme
+        success_style = console.get_style("success")
+        error_style = console.get_style("error")
+        warning_style = console.get_style("warning")
+        info_style = console.get_style("info")
+
+        # Styles should not be None (would raise error if not found)
+        assert success_style is not None
+        assert error_style is not None
+        assert warning_style is not None
+        assert info_style is not None
+
+    def test_create_console_no_color(self) -> None:
+        """T028: Verify create_console respects NO_COLOR environment variable.
+
+        When NO_COLOR is set, the Console should have no_color=True,
+        disabling all ANSI color output.
+        """
+        from src.cli.shared.utils.terminal import create_console
+
+        with patch.dict(os.environ, {"NO_COLOR": "1"}, clear=False):
+            console = create_console()
+
+            # Console should have color disabled
+            assert console.no_color is True
+
+    def test_create_console_no_unicode(self) -> None:
+        """T029: Verify create_console disables emoji on terminals without unicode.
+
+        On Windows without Windows Terminal, emoji should be disabled
+        to avoid displaying broken characters.
+        """
+        from src.cli.shared.utils.terminal import create_console
+
+        # Simulate Windows without Windows Terminal
+        env = os.environ.copy()
+        env.pop("WT_SESSION", None)
+
+        with (
+            patch("sys.platform", "win32"),
+            patch.dict(os.environ, env, clear=True),
+        ):
+            console = create_console()
+
+            # Console should have emoji disabled
+            assert console._emoji is False
+
+    def test_create_console_with_unicode(self) -> None:
+        """Verify create_console enables emoji on terminals with unicode support."""
+        from src.cli.shared.utils.terminal import create_console
+
+        # Simulate Unix system with unicode support
+        with patch("sys.platform", "darwin"):
+            console = create_console()
+
+            # Console should have emoji enabled (or default which is True)
+            assert console._emoji is True
+
+    def test_create_console_force_color(self) -> None:
+        """Verify create_console respects FORCE_COLOR environment variable."""
+        from src.cli.shared.utils.terminal import create_console
+
+        with (
+            patch.dict(os.environ, {"FORCE_COLOR": "1"}, clear=False),
+            patch("sys.stdout.isatty", return_value=False),
+        ):
+            console = create_console()
+
+            # Console should have color enabled despite non-TTY
+            assert console.no_color is False
+
+    def test_create_console_force_no_color(self) -> None:
+        """Verify create_console can be forced to disable colors via parameter."""
+        from src.cli.shared.utils.terminal import create_console
+
+        # Even without NO_COLOR env var, force_no_color parameter should work
+        env = os.environ.copy()
+        env.pop("NO_COLOR", None)
+
+        with patch.dict(os.environ, env, clear=True):
+            console = create_console(force_no_color=True)
+
+            assert console.no_color is True
+
+    def test_create_console_force_no_emoji(self) -> None:
+        """Verify create_console can be forced to disable emoji via parameter."""
+        from src.cli.shared.utils.terminal import create_console
+
+        # On Unix with unicode support, but force emoji off
+        with patch("sys.platform", "darwin"):
+            console = create_console(force_no_emoji=True)
+
+            assert console._emoji is False

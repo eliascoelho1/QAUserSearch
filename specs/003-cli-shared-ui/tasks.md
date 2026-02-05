@@ -110,18 +110,18 @@
 
 #### Testes TDD (RED)
 
-- [ ] T027 [P] [US7] Criar teste `test_create_console_default` em `tests/unit/cli/shared/test_terminal.py`
-- [ ] T028 [P] [US7] Criar teste `test_create_console_no_color` em `tests/unit/cli/shared/test_terminal.py`
-- [ ] T029 [P] [US7] Criar teste `test_create_console_no_unicode` em `tests/unit/cli/shared/test_terminal.py`
+- [x] T027 [P] [US7] Criar teste `test_create_console_default` em `tests/unit/cli/shared/test_terminal.py`
+- [x] T028 [P] [US7] Criar teste `test_create_console_no_color` em `tests/unit/cli/shared/test_terminal.py`
+- [x] T029 [P] [US7] Criar teste `test_create_console_no_unicode` em `tests/unit/cli/shared/test_terminal.py`
 
 #### Implementação (GREEN)
 
-- [ ] T030 [US7] Implementar `create_console()` em `src/cli/shared/utils/terminal.py`
-- [ ] T031 [US7] Integrar `get_rich_theme()` no console factory
+- [x] T030 [US7] Implementar `create_console()` em `src/cli/shared/utils/terminal.py`
+- [x] T031 [US7] Integrar `get_rich_theme()` no console factory
 
 #### Refactor
 
-- [ ] T032 [US7] Verificar testes passam e refatorar se necessário
+- [x] T032 [US7] Verificar testes passam e refatorar se necessário
 
 **Checkpoint Foundational**: Base completa - US1, US2, US3, US4 podem iniciar
 

@@ -14,6 +14,10 @@ Example:
 import os
 import shutil
 import sys
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from rich.console import Console
 
 
 def get_terminal_size(
@@ -113,3 +117,46 @@ def is_interactive() -> bool:
         return sys.stdin.isatty() and sys.stdout.isatty()
     except AttributeError:
         return False
+
+
+def create_console(
+    *,
+    force_no_color: bool = False,
+    force_no_emoji: bool = False,
+) -> "Console":
+    """Create a Rich Console pre-configured with the application theme.
+
+    Factory function that creates a Rich Console with:
+    - Application color theme applied
+    - Automatic color/unicode capability detection
+    - Respect for NO_COLOR and FORCE_COLOR environment variables
+
+    Args:
+        force_no_color: If True, disable colors regardless of terminal capability.
+        force_no_emoji: If True, disable emoji regardless of unicode support.
+
+    Returns:
+        Console: Rich Console instance configured for the current environment.
+
+    Example:
+        >>> console = create_console()
+        >>> console.print("[success]Operation complete![/success]")
+
+        >>> # Force no colors for testing
+        >>> console = create_console(force_no_color=True)
+    """
+    from rich.console import Console
+
+    from src.cli.shared.ui.theme import get_rich_theme
+
+    # Determine color support
+    no_color = force_no_color or not supports_color()
+
+    # Determine unicode/emoji support
+    use_emoji = not force_no_emoji and supports_unicode()
+
+    return Console(
+        theme=get_rich_theme(),
+        no_color=no_color,
+        emoji=use_emoji,
+    )
