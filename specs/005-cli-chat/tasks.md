@@ -209,29 +209,29 @@
 
 #### Testes TDD (RED)
 
-- [ ] T082 [P] [US2] Criar teste `test_message_handler_init` em `tests/unit/cli/chat/test_handlers.py`
-- [ ] T083 [P] [US2] Criar teste `test_handle_status_updates_spinner` em `tests/unit/cli/chat/test_handlers.py`
-- [ ] T084 [P] [US2] Criar teste `test_handle_chunk_appends_content` em `tests/unit/cli/chat/test_handlers.py`
-- [ ] T085 [P] [US2] Criar teste `test_handle_interpretation_renders_panel` em `tests/unit/cli/chat/test_handlers.py`
-- [ ] T086 [P] [US2] Criar teste `test_handle_interpretation_updates_session` em `tests/unit/cli/chat/test_handlers.py`
-- [ ] T087 [P] [US2] Criar teste `test_handle_query_renders_panel` em `tests/unit/cli/chat/test_handlers.py`
-- [ ] T088 [P] [US2] Criar teste `test_handle_query_updates_session` em `tests/unit/cli/chat/test_handlers.py`
-- [ ] T089 [P] [US2] Criar teste `test_handle_error_renders_error_panel` em `tests/unit/cli/chat/test_handlers.py`
+- [x] T082 [P] [US2] Criar teste `test_message_handler_init` em `tests/unit/cli/chat/test_handlers.py`
+- [x] T083 [P] [US2] Criar teste `test_handle_status_updates_spinner` em `tests/unit/cli/chat/test_handlers.py`
+- [x] T084 [P] [US2] Criar teste `test_handle_chunk_appends_content` em `tests/unit/cli/chat/test_handlers.py`
+- [x] T085 [P] [US2] Criar teste `test_handle_interpretation_renders_panel` em `tests/unit/cli/chat/test_handlers.py`
+- [x] T086 [P] [US2] Criar teste `test_handle_interpretation_updates_session` em `tests/unit/cli/chat/test_handlers.py`
+- [x] T087 [P] [US2] Criar teste `test_handle_query_renders_panel` em `tests/unit/cli/chat/test_handlers.py`
+- [x] T088 [P] [US2] Criar teste `test_handle_query_updates_session` em `tests/unit/cli/chat/test_handlers.py`
+- [x] T089 [P] [US2] Criar teste `test_handle_error_renders_error_panel` em `tests/unit/cli/chat/test_handlers.py`
 
 #### Implementação (GREEN)
 
-- [ ] T090 [US2] Implementar `MessageHandler.__init__()` em `src/cli/chat/handlers/message_handler.py`
-- [ ] T091 [US2] Implementar `MessageHandler.handle_status()` (atualiza PhaseSpinner)
-- [ ] T092 [US2] Implementar `MessageHandler.handle_chunk()` (streaming content)
-- [ ] T093 [US2] Implementar `MessageHandler.handle_interpretation()` (renderiza + atualiza session)
-- [ ] T094 [US2] Implementar `MessageHandler.handle_query()` (renderiza + atualiza session)
-- [ ] T095 [US2] Implementar `MessageHandler.handle_error()` (renderiza erro)
+- [x] T090 [US2] Implementar `MessageHandler.__init__()` em `src/cli/chat/handlers/message_handler.py`
+- [x] T091 [US2] Implementar `MessageHandler.handle_status()` (atualiza PhaseSpinner)
+- [x] T092 [US2] Implementar `MessageHandler.handle_chunk()` (streaming content)
+- [x] T093 [US2] Implementar `MessageHandler.handle_interpretation()` (renderiza + atualiza session)
+- [x] T094 [US2] Implementar `MessageHandler.handle_query()` (renderiza + atualiza session)
+- [x] T095 [US2] Implementar `MessageHandler.handle_error()` (renderiza erro)
 
 #### Refactor
 
-- [ ] T096 [US2] Verificar testes passam e refatorar se necessário
+- [x] T096 [US2] Verificar testes passam e refatorar se necessário
 
-**Checkpoint US2**: Feedback visual funciona com spinners e status
+**Checkpoint US2**: Feedback visual funciona com spinners e status ✅
 
 ---
 
