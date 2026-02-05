@@ -9,20 +9,21 @@
 │                                                                  │
 │  Responsibilities:                                               │
 │  - Parse feature description from $ARGUMENTS                     │
-│  - Invoke each step as subtask                                   │
-│  - Handle clarification batch (single pause)                     │
-│  - Collect and present final summary                             │
+│  - Launch each step as subtask via Task tool                     │
+│  - Delegate to /speckit.* commands (not replicate behavior)      │
+│  - Collect summary data from subtask results                     │
+│  - Present final consolidated summary                            │
 └─────────────────────────────────────────────────────────────────┘
                               │
     ┌─────────────────────────┼─────────────────────────────────┐
     │                         │                                  │
     ▼                         ▼                                  ▼
-┌─────────┐  result     ┌─────────┐  result     ┌─────────┐  ...
-│ SPECIFY │ ─────────▶  │ CLARIFY │ ─────────▶  │  PLAN   │
-│(subtask)│             │(subtask)│             │(subtask)│
-└─────────┘             └─────────┘             └─────────┘
-  Clean                   Clean                   Clean
-  Context                 Context                 Context
+┌───────────────┐       ┌───────────────┐       ┌───────────────┐
+│    SUBTASK    │       │    SUBTASK    │       │    SUBTASK    │
+│ /speckit.     │result │ /speckit.     │result │ /speckit.     │ ...
+│   specify     │──────▶│   clarify     │──────▶│    plan       │
+│(clean context)│       │(clean context)│       │(clean context)│
+└───────────────┘       └───────────────┘       └───────────────┘
 ```
 
 ## Execution Flow
@@ -31,122 +32,202 @@
 User: /fast-spec Add user authentication with OAuth2
 
 ┌─────────────────────────────────────────────────────────────────┐
-│ ORCHESTRATOR (fast-spec.md)                                      │
-│ - NOT a subtask (maintains context for orchestration)            │
-│ - Invokes each step as subtask                                   │
-│ - Collects results between steps                                 │
-│ - Single pause for clarifications (batch)                        │
+│ ORCHESTRATOR (fast-spec skill)                                   │
+│ - Runs in main context (not a subtask)                          │
+│ - Launches each step as subtask via Task tool                   │
+│ - Delegates to /speckit.* commands                              │
+│ - Collects minimal summary data between steps                   │
+│ - Waits for each subtask to complete before next                │
 └─────────────────────────────────────────────────────────────────┘
         │
-        │ 1. Invoke /fast-spec.specify with feature description
+        │ 1. Task(prompt="/speckit.specify <description>")
         ▼
 ┌─────────────────────────────────────────────────────────────────┐
-│ SPECIFY (subtask: true) - Clean Context                         │
+│ /speckit.specify (subtask) - Clean Context                      │
 │ - Creates branch + spec.md                                       │
-│ - Collects [NEEDS CLARIFICATION] markers                        │
-│ - Returns: branch_name, spec_path, clarifications[]             │
+│ - Runs quality validation checklist                              │
+│ - Handles initial clarifications (max 3)                         │
+│ - Returns: branch_name, spec_path                                │
 └─────────────────────────────────────────────────────────────────┘
         │
-        │ 2. If clarifications[] not empty:
-        │    PAUSE - Present batch questions to user
-        │    (Only interruption in the flow)
-        │
-        │ 3. Invoke /fast-spec.clarify with answers
+        │ 2. Task(prompt="/speckit.clarify")
         ▼
 ┌─────────────────────────────────────────────────────────────────┐
-│ CLARIFY (subtask: true) - Clean Context                         │
-│ - Applies answers to spec.md                                     │
-│ - Returns: spec_updated, remaining_issues                        │
+│ /speckit.clarify (subtask) - Clean Context                      │
+│ - Loads spec fresh from disk                                     │
+│ - Scans for ambiguities (taxonomy-based)                        │
+│ - Asks up to 5 sequential questions (may pause for user)        │
+│ - Updates spec with clarifications                               │
+│ - Returns: clarification_count, coverage_status                  │
 └─────────────────────────────────────────────────────────────────┘
         │
-        │ 4. Invoke /fast-spec.plan
+        │ 3. Task(prompt="/speckit.plan")
         ▼
 ┌─────────────────────────────────────────────────────────────────┐
-│ PLAN (subtask: true) - Clean Context                            │
+│ /speckit.plan (subtask) - Clean Context                         │
+│ - Loads spec.md and constitution.md fresh from disk             │
+│ - Runs Constitution Check                                        │
 │ - Generates research.md, data-model.md, contracts/, plan.md     │
+│ - Updates agent context (AGENTS.md)                              │
 │ - Returns: artifacts_created[], plan_path                        │
 └─────────────────────────────────────────────────────────────────┘
         │
-        │ 5. Invoke /fast-spec.tasks
+        │ 4. Task(prompt="/speckit.tasks")
         ▼
 ┌─────────────────────────────────────────────────────────────────┐
-│ TASKS (subtask: true) - Clean Context                           │
+│ /speckit.tasks (subtask) - Clean Context                        │
+│ - Loads plan.md, spec.md fresh from disk                        │
+│ - Maps user stories to tasks                                     │
 │ - Generates tasks.md with dependency ordering                    │
-│ - Returns: tasks_count, tasks_path                               │
+│ - Returns: tasks_count, phase_count, tasks_path                  │
 └─────────────────────────────────────────────────────────────────┘
         │
-        │ 6. Invoke /fast-spec.analyze
+        │ 5. Task(prompt="/speckit.analyze")
         ▼
 ┌─────────────────────────────────────────────────────────────────┐
-│ ANALYZE (subtask: true) - Clean Context                         │
-│ - Validates consistency (READ-ONLY)                              │
-│ - Returns: analysis_report, issues_by_severity                   │
+│ /speckit.analyze (subtask) - Clean Context                      │
+│ - Loads all artifacts fresh from disk (READ-ONLY)               │
+│ - Validates consistency across spec/plan/tasks                   │
+│ - Checks constitution alignment                                  │
+│ - Returns: coverage_percent, issues_by_severity, critical_list   │
 └─────────────────────────────────────────────────────────────────┘
         │
         ▼
 ┌─────────────────────────────────────────────────────────────────┐
-│ SUMMARY (orchestrator)                                           │
-│ - Presents consolidated summary                                  │
-│ - Links to all artifacts                                         │
-│ - Issues found by analyze                                        │
-│ - Suggested next steps                                           │
+│ SUMMARY (orchestrator context)                                   │
+│ - Consolidates results from all subtasks                        │
+│ - Lists all generated artifacts                                  │
+│ - Shows analysis metrics and issues                              │
+│ - Recommends next steps based on critical issues                │
 └─────────────────────────────────────────────────────────────────┘
 ```
 
+## Subtask Execution Pattern
+
+Each step uses the Task tool to launch a clean-context subtask:
+
+```
+Task(
+  description="[N/5] speckit.{command}",
+  prompt="/speckit.{command} {arguments}",
+  subagent_type="general"
+)
+```
+
+**Key points**:
+- `subagent_type="general"` ensures full capability
+- Each subtask reads artifacts fresh from disk
+- Subtask results contain only summary data (not full artifacts)
+- Orchestrator waits for completion before next step
+
 ## Step Returns
 
-| Step | Returns |
-|------|---------|
-| SPECIFY | `branch_name`, `spec_path`, `clarifications[]` |
-| CLARIFY | `spec_updated`, `remaining_issues` |
-| PLAN | `artifacts[]`, `plan_path` |
-| TASKS | `tasks_count`, `tasks_path` |
-| ANALYZE | `analysis_report`, `issues_by_severity` |
+| Step | Command | Returns |
+|------|---------|---------|
+| 1 | `/speckit.specify` | `branch_name`, `spec_path` |
+| 2 | `/speckit.clarify` | `clarification_count`, `coverage_status` |
+| 3 | `/speckit.plan` | `artifacts[]`, `plan_path` |
+| 4 | `/speckit.tasks` | `tasks_count`, `phase_count`, `tasks_path` |
+| 5 | `/speckit.analyze` | `coverage_percent`, `issues_by_severity`, `critical_list` |
+
+## Context Isolation
+
+### Why Clean Context Matters
+
+```
+WITHOUT subtasks (bad):
+┌────────────────────────────────────────────────────────┐
+│ Single Context                                          │
+│ ┌──────────┐ ┌──────────┐ ┌──────────┐ ┌──────────┐   │
+│ │ specify  │+│ clarify  │+│   plan   │+│  tasks   │   │
+│ │ output   │ │ output   │ │ output   │ │ output   │   │
+│ └──────────┘ └──────────┘ └──────────┘ └──────────┘   │
+│         CONTEXT GROWS → TOKEN OVERFLOW                 │
+└────────────────────────────────────────────────────────┘
+
+WITH subtasks (good):
+┌─────────────────────────────────────────────────────────┐
+│ Orchestrator (minimal context)                          │
+│ ┌─────────┐  ┌─────────┐  ┌─────────┐  ┌─────────┐    │
+│ │ branch  │  │ count   │  │ paths   │  │ metrics │    │
+│ │ path    │  │ status  │  │ list    │  │ issues  │    │
+│ └─────────┘  └─────────┘  └─────────┘  └─────────┘    │
+│     ▲            ▲            ▲            ▲           │
+└─────┼────────────┼────────────┼────────────┼───────────┘
+      │            │            │            │
+┌─────┴────┐ ┌─────┴────┐ ┌─────┴────┐ ┌─────┴────┐
+│ SUBTASK  │ │ SUBTASK  │ │ SUBTASK  │ │ SUBTASK  │
+│ specify  │ │ clarify  │ │  plan    │ │  tasks   │
+│(isolated)│ │(isolated)│ │(isolated)│ │(isolated)│
+└──────────┘ └──────────┘ └──────────┘ └──────────┘
+```
+
+### Benefits
+
+1. **Prevents token bloat**: Each subtask has fresh context
+2. **Avoids stale state**: Subtasks read from disk, not memory
+3. **Matches standalone**: `/speckit.plan` behaves same in pipeline or alone
+4. **Isolates failures**: One step failing doesn't corrupt others
 
 ## Troubleshooting
 
 ### Step Fails to Start
 
-1. Check if required speckit command exists
+1. Check if `/speckit.*` command exists in `.opencode/command/`
 2. Verify `.specify/` directory structure
 3. Ensure Git repository is initialized
+4. Check that previous step completed successfully
 
-### Clarifications Not Collected
+### Subtask Returns Error
 
-1. Check spec.md for `[NEEDS CLARIFICATION]` markers
-2. Verify SPECIFY step completed successfully
-3. Check for formatting issues in markers
+1. Review error message from subtask result
+2. Run the failed `/speckit.*` command standalone to debug
+3. Check prerequisites (spec.md exists for clarify, plan.md exists for tasks)
+4. Verify constitution.md is valid if plan fails
 
-### Context Pollution
+### Context Issues
 
-1. Ensure subtask commands have `subtask: true` in frontmatter
-2. Restart OpenCode session if issues persist
-3. Run steps individually to isolate problem
+1. Ensure using Task tool (not direct invocation) for each step
+2. Verify subtask results contain only summary data
+3. Restart session if context seems corrupted
+4. Run steps individually via `/speckit.*` commands
 
-### Analyze Reports Issues
+### Analyze Reports Critical Issues
 
-1. Review CRITICAL issues first
-2. Fix spec/plan/tasks as recommended
-3. Re-run `/fast-spec.analyze` to verify fixes
+1. Review CRITICAL issues first (blocks implementation)
+2. Fix in appropriate artifact (spec.md, plan.md, or tasks.md)
+3. Re-run `/speckit.analyze` standalone to verify fixes
+4. Only proceed to `/speckit.implement` when no CRITICAL issues
 
 ## Manual Step Execution
 
-For debugging, run steps individually:
+For debugging or iterative refinement, run speckit commands directly:
 
 ```
-/fast-spec.specify <description>   # Step 1
-/fast-spec.clarify                 # Step 2 (after answering questions)
-/fast-spec.plan                    # Step 3
-/fast-spec.tasks                   # Step 4
-/fast-spec.analyze                 # Step 5
+/speckit.specify <description>   # Step 1: Create spec
+/speckit.clarify                 # Step 2: Resolve ambiguities
+/speckit.plan                    # Step 3: Generate design
+/speckit.tasks                   # Step 4: Create task list
+/speckit.analyze                 # Step 5: Validate consistency
 ```
 
-## Comparison with Manual Execution
+**Note**: Running manually loses context isolation benefits but allows fine-grained control.
 
-| Aspect | Manual (`/speckit.*`) | Fast-Spec |
-|--------|----------------------|-----------|
-| Context | Accumulates | Clean per step |
-| User interruptions | Multiple | Single (clarify) |
-| Error isolation | Shared | Isolated |
-| Progress tracking | Manual | Automatic |
-| Final summary | None | Consolidated |
+## Comparison: Fast-Spec vs Manual
+
+| Aspect | Manual (`/speckit.*`) | `/fast-spec` |
+|--------|----------------------|--------------|
+| Context | Single (accumulates) | Clean per step (subtasks) |
+| Commands | Direct invocation | Delegates to same commands |
+| User pauses | At each command | Within subtasks (clarify) |
+| Error isolation | Shared context | Isolated per subtask |
+| Progress tracking | Manual | Automatic [N/5] indicators |
+| Final summary | None | Consolidated report |
+| When to use | Debugging, iteration | Full pipeline, new features |
+
+## Related Files
+
+- **Skill definition**: `.agents/skills/fast-spec/SKILL.md`
+- **Speckit commands**: `.opencode/command/speckit.*.md`
+- **Templates**: `.specify/templates/`
+- **Scripts**: `.specify/scripts/bash/`
