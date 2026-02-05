@@ -2,7 +2,8 @@
 
 **Data**: 2026-02-04  
 **Status**: Draft  
-**Autor**: Proposta baseada em análise do catálogo atual
+**Autor**: Proposta baseada em análise do catálogo atual  
+**Depende de**: [`01-cli-shared-ui.md`](./01-cli-shared-ui.md)
 
 ---
 
@@ -133,7 +134,7 @@ domain_categories:
 │           │                                                              │
 │           ▼                                                              │
 │  ┌─────────────────┐                                                     │
-│  │ 4. VALIDAÇÃO    │   CLI interativo (Questionary)                     │
+│  │ 4. VALIDAÇÃO    │   CLI interativo (usa shared/prompts)        │
 │  │    (Humano)     │   ┌─────────────────────────────────┐             │
 │  │                 │   │ ? O que fazer?                  │             │
 │  │                 │   │   ❯ ✓ Aprovar                   │             │
@@ -187,7 +188,7 @@ Com base na análise do catálogo atual:
 ### Exemplo de Sessão CLI
 
 ```bash
-$ uv run qa-catalog enrich credit invoice
+$ qa catalog enrich credit invoice
 
 ┌─────────────────────────────────────────────────────────────────────────┐
 │  🔍 Enriquecimento Semântico: credit.invoice                             │
@@ -256,40 +257,43 @@ $ uv run qa-catalog enrich credit invoice
 
 ## CLI Commands
 
+> **Nota**: O comando `qa` é o entry point unificado. Veja [03P-cli-chat.md](./03P-cli-chat.md) para detalhes.
+> O subcomando `catalog` agrupa todas as operações de catálogo.
+
 ### Enriquecimento Individual
 
 ```bash
 # Enriquecer uma tabela específica (modo interativo)
-uv run qa-catalog enrich credit invoice
+qa catalog enrich credit invoice
 
 # Enriquecer apenas campos específicos
-uv run qa-catalog enrich credit invoice --fields status,block_code,archived
+qa catalog enrich credit invoice --fields status,block_code,archived
 
 # Modo automático (sem validação humana) - para CI/CD
-uv run qa-catalog enrich credit invoice --auto-approve
+qa catalog enrich credit invoice --auto-approve
 
 # Especificar modelo LLM
-uv run qa-catalog enrich credit invoice --model gpt-4o
+qa catalog enrich credit invoice --model gpt-4o
 ```
 
 ### Enriquecimento em Batch
 
 ```bash
 # Enriquecer todas as tabelas conhecidas
-uv run qa-catalog enrich-all
+qa catalog enrich-all
 
 # Modo interativo com pause a cada 5 campos
-uv run qa-catalog enrich-all --interactive --batch-size 5
+qa catalog enrich-all --interactive --batch-size 5
 
 # Apenas campos prioritários (enumerable + presence > 0.9)
-uv run qa-catalog enrich-all --priority-only
+qa catalog enrich-all --priority-only
 ```
 
 ### Status e Estatísticas
 
 ```bash
 # Ver status de enriquecimento do catálogo
-uv run qa-catalog enrich-status
+qa catalog enrich-status
 
 # Exemplo de output:
 # ┌─────────────────────┬───────────┬──────────┬─────────────┐
@@ -301,10 +305,10 @@ uv run qa-catalog enrich-status
 # └─────────────────────┴───────────┴──────────┴─────────────┘
 
 # Listar campos pendentes de enriquecimento
-uv run qa-catalog enrich-pending
+qa catalog enrich-pending
 
 # Re-enriquecer campos já marcados como enriched
-uv run qa-catalog enrich credit invoice --force
+qa catalog enrich credit invoice --force
 ```
 
 ---
@@ -326,8 +330,20 @@ src/
 │   └── catalog_yaml_extractor.py      # (existente)
 │
 ├── cli/
-│   ├── catalog.py                     # (existente) + novos commands
-│   └── enrichment_ui.py               # NOVO: componentes Questionary
+│   ├── main.py                        # Entry point unificado `qa`
+│   ├── catalog.py                     # Subcomando `qa catalog` + novos commands
+│   ├── shared/                        # ← Do plano 00-cli-shared-ui.md
+│   │   ├── ui/
+│   │   │   ├── theme.py               # Tema de cores e estilos
+│   │   │   ├── components.py          # Componentes visuais
+│   │   │   ├── panels.py              # Painéis especializados
+│   │   │   ├── progress.py            # Spinners e barras
+│   │   │   └── prompts.py             # Prompts Questionary
+│   │   └── utils/
+│   │       └── terminal.py            # Utilitários de terminal
+│   └── enrichment/                    # NOVO: UI específica de enriquecimento
+│       ├── __init__.py
+│       └── panels.py                  # Painéis de exibição de enriquecimento
 │
 ├── schemas/
 │   ├── catalog_yaml.py                # (existente) + novos campos
@@ -472,6 +488,8 @@ Retorne APENAS o JSON, sem comentários ou markdown.
 
 ## Implementação: Roadmap
 
+> **Pré-requisito**: O plano [`01-cli-shared-ui.md`](./01-cli-shared-ui.md) deve ser implementado primeiro.
+
 ### Fase 1: Infraestrutura Base (4-5h)
 
 | ID | Tarefa | Estimativa | Prioridade |
@@ -506,20 +524,21 @@ Retorne APENAS o JSON, sem comentários ou markdown.
 
 ---
 
-### Fase 3: CLI Interativo (4-5h)
+### Fase 3: CLI Interativo (3-4h)
+
+> Usa componentes de `src/cli/shared/ui/` do plano 01
 
 | ID | Tarefa | Estimativa | Prioridade |
 |----|--------|------------|------------|
-| **E10** | Adicionar `questionary` ao `pyproject.toml` | 0.5h | P0 |
-| **E11** | Criar `enrichment_ui.py` com componentes visuais | 2h | P0 |
-| **E12** | Adicionar command `enrich` ao CLI | 1.5h | P0 |
-| **E13** | Adicionar command `enrich-all` ao CLI | 1h | P1 |
-| **E14** | Adicionar command `enrich-status` ao CLI | 1h | P1 |
+| **E10** | Criar `src/cli/enrichment/panels.py` com painéis específicos | 1h | P0 |
+| **E11** | Adicionar command `enrich` ao CLI (usa shared/prompts) | 1.5h | P0 |
+| **E12** | Adicionar command `enrich-all` ao CLI | 1h | P1 |
+| **E13** | Adicionar command `enrich-status` ao CLI | 0.5h | P1 |
 
 **Critérios de Aceite:**
-- [ ] CLI exibe enriquecimento com formatação clara
-- [ ] Questionary permite aprovar/editar/rejeitar
-- [ ] Progress bar atualiza em tempo real
+- [ ] CLI exibe enriquecimento com formatação clara (usa shared/panels)
+- [ ] `ask_approval` do shared permite aprovar/editar/rejeitar
+- [ ] Progress bar do shared atualiza em tempo real
 - [ ] Modo `--auto-approve` funciona sem interação
 
 ---
@@ -528,10 +547,10 @@ Retorne APENAS o JSON, sem comentários ou markdown.
 
 | ID | Tarefa | Estimativa | Prioridade |
 |----|--------|------------|------------|
-| **E15** | Criar `docs/context/invoice_status.md` | 1h | P1 |
-| **E16** | Criar `docs/context/account_types.md` | 1h | P1 |
-| **E17** | Expandir `card_status_bloqueios.md` com mais exemplos | 1h | P2 |
-| **E18** | Criar índice `docs/context/README.md` | 0.5h | P2 |
+| **E14** | Criar `docs/context/invoice_status.md` | 1h | P1 |
+| **E15** | Criar `docs/context/account_types.md` | 1h | P1 |
+| **E16** | Expandir `card_status_bloqueios.md` com mais exemplos | 1h | P2 |
+| **E17** | Criar índice `docs/context/README.md` | 0.5h | P2 |
 
 **Critérios de Aceite:**
 - [ ] Documentos seguem formato padronizado
@@ -544,10 +563,10 @@ Retorne APENAS o JSON, sem comentários ou markdown.
 
 | ID | Tarefa | Estimativa | Prioridade |
 |----|--------|------------|------------|
-| **E19** | Testes unitários para `llm_enricher` (mock OpenAI) | 1.5h | P0 |
-| **E20** | Testes unitários para `field_selector` | 1h | P0 |
-| **E21** | Testes de integração do fluxo completo | 2h | P0 |
-| **E22** | Testes de contrato para novos campos no schema | 1h | P1 |
+| **E18** | Testes unitários para `llm_enricher` (mock OpenAI) | 1.5h | P0 |
+| **E19** | Testes unitários para `field_selector` | 1h | P0 |
+| **E20** | Testes de integração do fluxo completo | 2h | P0 |
+| **E21** | Testes de contrato para novos campos no schema | 1h | P1 |
 
 **Critérios de Aceite:**
 - [ ] Cobertura de testes > 80%
@@ -560,9 +579,9 @@ Retorne APENAS o JSON, sem comentários ou markdown.
 
 | ID | Tarefa | Estimativa | Prioridade |
 |----|--------|------------|------------|
-| **E23** | Enriquecer `credit.invoice` (15 campos) | 1h | P0 |
-| **E24** | Enriquecer `credit.closed_invoice` (20 campos) | 1h | P1 |
-| **E25** | Enriquecer `card_account.card_main` (25 campos) | 1.5h | P1 |
+| **E22** | Enriquecer `credit.invoice` (15 campos) | 1h | P0 |
+| **E23** | Enriquecer `credit.closed_invoice` (20 campos) | 1h | P1 |
+| **E24** | Enriquecer `card_account.card_main` (25 campos) | 1.5h | P1 |
 
 **Critérios de Aceite:**
 - [ ] Campos prioritários enriquecidos e aprovados
@@ -571,7 +590,9 @@ Retorne APENAS o JSON, sem comentários ou markdown.
 
 ---
 
-**Total Estimado**: ~23-29 horas (~3-4 dias de trabalho)
+**Total Estimado**: ~21-26 horas (~3 dias de trabalho)
+
+> Nota: Tempo reduzido em ~2-3h pois infraestrutura de UI vem do plano 00.
 
 ---
 
@@ -582,7 +603,6 @@ Retorne APENAS o JSON, sem comentários ou markdown.
 | **LLM gera enriquecimentos incorretos** | Média | Alto | Validação humana obrigatória no CLI; criar test cases de referência |
 | **Custos de API OpenAI mais altos que estimado** | Baixa | Médio | Usar modelo mais barato (gpt-4o-mini); cache de prompts similares |
 | **Context builder injeta docs errados** | Média | Médio | Testar com múltiplos cenários; permitir override manual |
-| **Questionary conflita com async/threading** | Baixa | Médio | Isolar input em thread separada; usar `asyncio.to_thread` |
 | **Performance lenta em batch** | Baixa | Médio | Paralelizar chamadas OpenAI (max 5 concurrent); usar batch API se disponível |
 
 ---

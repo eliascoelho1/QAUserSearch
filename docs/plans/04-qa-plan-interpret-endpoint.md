@@ -4,12 +4,15 @@
 
 | Atributo | Valor |
 |----------|-------|
-| Endpoint | POST http://localhost:8001/api/v1/query/interpret |
+| **REST Endpoint** | POST http://localhost:8000/api/v1/query/interpret |
+| **WebSocket Endpoint** | ws://localhost:8000/ws/query/interpret |
 | Request | {"prompt": "..."} |
 | Timeout | 60s |
 | Performance Warning | > 10s |
 | Performance Failure | > 30s |
 | Confidence Threshold | 0.5 |
+
+> **Nota de Dependência**: Os testes das categorias 1 (Interpretação NL) e 2.6 (Sinônimos e Variações) dependem do **enriquecimento semântico do catálogo** estar completo. Veja [02P-catalog-ai-enrichment.md](./02P-catalog-ai-enrichment.md) para detalhes. Execute os testes de enriquecimento antes de rodar a suíte completa de QA.
 
 ---
 
@@ -284,13 +287,102 @@ VALID_COLUMNS = {
 
 ---
 
-## CATEGORIA 4: Performance (3 cenários)
+## CATEGORIA 4: Performance (3 cenários REST)
 
 | ID | Prompt | Complexidade | Warning | Failure |
 |----|--------|--------------|---------|---------|
 | 4.1 | "faturas vencidas" | Simples | > 10s | > 30s |
 | 4.2 | "cartoes virtuais platinum ativos do picpay" | Média | > 15s | > 45s |
 | 4.3 | "contas bloqueadas em creli com charge-off" | Alta | > 20s | > 60s |
+
+---
+
+## CATEGORIA 5: WebSocket (12 cenários)
+
+> **Contexto**: O CLI Chat (`qa chat`) consome a API via WebSocket para feedback em tempo real.
+> Estes testes garantem a qualidade do canal de streaming usado pelo cliente principal.
+
+### 5.1 Conexão e Handshake (3 cenários)
+
+| ID | Cenário | Critério de Sucesso | Timeout |
+|----|---------|---------------------|---------|
+| 5.1.1 | Conexão bem-sucedida | WebSocket aceito, status 101 | 5s |
+| 5.1.2 | Conexão com URL inválida | Erro 404 ou rejeição de upgrade | 5s |
+| 5.1.3 | Reconexão após disconnect | Segunda conexão bem-sucedida | 10s |
+
+**Validação:**
+
+```python
+async def validate_ws_connection(url: str) -> None:
+    async with websockets.connect(url) as ws:
+        assert ws.open
+        # Enviar ping para confirmar conexão ativa
+        pong = await ws.ping()
+        await asyncio.wait_for(pong, timeout=5)
+```
+
+### 5.2 Streaming de Mensagens (5 cenários)
+
+| ID | Cenário | Mensagens Esperadas | Ordem |
+|----|---------|---------------------|-------|
+| 5.2.1 | Prompt simples | status → chunks → interpretation → query | Sequencial |
+| 5.2.2 | Prompt ambíguo | status → error (AMBIGUOUS_PROMPT) | Sequencial |
+| 5.2.3 | Múltiplas fases | status (interpreting) → status (validating) → status (ready) | Sequencial |
+| 5.2.4 | Chunks de progresso | Pelo menos 2 chunks entre status inicial e final | Parcial |
+| 5.2.5 | Mensagem final completa | Última mensagem contém interpretation + query | - |
+
+**Validação:**
+
+```python
+async def validate_ws_streaming(ws, prompt: str, expected_phases: list[str]) -> None:
+    await ws.send(json.dumps({"prompt": prompt}))
+    
+    received_phases = []
+    async for message in ws:
+        data = json.loads(message)
+        if "status" in data:
+            received_phases.append(data["status"])
+        if data.get("status") == "ready" or data.get("status") == "error":
+            break
+    
+    # Verificar que todas as fases esperadas foram recebidas em ordem
+    for expected in expected_phases:
+        assert expected in received_phases, f"Fase '{expected}' não recebida"
+```
+
+### 5.3 Tratamento de Erros WebSocket (4 cenários)
+
+| ID | Cenário | Comportamento Esperado | Código |
+|----|---------|------------------------|--------|
+| 5.3.1 | Timeout de inatividade (60s) | Conexão fechada pelo servidor | 1000 |
+| 5.3.2 | Prompt inválido (JSON malformado) | Mensagem de erro + conexão mantida | - |
+| 5.3.3 | Desconexão durante processamento | Cleanup gracioso no servidor | - |
+| 5.3.4 | Rate limiting (se aplicável) | Erro 429 ou mensagem de throttle | - |
+
+**Validação:**
+
+```python
+async def validate_ws_error_handling(ws) -> None:
+    # Enviar JSON inválido
+    await ws.send("not-a-json")
+    
+    response = await ws.recv()
+    data = json.loads(response)
+    
+    assert data.get("type") == "error"
+    assert "JSON" in data.get("message", "").upper() or "parse" in data.get("message", "").lower()
+    
+    # Conexão deve permanecer aberta
+    assert ws.open
+```
+
+### 5.4 Validação de Schema WebSocket
+
+| ID | Campo | Critério |
+|----|-------|----------|
+| 5.4.1 | type | Um de: status, chunk, interpretation, query, error |
+| 5.4.2 | timestamp | ISO 8601 válido em todas as mensagens |
+| 5.4.3 | session_id | UUID consistente durante toda a sessão |
 
 ---
 
@@ -301,8 +393,9 @@ VALID_COLUMNS = {
 | 1. Interpretação NL | 30 |
 | 2. Ambiguidade | 19 |
 | 3. Validação Schema | 14 |
-| 4. Performance | 3 |
-| **TOTAL** | **66** |
+| 4. Performance REST | 3 |
+| 5. WebSocket | 12 |
+| **TOTAL** | **78** |
 
 ---
 
@@ -312,9 +405,10 @@ VALID_COLUMNS = {
 tests/qa/
 ├── __init__.py
 ├── config.py              # Configurações (BASE_URL, thresholds, tabelas válidas)
-├── test_cases.py          # Definição de todos os 66 casos de teste
+├── test_cases.py          # Definição de todos os 78 casos de teste
 ├── validators.py          # Funções de validação (schema, catálogo, filtros)
-├── executor.py            # Executor async com httpx
+├── executor.py            # Executor async com httpx (REST)
+├── ws_executor.py         # Executor async com websockets (WebSocket)
 ├── reporter.py            # Geração de relatórios MD + JSON
 └── run_qa.py              # Entry point CLI
 ```
@@ -322,7 +416,14 @@ tests/qa/
 **Comando de execução:**
 
 ```bash
-uv run python -m tests.qa.run_qa --base-url http://localhost:8001 --output-dir ./reports
+# Todos os testes (REST + WebSocket)
+uv run python -m tests.qa.run_qa --base-url http://localhost:8000 --output-dir ./reports
+
+# Apenas testes REST
+uv run python -m tests.qa.run_qa --base-url http://localhost:8000 --protocol rest
+
+# Apenas testes WebSocket
+uv run python -m tests.qa.run_qa --base-url ws://localhost:8000 --protocol websocket
 ```
 
 ---
@@ -331,14 +432,15 @@ uv run python -m tests.qa.run_qa --base-url http://localhost:8001 --output-dir .
 
 ### Priorização
 
-1. **P0 (Crítico)**: Categorias 3.3 (Validação de Filtros) e 1 (Interpretação NL básica)
-2. **P1 (Alto)**: Categorias 2 (Ambiguidade) e 3.1/3.2 (Schema)
-3. **P2 (Médio)**: Categoria 4 (Performance)
+1. **P0 (Crítico)**: Categorias 3.3 (Validação de Filtros), 1 (Interpretação NL básica), 5.1-5.2 (WebSocket conexão/streaming)
+2. **P1 (Alto)**: Categorias 2 (Ambiguidade), 3.1/3.2 (Schema), 5.3-5.4 (WebSocket erros/schema)
+3. **P2 (Médio)**: Categoria 4 (Performance REST)
 
 ### Dependências
 
 - Python 3.11+
-- httpx (async HTTP client)
+- httpx (async HTTP client para REST)
+- websockets (async WebSocket client)
 - pytest (test runner)
 - pyyaml (para validação contra catálogo YAML)
 - jsonschema (para validação de schema)
@@ -352,8 +454,11 @@ uv run pytest tests/qa/ -k "test_interpretation"
 # Rodar testes de ambiguidade
 uv run pytest tests/qa/ -k "test_ambiguity"
 
+# Rodar testes WebSocket
+uv run pytest tests/qa/ -k "test_websocket"
+
 # Rodar todos os testes com relatório
-uv run python -m tests.qa.run_qa --base-url http://localhost:8001 --output-dir ./reports --verbose
+uv run python -m tests.qa.run_qa --base-url http://localhost:8000 --output-dir ./reports --verbose
 
 # Rodar apenas testes críticos (P0)
 uv run pytest tests/qa/ -m critical
@@ -364,8 +469,12 @@ uv run pytest tests/qa/ -m critical
 - ✅ 100% dos testes de interpretação NL (categoria 1) devem passar
 - ✅ 100% dos testes de ambiguidade (categoria 2) devem retornar erro esperado
 - ✅ 100% dos testes de validação de schema (categoria 3) devem passar
+- ✅ 100% dos testes de WebSocket (categoria 5) devem passar
 - ⚠️ 90% dos testes de performance (categoria 4) devem estar dentro dos limites de warning
 - ❌ 0% dos testes de performance podem exceder os limites de failure
+
+> **Nota**: Os testes das categorias 1 e 2.6 requerem que o enriquecimento semântico do catálogo
+> esteja completo. Veja [02P-catalog-ai-enrichment.md](./02P-catalog-ai-enrichment.md).
 
 ---
 

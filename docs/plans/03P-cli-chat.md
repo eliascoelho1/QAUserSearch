@@ -3,7 +3,7 @@
 **Data**: 2026-02-04  
 **Status**: Draft  
 **Autor**: Claude (AI Assistant)  
-**Depende de**: [`00-cli-shared-ui.md`](./00-cli-shared-ui.md)
+**Depende de**: [`01-cli-shared-ui.md`](./01-cli-shared-ui.md)
 
 ---
 
@@ -17,12 +17,12 @@ Criar um CLI chat moderno, visualmente impactante e intuitivo que permita aos us
 
 | Componente | Tecnologia | Versão | Justificativa |
 |------------|------------|--------|---------------|
-| **UI Compartilhada** | `src/cli/shared/` | - | Tema, componentes e prompts do plano 00 |
+| **UI Compartilhada** | `src/cli/shared/` | - | Tema, componentes e prompts do plano 01 |
 | **WebSocket Client** | websockets | >=12.0 | Já instalado no projeto |
 | **CLI Framework** | Typer | >=0.15.0 | Já instalado, integração nativa com Rich |
 | **Async** | asyncio | stdlib | Necessário para WebSocket |
 
-> **Nota**: Rich e Questionary são gerenciados pelo plano [`00-cli-shared-ui.md`](./00-cli-shared-ui.md).
+> **Nota**: Rich e Questionary são gerenciados pelo plano [`01-cli-shared-ui.md`](./01-cli-shared-ui.md).
 
 ---
 
@@ -33,9 +33,10 @@ Criar um CLI chat moderno, visualmente impactante e intuitivo que permita aos us
 ```
 src/cli/
 ├── __init__.py
-├── catalog.py              # CLI existente (mantido)
-├── chat.py                 # Entry point do CLI chat ← NOVO
-├── shared/                 # ← Do plano 00-cli-shared-ui.md
+├── main.py                 # Entry point unificado (qa) ← NOVO
+├── catalog.py              # Subcomando `qa catalog` (existente, renomeado)
+├── chat.py                 # Subcomando `qa chat` ← NOVO
+├── shared/                 # ← Do plano 01-cli-shared-ui.md
 │   ├── ui/
 │   │   ├── theme.py        # Tema de cores e estilos
 │   │   ├── components.py   # Componentes visuais reutilizáveis
@@ -117,7 +118,7 @@ src/cli/
 
 ## Design Visual (UX)
 
-> **Nota**: A paleta de cores e estilos base estão definidos em [`00-cli-shared-ui.md`](./00-cli-shared-ui.md).
+> **Nota**: A paleta de cores e estilos base estão definidos em [`01-cli-shared-ui.md`](./01-cli-shared-ui.md).
 > Este plano define apenas os componentes visuais específicos do chat.
 
 ### Componentes Visuais Específicos do Chat
@@ -249,13 +250,13 @@ src/cli/
 ### 1. Inicialização
 ```bash
 # Iniciar o chat (modo padrão - WebSocket)
-qa-chat
+qa chat
 
 # Iniciar em modo mock (desenvolvimento)
-qa-chat --mock
+qa chat --mock
 
 # Especificar URL do servidor
-qa-chat --server ws://localhost:8000/ws/query/interpret
+qa chat --server ws://localhost:8000/ws/query/interpret
 ```
 
 ### 2. Loop Principal
@@ -294,7 +295,7 @@ qa-chat --server ws://localhost:8000/ws/query/interpret
 
 ## Implementação
 
-> **Pré-requisito**: O plano [`00-cli-shared-ui.md`](./00-cli-shared-ui.md) deve ser implementado primeiro.
+> **Pré-requisito**: O plano [`01-cli-shared-ui.md`](./01-cli-shared-ui.md) deve ser implementado primeiro.
 
 ### Fase 1: WebSocket Client
 **Estimativa**: 2-3 horas
@@ -308,8 +309,12 @@ qa-chat --server ws://localhost:8000/ws/query/interpret
 2. **Adicionar entry point** no `pyproject.toml`:
    ```toml
    [project.scripts]
-   qa-chat = "src.cli.chat:app"
+   qa = "src.cli.main:app"
    ```
+   
+   > **Nota**: O comando `qa` é o entry point unificado. Os subcomandos são:
+   > - `qa chat` - CLI de chat interativo (este plano)
+   > - `qa catalog` - CLI de catálogo existente
 
 3. **Implementar `client.py`**:
    - Classe `WSChatClient` async
@@ -365,40 +370,33 @@ qa-chat --server ws://localhost:8000/ws/query/interpret
 
 ## Tarefas (Checklist)
 
-### Fase 1: Infraestrutura Base
-- [ ] Adicionar `rich>=13.9.0` ao pyproject.toml
-- [ ] Adicionar `questionary>=2.0.0` ao pyproject.toml
+### Pré-requisito
+- [ ] Plano `01-cli-shared-ui.md` implementado
+
+### Fase 1: WebSocket Client
 - [ ] Criar diretório `src/cli/chat/`
-- [ ] Criar diretório `src/cli/chat/ui/`
 - [ ] Criar diretório `src/cli/chat/handlers/`
 - [ ] Criar `src/cli/chat/__init__.py`
-- [ ] Criar `src/cli/chat/ui/__init__.py`
 - [ ] Criar `src/cli/chat/handlers/__init__.py`
-- [ ] Implementar `src/cli/chat/ui/theme.py` com paleta de cores
-- [ ] Adicionar entry point `qa-chat` no pyproject.toml
-
-### Fase 2: WebSocket Client
+- [ ] Criar `src/cli/main.py` (entry point unificado `qa`)
+- [ ] Registrar subcomando `chat` no main.py
 - [ ] Implementar `src/cli/chat/client.py` (WSChatClient)
 - [ ] Implementar `src/cli/chat/mock_client.py` (MockChatClient)
 - [ ] Criar protocolo/interface comum para ambos os clients
 - [ ] Implementar reconnection logic no WSChatClient
 
-### Fase 3: UI Components
-- [ ] Implementar `WelcomePanel` em components.py
-- [ ] Implementar `InterpretationPanel` em components.py
+### Fase 2: Chat-Specific UI Components
+- [ ] Implementar `WelcomePanel` em renderer.py (usa shared/panels)
+- [ ] Implementar `InterpretationPanel` em renderer.py
 - [ ] Implementar `QueryPanel` com syntax highlighting
-- [ ] Implementar `ErrorPanel` em components.py
-- [ ] Implementar `ConfidenceBar` em components.py
-- [ ] Implementar `StatusSpinner` em components.py
 - [ ] Implementar `MessageRenderer` em renderer.py
-- [ ] Implementar prompts em prompts.py
 
-### Fase 4: Handlers
+### Fase 3: Handlers
 - [ ] Implementar `MessageHandler` em message_handler.py
-- [ ] Implementar `SuggestionHandler` em suggestion_handler.py
+- [ ] Implementar `SuggestionHandler` em suggestion_handler.py (usa shared/prompts)
 - [ ] Integrar handlers com UI components
 
-### Fase 5: Entry Point e Integração
+### Fase 4: Entry Point e Integração
 - [ ] Implementar `src/cli/chat.py` com Typer
 - [ ] Implementar comandos especiais (/exit, /help, /clear, /history)
 - [ ] Implementar loop principal assíncrono
@@ -451,8 +449,8 @@ qa-chat --server ws://localhost:8000/ws/query/interpret
 
 ## Referências
 
+- [01-cli-shared-ui.md](./01-cli-shared-ui.md) - Infraestrutura compartilhada (pré-requisito)
 - [Rich Documentation](https://rich.readthedocs.io/)
 - [Questionary Documentation](https://questionary.readthedocs.io/)
-- [CLI UX Patterns](.agents/skills/cli-ux-patterns/SKILL.md)
 - [WebSocket atual](src/api/v1/websocket/interpreter_ws.py)
 - [Schemas WebSocket](src/schemas/websocket.py)
