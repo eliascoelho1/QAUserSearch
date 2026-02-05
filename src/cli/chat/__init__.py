@@ -16,6 +16,7 @@ Modules:
     - handlers: Message handling for WebSocket responses
     - mock_client: Mock client for offline development
     - client: WebSocket client for real backend connection
+    - validation: Input validation and edge case handling
 """
 
 import asyncio
@@ -46,6 +47,15 @@ from src.cli.chat.renderer import (
     render_welcome,
 )
 from src.cli.chat.session import ChatSession, QueryRecord
+from src.cli.chat.validation import (
+    ResponseTimeoutError,
+    ValidationError,
+    check_terminal_width,
+    get_response_timeout,
+    get_terminal_info,
+    is_interactive_terminal,
+    validate_prompt,
+)
 from src.schemas.websocket import (
     WSChunkMessage,
     WSErrorMessage,
@@ -74,6 +84,7 @@ class ChatLoop:
         client: The chat client (mock or WebSocket).
         handler: Message handler for processing responses.
         server_url: WebSocket server URL (used when toggling mock mode).
+        is_interactive: Whether running in an interactive terminal.
     """
 
     def __init__(
@@ -87,7 +98,18 @@ class ChatLoop:
             mock_mode: Whether to start in mock mode (offline).
             server_url: WebSocket server URL for real mode.
         """
-        self.console = Console()
+        # Detect terminal capabilities
+        terminal_info = get_terminal_info()
+        self.is_interactive = terminal_info.is_tty
+
+        # Configure console based on terminal capabilities
+        # force_terminal=False for non-TTY to avoid escape codes
+        self.console = Console(
+            force_terminal=self.is_interactive,
+            no_color=not terminal_info.supports_color,
+            width=terminal_info.width if terminal_info.is_narrow else None,
+        )
+
         self.session = ChatSession(mock_mode=mock_mode)
         self.server_url = server_url or DEFAULT_SERVER_URL
         self._running = True
@@ -116,6 +138,11 @@ class ChatLoop:
 
     def _display_welcome(self) -> None:
         """Display the welcome screen."""
+        # Check terminal width and show warning if narrow
+        width_warning = check_terminal_width()
+        if width_warning:
+            self.console.print(f"[yellow]{width_warning}[/yellow]\n")
+
         welcome = render_welcome()
         self.console.print(welcome)
 
@@ -127,6 +154,13 @@ class ChatLoop:
         else:
             self.console.print(
                 f"[dim italic]Conectando a: {self.server_url}[/dim italic]\n"
+            )
+
+        # Show non-interactive warning
+        if not self.is_interactive:
+            self.console.print(
+                "[yellow]Modo não-interativo detectado. "
+                "Para entrada interativa, use um terminal TTY.[/yellow]\n"
             )
 
     def _get_user_input(self) -> str | None:
@@ -180,12 +214,24 @@ class ChatLoop:
     async def _process_query(self, prompt: str) -> None:
         """Process a natural language query.
 
+        Validates the prompt, sends it to the server (with timeout),
+        and handles the response messages.
+
         Args:
             prompt: The user's natural language query.
         """
+        # Validate prompt first
+        try:
+            validated_prompt = validate_prompt(prompt)
+        except ValidationError as e:
+            self.console.print(f"[bold red]Erro de validação:[/bold red] {e.message}")
+            if e.suggestion:
+                self.console.print(f"[dim]{e.suggestion}[/dim]")
+            return
+
         self._processing = True
         self.handler.reset()
-        self.handler.set_current_prompt(prompt)
+        self.handler.set_current_prompt(validated_prompt)
 
         try:
             # Show spinner while processing
@@ -197,35 +243,47 @@ class ChatLoop:
                     status.update("[bold cyan]Conectando...[/bold cyan]")
                     await self.client.connect()
 
-                # Send prompt and process messages
-                async for message in self.client.send_prompt(prompt):
-                    if isinstance(message, WSStatusMessage):
-                        status_msg = message.data.get("message", "Processando...")
-                        status.update(f"[bold cyan]{status_msg}[/bold cyan]")
-                        self.handler.handle_status(status_msg)
+                # Send prompt and process messages with timeout
+                timeout = get_response_timeout()
+                try:
+                    async with asyncio.timeout(timeout):
+                        async for message in self.client.send_prompt(validated_prompt):
+                            if isinstance(message, WSStatusMessage):
+                                status_msg = message.data.get(
+                                    "message", "Processando..."
+                                )
+                                status.update(f"[bold cyan]{status_msg}[/bold cyan]")
+                                self.handler.handle_status(status_msg)
 
-                    elif isinstance(message, WSChunkMessage):
-                        content = message.data.get("content", "")
-                        self.handler.handle_chunk(content)
+                            elif isinstance(message, WSChunkMessage):
+                                content = message.data.get("content", "")
+                                self.handler.handle_chunk(content)
 
-                    elif isinstance(message, WSInterpretationMessage):
-                        # Stop spinner before rendering panel
-                        status.stop()
-                        self.handler.handle_interpretation(message.data)
-                        # Restart spinner for query generation
-                        status.start()
-                        status.update("[bold cyan]Gerando query...[/bold cyan]")
+                            elif isinstance(message, WSInterpretationMessage):
+                                # Stop spinner before rendering panel
+                                status.stop()
+                                self.handler.handle_interpretation(message.data)
+                                # Restart spinner for query generation
+                                status.start()
+                                status.update("[bold cyan]Gerando query...[/bold cyan]")
 
-                    elif isinstance(message, WSQueryMessage):
-                        # Stop spinner before rendering panel
-                        status.stop()
-                        self.handler.handle_query(message.data)
+                            elif isinstance(message, WSQueryMessage):
+                                # Stop spinner before rendering panel
+                                status.stop()
+                                self.handler.handle_query(message.data)
 
-                    elif isinstance(message, WSErrorMessage):
-                        # Stop spinner before rendering error
-                        status.stop()
-                        self.handler.handle_error(message.data)
+                            elif isinstance(message, WSErrorMessage):
+                                # Stop spinner before rendering error
+                                status.stop()
+                                self.handler.handle_error(message.data)
+                except TimeoutError:
+                    raise ResponseTimeoutError(timeout) from None
 
+        except ResponseTimeoutError as e:
+            self.console.print(f"[bold red]Timeout:[/bold red] {e.message}")
+            self.console.print(
+                "[dim]Tente novamente ou use /mock para modo offline.[/dim]"
+            )
         except ConnectionError as e:
             self.console.print(f"[bold red]Erro de conexão:[/bold red] {e}")
             self.console.print(
@@ -329,8 +387,14 @@ __all__ = [
     "CommandResult",
     "CommandType",
     "QueryRecord",
+    "ResponseTimeoutError",
+    "ValidationError",
+    "check_terminal_width",
     "execute_command",
+    "get_response_timeout",
+    "get_terminal_info",
     "is_command",
+    "is_interactive_terminal",
     "parse_command",
     "render_confidence_bar",
     "render_error",
@@ -340,4 +404,5 @@ __all__ = [
     "render_query",
     "render_welcome",
     "run_chat",
+    "validate_prompt",
 ]
