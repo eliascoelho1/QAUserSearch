@@ -170,32 +170,32 @@
 
 #### Testes TDD (RED)
 
-- [ ] T064 [P] [US4] Criar teste `test_mock_client_connect_succeeds` em `tests/unit/cli/chat/test_mock_client.py`
-- [ ] T065 [P] [US4] Criar teste `test_mock_client_is_connected` em `tests/unit/cli/chat/test_mock_client.py`
-- [ ] T066 [P] [US4] Criar teste `test_mock_client_disconnect` em `tests/unit/cli/chat/test_mock_client.py`
-- [ ] T067 [P] [US4] Criar teste `test_mock_client_send_prompt_normal` em `tests/unit/cli/chat/test_mock_client.py`
-- [ ] T068 [P] [US4] Criar teste `test_mock_client_send_prompt_returns_status_messages` em `tests/unit/cli/chat/test_mock_client.py`
-- [ ] T069 [P] [US4] Criar teste `test_mock_client_send_prompt_returns_interpretation` em `tests/unit/cli/chat/test_mock_client.py`
-- [ ] T070 [P] [US4] Criar teste `test_mock_client_send_prompt_returns_query` em `tests/unit/cli/chat/test_mock_client.py`
-- [ ] T071 [P] [US4] Criar teste `test_mock_client_error_keyword` em `tests/unit/cli/chat/test_mock_client.py`
-- [ ] T072 [P] [US4] Criar teste `test_mock_client_ambiguity_keyword` em `tests/unit/cli/chat/test_mock_client.py`
-- [ ] T073 [P] [US4] Criar teste `test_mock_client_simulates_delay` em `tests/unit/cli/chat/test_mock_client.py`
+- [x] T064 [P] [US4] Criar teste `test_mock_client_connect_succeeds` em `tests/unit/cli/chat/test_mock_client.py`
+- [x] T065 [P] [US4] Criar teste `test_mock_client_is_connected` em `tests/unit/cli/chat/test_mock_client.py`
+- [x] T066 [P] [US4] Criar teste `test_mock_client_disconnect` em `tests/unit/cli/chat/test_mock_client.py`
+- [x] T067 [P] [US4] Criar teste `test_mock_client_send_prompt_normal` em `tests/unit/cli/chat/test_mock_client.py`
+- [x] T068 [P] [US4] Criar teste `test_mock_client_send_prompt_returns_status_messages` em `tests/unit/cli/chat/test_mock_client.py`
+- [x] T069 [P] [US4] Criar teste `test_mock_client_send_prompt_returns_interpretation` em `tests/unit/cli/chat/test_mock_client.py`
+- [x] T070 [P] [US4] Criar teste `test_mock_client_send_prompt_returns_query` em `tests/unit/cli/chat/test_mock_client.py`
+- [x] T071 [P] [US4] Criar teste `test_mock_client_error_keyword` em `tests/unit/cli/chat/test_mock_client.py`
+- [x] T072 [P] [US4] Criar teste `test_mock_client_ambiguity_keyword` em `tests/unit/cli/chat/test_mock_client.py`
+- [x] T073 [P] [US4] Criar teste `test_mock_client_simulates_delay` em `tests/unit/cli/chat/test_mock_client.py`
 
 #### Implementação (GREEN)
 
-- [ ] T074 [US4] Implementar `MockChatClient.__init__()` em `src/cli/chat/mock_client.py`
-- [ ] T075 [US4] Implementar `MockChatClient.connect()` e `disconnect()`
-- [ ] T076 [US4] Implementar `MockChatClient.is_connected` property
-- [ ] T077 [US4] Implementar `MockChatClient.send_prompt()` com cenário normal
-- [ ] T078 [US4] Implementar cenário "erro" em `send_prompt()` (retorna WSErrorMessage)
-- [ ] T079 [US4] Implementar cenário "ambiguidade" em `send_prompt()` (retorna com ambiguities)
-- [ ] T080 [US4] Implementar delays simulados (500-2000ms)
+- [x] T074 [US4] Implementar `MockChatClient.__init__()` em `src/cli/chat/mock_client.py`
+- [x] T075 [US4] Implementar `MockChatClient.connect()` e `disconnect()`
+- [x] T076 [US4] Implementar `MockChatClient.is_connected` property
+- [x] T077 [US4] Implementar `MockChatClient.send_prompt()` com cenário normal
+- [x] T078 [US4] Implementar cenário "erro" em `send_prompt()` (retorna WSErrorMessage)
+- [x] T079 [US4] Implementar cenário "ambiguidade" em `send_prompt()` (retorna com ambiguities)
+- [x] T080 [US4] Implementar delays simulados (500-2000ms)
 
 #### Refactor
 
-- [ ] T081 [US4] Verificar testes passam e refatorar se necessário
+- [x] T081 [US4] Verificar testes passam e refatorar se necessário
 
-**Checkpoint US4**: Modo mock funciona 100% offline
+**Checkpoint US4**: Modo mock funciona 100% offline ✅
 
 ---
 
