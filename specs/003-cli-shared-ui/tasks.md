@@ -49,24 +49,24 @@
 
 #### Testes TDD (RED)
 
-- [ ] T004 [P] [US5] Criar teste `test_colors_constants_exist` em `tests/unit/cli/shared/test_theme.py`
-- [ ] T005 [P] [US5] Criar teste `test_colors_are_valid_hex` em `tests/unit/cli/shared/test_theme.py`
-- [ ] T006 [P] [US5] Criar teste `test_get_icon_unicode` em `tests/unit/cli/shared/test_theme.py`
-- [ ] T007 [P] [US5] Criar teste `test_get_icon_ascii_fallback` em `tests/unit/cli/shared/test_theme.py`
-- [ ] T008 [P] [US5] Criar teste `test_get_rich_theme_returns_theme` em `tests/unit/cli/shared/test_theme.py`
-- [ ] T009 [P] [US5] Criar teste `test_get_questionary_style_returns_style` em `tests/unit/cli/shared/test_theme.py`
+- [x] T004 [P] [US5] Criar teste `test_colors_constants_exist` em `tests/unit/cli/shared/test_theme.py`
+- [x] T005 [P] [US5] Criar teste `test_colors_are_valid_hex` em `tests/unit/cli/shared/test_theme.py`
+- [x] T006 [P] [US5] Criar teste `test_get_icon_unicode` em `tests/unit/cli/shared/test_theme.py`
+- [x] T007 [P] [US5] Criar teste `test_get_icon_ascii_fallback` em `tests/unit/cli/shared/test_theme.py`
+- [x] T008 [P] [US5] Criar teste `test_get_rich_theme_returns_theme` em `tests/unit/cli/shared/test_theme.py`
+- [x] T009 [P] [US5] Criar teste `test_get_questionary_style_returns_style` em `tests/unit/cli/shared/test_theme.py`
 
 #### Implementação (GREEN)
 
-- [ ] T010 [US5] Implementar `COLORS` namespace em `src/cli/shared/ui/theme.py`
-- [ ] T011 [US5] Implementar `IconType` enum e mapeamentos `ICONS_EMOJI`/`ICONS_ASCII`
-- [ ] T012 [US5] Implementar `get_icon(icon_type, use_unicode)` em `src/cli/shared/ui/theme.py`
-- [ ] T013 [US5] Implementar `get_rich_theme()` em `src/cli/shared/ui/theme.py`
-- [ ] T014 [US5] Implementar `get_questionary_style()` em `src/cli/shared/ui/theme.py`
+- [x] T010 [US5] Implementar `COLORS` namespace em `src/cli/shared/ui/theme.py`
+- [x] T011 [US5] Implementar `IconType` enum e mapeamentos `ICONS_EMOJI`/`ICONS_ASCII`
+- [x] T012 [US5] Implementar `get_icon(icon_type, use_unicode)` em `src/cli/shared/ui/theme.py`
+- [x] T013 [US5] Implementar `get_rich_theme()` em `src/cli/shared/ui/theme.py`
+- [x] T014 [US5] Implementar `get_questionary_style()` em `src/cli/shared/ui/theme.py`
 
 #### Refactor
 
-- [ ] T015 [US5] Verificar testes passam e refatorar se necessário
+- [x] T015 [US5] Verificar testes passam e refatorar se necessário
 
 **Checkpoint US5**: `from src.cli.shared.ui.theme import COLORS, get_rich_theme` funciona
 
