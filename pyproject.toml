@@ -45,6 +45,7 @@ build-backend = "hatchling.build"
 packages = ["src"]
 
 [project.scripts]
+qa = "src.cli.main:app"
 qa-catalog = "src.cli.catalog:app"
 
 [tool.ruff]

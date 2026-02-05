@@ -315,22 +315,22 @@
 
 #### Testes TDD (RED)
 
-- [ ] T125 [P] [US7] Criar teste `test_qa_help_lists_subcommands` em `tests/unit/cli/test_main.py`
-- [ ] T126 [P] [US7] Criar teste `test_qa_chat_help` em `tests/unit/cli/test_main.py`
-- [ ] T127 [P] [US7] Criar teste `test_qa_catalog_help` em `tests/unit/cli/test_main.py`
+- [x] T125 [P] [US7] Criar teste `test_qa_help_lists_subcommands` em `tests/unit/cli/test_main.py`
+- [x] T126 [P] [US7] Criar teste `test_qa_chat_help` em `tests/unit/cli/test_main.py`
+- [x] T127 [P] [US7] Criar teste `test_qa_catalog_help` em `tests/unit/cli/test_main.py`
 
 #### Implementação (GREEN)
 
-- [ ] T128 [US7] Criar `src/cli/main.py` com Typer app principal
-- [ ] T129 [US7] Registrar subcomando `catalog` (existente)
-- [ ] T130 [US7] Implementar `chat` command com flags `--mock` e `--server`
-- [ ] T131 [US7] Atualizar `pyproject.toml` scripts para usar `qa` entry point
+- [x] T128 [US7] Criar `src/cli/main.py` com Typer app principal
+- [x] T129 [US7] Registrar subcomando `catalog` (existente)
+- [x] T130 [US7] Implementar `chat` command com flags `--mock` e `--server`
+- [x] T131 [US7] Atualizar `pyproject.toml` scripts para usar `qa` entry point
 
 #### Refactor
 
-- [ ] T132 [US7] Verificar testes passam e refatorar se necessário
+- [x] T132 [US7] Verificar testes passam e refatorar se necessário
 
-**Checkpoint US7**: `qa chat --mock` e `qa catalog` funcionam
+**Checkpoint US7**: `qa chat --mock` e `qa catalog` funcionam ✅
 
 ---
 
