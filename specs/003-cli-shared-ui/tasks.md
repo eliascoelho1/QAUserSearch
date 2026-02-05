@@ -264,11 +264,11 @@
 
 **Purpose**: Consolidar exports e verificar integração
 
-- [ ] T090 Criar `src/cli/shared/ui/__init__.py` com todos os exports públicos
-- [ ] T091 Criar `src/cli/shared/utils/__init__.py` com exports de terminal
-- [ ] T092 Criar `src/cli/shared/__init__.py` com re-exports de ui e utils
-- [ ] T093 [P] Criar teste `test_all_exports_importable` em `tests/unit/cli/shared/test_init.py`
-- [ ] T094 Verificar `from src.cli.shared.ui import *` funciona sem erros
+- [x] T090 Criar `src/cli/shared/ui/__init__.py` com todos os exports públicos
+- [x] T091 Criar `src/cli/shared/utils/__init__.py` com exports de terminal
+- [x] T092 Criar `src/cli/shared/__init__.py` com re-exports de ui e utils
+- [x] T093 [P] Criar teste `test_all_exports_importable` em `tests/unit/cli/shared/test_init.py`
+- [x] T094 Verificar `from src.cli.shared.ui import *` funciona sem erros
 
 **Checkpoint**: Todos os componentes importáveis via módulo público
 
