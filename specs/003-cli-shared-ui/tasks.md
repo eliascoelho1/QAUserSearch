@@ -205,27 +205,27 @@
 
 ### Testes TDD (RED)
 
-- [ ] T065 [P] [US3] Criar teste `test_ask_text_returns_input` em `tests/unit/cli/shared/test_prompts.py`
-- [ ] T066 [P] [US3] Criar teste `test_ask_text_keyboard_interrupt_returns_none` em `tests/unit/cli/shared/test_prompts.py`
-- [ ] T067 [P] [US3] Criar teste `test_ask_confirm_returns_bool` em `tests/unit/cli/shared/test_prompts.py`
-- [ ] T068 [P] [US3] Criar teste `test_ask_confirm_keyboard_interrupt_returns_none` em `tests/unit/cli/shared/test_prompts.py`
-- [ ] T069 [P] [US3] Criar teste `test_ask_select_returns_choice` em `tests/unit/cli/shared/test_prompts.py`
-- [ ] T070 [P] [US3] Criar teste `test_ask_select_keyboard_interrupt_returns_none` em `tests/unit/cli/shared/test_prompts.py`
-- [ ] T071 [P] [US3] Criar teste `test_ask_checkbox_returns_list` em `tests/unit/cli/shared/test_prompts.py`
-- [ ] T072 [P] [US3] Criar teste `test_ask_checkbox_keyboard_interrupt_returns_none` em `tests/unit/cli/shared/test_prompts.py`
-- [ ] T073 [P] [US3] Criar teste `test_prompts_non_interactive_returns_none` em `tests/unit/cli/shared/test_prompts.py`
+- [x] T065 [P] [US3] Criar teste `test_ask_text_returns_input` em `tests/unit/cli/shared/test_prompts.py`
+- [x] T066 [P] [US3] Criar teste `test_ask_text_keyboard_interrupt_returns_none` em `tests/unit/cli/shared/test_prompts.py`
+- [x] T067 [P] [US3] Criar teste `test_ask_confirm_returns_bool` em `tests/unit/cli/shared/test_prompts.py`
+- [x] T068 [P] [US3] Criar teste `test_ask_confirm_keyboard_interrupt_returns_none` em `tests/unit/cli/shared/test_prompts.py`
+- [x] T069 [P] [US3] Criar teste `test_ask_select_returns_choice` em `tests/unit/cli/shared/test_prompts.py`
+- [x] T070 [P] [US3] Criar teste `test_ask_select_keyboard_interrupt_returns_none` em `tests/unit/cli/shared/test_prompts.py`
+- [x] T071 [P] [US3] Criar teste `test_ask_checkbox_returns_list` em `tests/unit/cli/shared/test_prompts.py`
+- [x] T072 [P] [US3] Criar teste `test_ask_checkbox_keyboard_interrupt_returns_none` em `tests/unit/cli/shared/test_prompts.py`
+- [x] T073 [P] [US3] Criar teste `test_prompts_non_interactive_returns_none` em `tests/unit/cli/shared/test_prompts.py`
 
 ### Implementação (GREEN)
 
-- [ ] T074 [US3] Implementar `ask_text()` em `src/cli/shared/ui/prompts.py` com estilo e Ctrl+C handling
-- [ ] T075 [US3] Implementar `ask_confirm()` com estilo e Ctrl+C handling
-- [ ] T076 [US3] Implementar `ask_select()` com estilo, instrução em português e Ctrl+C handling
-- [ ] T077 [US3] Implementar `ask_checkbox()` com estilo, instrução em português e Ctrl+C handling
-- [ ] T078 [US3] Implementar check `is_interactive()` retornando None se não-interativo
+- [x] T074 [US3] Implementar `ask_text()` em `src/cli/shared/ui/prompts.py` com estilo e Ctrl+C handling
+- [x] T075 [US3] Implementar `ask_confirm()` com estilo e Ctrl+C handling
+- [x] T076 [US3] Implementar `ask_select()` com estilo, instrução em português e Ctrl+C handling
+- [x] T077 [US3] Implementar `ask_checkbox()` com estilo, instrução em português e Ctrl+C handling
+- [x] T078 [US3] Implementar check `is_interactive()` retornando None se não-interativo
 
 ### Refactor
 
-- [ ] T079 [US3] Verificar testes passam e extrair decorator para Ctrl+C handling se útil
+- [x] T079 [US3] Verificar testes passam e extrair decorator para Ctrl+C handling se útil
 
 **Checkpoint US3**: Prompts funcionam com estilo e tratam interrupção graciosamente
 
