@@ -8,10 +8,12 @@ Modules:
     - suggestion_handler: Handles ambiguity resolution with interactive prompts
 
 Example:
-    >>> from src.cli.chat.handlers import MessageHandler
+    >>> from src.cli.chat.handlers import MessageHandler, SuggestionHandler
     >>> handler = MessageHandler(session, console, spinner)
+    >>> suggestion_handler = SuggestionHandler(console)
 """
 
 from src.cli.chat.handlers.message_handler import MessageHandler
+from src.cli.chat.handlers.suggestion_handler import SuggestionHandler
 
-__all__ = ["MessageHandler"]
+__all__ = ["MessageHandler", "SuggestionHandler"]

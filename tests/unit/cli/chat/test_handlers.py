@@ -1,6 +1,6 @@
-"""Tests for MessageHandler - Phase 5: US2 Feedback Visual.
+"""Tests for MessageHandler and SuggestionHandler.
 
-TDD Tests for:
+TDD Tests for Phase 5: US2 Feedback Visual:
 - T082: test_message_handler_init
 - T083: test_handle_status_updates_spinner
 - T084: test_handle_chunk_appends_content
@@ -9,16 +9,27 @@ TDD Tests for:
 - T087: test_handle_query_renders_panel
 - T088: test_handle_query_updates_session
 - T089: test_handle_error_renders_error_panel
+
+TDD Tests for Phase 6: US5 Suggestion Handler:
+- T097: test_has_critical_ambiguities_true
+- T098: test_has_critical_ambiguities_false
+- T099: test_prompt_for_clarification_shows_options
+- T100: test_prompt_for_clarification_returns_selection
+- T101: test_prompt_for_clarification_cancelled_returns_none
 """
 
 from typing import TYPE_CHECKING
-from unittest.mock import MagicMock
+from unittest.mock import MagicMock, patch
+from uuid import UUID
 
 from src.cli.chat.handlers.message_handler import MessageHandler
+from src.cli.chat.handlers.suggestion_handler import SuggestionHandler
 from src.cli.chat.session import ChatSession
 from src.schemas.interpreter import (
+    AmbiguityResponse,
     ErrorResponse,
     InterpretationResponse,
+    InterpretationStatus,
     QueryResponse,
 )
 
@@ -306,3 +317,250 @@ class TestMessageHandlerPromptTracking:
         assert handler.current_prompt == ""
         assert handler.current_interpretation is None
         assert handler.content_buffer == ""
+
+
+# =============================================================================
+# SuggestionHandler Tests - Phase 6: US5 Suggestion Handler
+# =============================================================================
+
+
+class TestSuggestionHandlerHasCriticalAmbiguities:
+    """Tests for SuggestionHandler.has_critical_ambiguities method."""
+
+    def test_has_critical_ambiguities_true(self) -> None:
+        """T097: has_critical_ambiguities returns True when interpretation has ambiguities."""
+        # Arrange
+        handler = SuggestionHandler()
+        interpretation = InterpretationResponse(
+            id=UUID("12345678-1234-5678-1234-567812345678"),
+            status=InterpretationStatus.READY,
+            summary="Buscar usuários ativos (ambíguo)",
+            entities=[],
+            filters=[],
+            confidence=0.5,
+            ambiguities=[
+                AmbiguityResponse(
+                    field="status",
+                    message="'ativo' pode se referir ao status da conta ou do cartão",
+                    suggestions=["status da conta", "status do cartão"],
+                ),
+            ],
+        )
+
+        # Act
+        result = handler.has_critical_ambiguities(interpretation)
+
+        # Assert
+        assert result is True
+
+    def test_has_critical_ambiguities_false(self) -> None:
+        """T098: has_critical_ambiguities returns False when no ambiguities."""
+        # Arrange
+        handler = SuggestionHandler()
+        interpretation = InterpretationResponse(
+            id=UUID("12345678-1234-5678-1234-567812345678"),
+            status=InterpretationStatus.READY,
+            summary="Buscar usuários ativos",
+            entities=[],
+            filters=[],
+            confidence=0.85,
+            ambiguities=[],  # Empty list - no ambiguities
+        )
+
+        # Act
+        result = handler.has_critical_ambiguities(interpretation)
+
+        # Assert
+        assert result is False
+
+    def test_has_critical_ambiguities_false_default(self) -> None:
+        """has_critical_ambiguities returns False when ambiguities field uses default."""
+        # Arrange
+        handler = SuggestionHandler()
+        # InterpretationResponse without explicitly setting ambiguities uses default []
+        interpretation = InterpretationResponse(
+            id=UUID("12345678-1234-5678-1234-567812345678"),
+            status=InterpretationStatus.READY,
+            summary="Buscar usuários ativos",
+            entities=[],
+            filters=[],
+            confidence=0.85,
+        )
+
+        # Act
+        result = handler.has_critical_ambiguities(interpretation)
+
+        # Assert
+        assert result is False
+
+
+class TestSuggestionHandlerPromptForClarification:
+    """Tests for SuggestionHandler.prompt_for_clarification method."""
+
+    def test_prompt_for_clarification_shows_options(
+        self, mock_console: MagicMock
+    ) -> None:
+        """T099: prompt_for_clarification displays options from the ambiguity."""
+        # Arrange
+        handler = SuggestionHandler(console=mock_console)
+        interpretation = InterpretationResponse(
+            id=UUID("12345678-1234-5678-1234-567812345678"),
+            status=InterpretationStatus.READY,
+            summary="Buscar usuários ativos (ambíguo)",
+            entities=[],
+            filters=[],
+            confidence=0.5,
+            ambiguities=[
+                AmbiguityResponse(
+                    field="status",
+                    message="'ativo' pode se referir ao status da conta ou do cartão",
+                    suggestions=["status da conta", "status do cartão"],
+                ),
+            ],
+        )
+
+        # Mock ask_select to capture the choices passed to it
+        with patch(
+            "src.cli.chat.handlers.suggestion_handler.ask_select"
+        ) as mock_ask_select:
+            mock_ask_select.return_value = "status da conta"
+
+            # Act
+            handler.prompt_for_clarification(interpretation)
+
+            # Assert - verify ask_select was called with the suggestions
+            mock_ask_select.assert_called_once()
+            call_kwargs = mock_ask_select.call_args
+            # Check that choices contain the suggestions
+            assert "status da conta" in call_kwargs.kwargs["choices"]
+            assert "status do cartão" in call_kwargs.kwargs["choices"]
+
+    def test_prompt_for_clarification_returns_selection(
+        self, mock_console: MagicMock
+    ) -> None:
+        """T100: prompt_for_clarification returns the user's selection."""
+        # Arrange
+        handler = SuggestionHandler(console=mock_console)
+        interpretation = InterpretationResponse(
+            id=UUID("12345678-1234-5678-1234-567812345678"),
+            status=InterpretationStatus.READY,
+            summary="Buscar usuários ativos (ambíguo)",
+            entities=[],
+            filters=[],
+            confidence=0.5,
+            ambiguities=[
+                AmbiguityResponse(
+                    field="status",
+                    message="'ativo' pode se referir ao status da conta ou do cartão",
+                    suggestions=["status da conta", "status do cartão"],
+                ),
+            ],
+        )
+
+        with patch(
+            "src.cli.chat.handlers.suggestion_handler.ask_select"
+        ) as mock_ask_select:
+            mock_ask_select.return_value = "status do cartão"
+
+            # Act
+            result = handler.prompt_for_clarification(interpretation)
+
+            # Assert
+            assert result == "status do cartão"
+
+    def test_prompt_for_clarification_cancelled_returns_none(
+        self, mock_console: MagicMock
+    ) -> None:
+        """T101: prompt_for_clarification returns None when user cancels (Ctrl+C)."""
+        # Arrange
+        handler = SuggestionHandler(console=mock_console)
+        interpretation = InterpretationResponse(
+            id=UUID("12345678-1234-5678-1234-567812345678"),
+            status=InterpretationStatus.READY,
+            summary="Buscar usuários ativos (ambíguo)",
+            entities=[],
+            filters=[],
+            confidence=0.5,
+            ambiguities=[
+                AmbiguityResponse(
+                    field="status",
+                    message="'ativo' pode se referir ao status da conta ou do cartão",
+                    suggestions=["status da conta", "status do cartão"],
+                ),
+            ],
+        )
+
+        with patch(
+            "src.cli.chat.handlers.suggestion_handler.ask_select"
+        ) as mock_ask_select:
+            # ask_select returns None when cancelled
+            mock_ask_select.return_value = None
+
+            # Act
+            result = handler.prompt_for_clarification(interpretation)
+
+            # Assert
+            assert result is None
+
+    def test_prompt_for_clarification_no_ambiguities_returns_none(
+        self, mock_console: MagicMock
+    ) -> None:
+        """prompt_for_clarification returns None when no ambiguities exist."""
+        # Arrange
+        handler = SuggestionHandler(console=mock_console)
+        interpretation = InterpretationResponse(
+            id=UUID("12345678-1234-5678-1234-567812345678"),
+            status=InterpretationStatus.READY,
+            summary="Buscar usuários ativos",
+            entities=[],
+            filters=[],
+            confidence=0.85,
+            ambiguities=[],
+        )
+
+        # Act
+        result = handler.prompt_for_clarification(interpretation)
+
+        # Assert - should return None without calling ask_select
+        assert result is None
+
+    def test_prompt_for_clarification_multiple_ambiguities_uses_first(
+        self, mock_console: MagicMock
+    ) -> None:
+        """prompt_for_clarification handles first ambiguity when multiple exist."""
+        # Arrange
+        handler = SuggestionHandler(console=mock_console)
+        interpretation = InterpretationResponse(
+            id=UUID("12345678-1234-5678-1234-567812345678"),
+            status=InterpretationStatus.READY,
+            summary="Buscar usuários ativos (ambíguo)",
+            entities=[],
+            filters=[],
+            confidence=0.4,
+            ambiguities=[
+                AmbiguityResponse(
+                    field="status",
+                    message="'ativo' pode se referir ao status da conta ou do cartão",
+                    suggestions=["status da conta", "status do cartão"],
+                ),
+                AmbiguityResponse(
+                    field="tipo",
+                    message="'usuário' pode ser pessoa física ou jurídica",
+                    suggestions=["pessoa física", "pessoa jurídica"],
+                ),
+            ],
+        )
+
+        with patch(
+            "src.cli.chat.handlers.suggestion_handler.ask_select"
+        ) as mock_ask_select:
+            mock_ask_select.return_value = "status da conta"
+
+            # Act
+            result = handler.prompt_for_clarification(interpretation)
+
+            # Assert - uses first ambiguity's suggestions
+            mock_ask_select.assert_called_once()
+            call_kwargs = mock_ask_select.call_args
+            assert "status da conta" in call_kwargs.kwargs["choices"]
+            assert result == "status da conta"

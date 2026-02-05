@@ -245,23 +245,23 @@
 
 #### Testes TDD (RED)
 
-- [ ] T097 [P] [US5] Criar teste `test_has_critical_ambiguities_true` em `tests/unit/cli/chat/test_handlers.py`
-- [ ] T098 [P] [US5] Criar teste `test_has_critical_ambiguities_false` em `tests/unit/cli/chat/test_handlers.py`
-- [ ] T099 [P] [US5] Criar teste `test_prompt_for_clarification_shows_options` em `tests/unit/cli/chat/test_handlers.py`
-- [ ] T100 [P] [US5] Criar teste `test_prompt_for_clarification_returns_selection` em `tests/unit/cli/chat/test_handlers.py`
-- [ ] T101 [P] [US5] Criar teste `test_prompt_for_clarification_cancelled_returns_none` em `tests/unit/cli/chat/test_handlers.py`
+- [x] T097 [P] [US5] Criar teste `test_has_critical_ambiguities_true` em `tests/unit/cli/chat/test_handlers.py`
+- [x] T098 [P] [US5] Criar teste `test_has_critical_ambiguities_false` em `tests/unit/cli/chat/test_handlers.py`
+- [x] T099 [P] [US5] Criar teste `test_prompt_for_clarification_shows_options` em `tests/unit/cli/chat/test_handlers.py`
+- [x] T100 [P] [US5] Criar teste `test_prompt_for_clarification_returns_selection` em `tests/unit/cli/chat/test_handlers.py`
+- [x] T101 [P] [US5] Criar teste `test_prompt_for_clarification_cancelled_returns_none` em `tests/unit/cli/chat/test_handlers.py`
 
 #### Implementação (GREEN)
 
-- [ ] T102 [US5] Implementar `SuggestionHandler` class em `src/cli/chat/handlers/suggestion_handler.py`
-- [ ] T103 [US5] Implementar `has_critical_ambiguities()` (verifica se ambiguities não vazio)
-- [ ] T104 [US5] Implementar `prompt_for_clarification()` (usa ask_select de shared/ui)
+- [x] T102 [US5] Implementar `SuggestionHandler` class em `src/cli/chat/handlers/suggestion_handler.py`
+- [x] T103 [US5] Implementar `has_critical_ambiguities()` (verifica se ambiguities não vazio)
+- [x] T104 [US5] Implementar `prompt_for_clarification()` (usa ask_select de shared/ui)
 
 #### Refactor
 
-- [ ] T105 [US5] Verificar testes passam e refatorar se necessário
+- [x] T105 [US5] Verificar testes passam e refatorar se necessário
 
-**Checkpoint US5**: Sugestões interativas funcionam para queries ambíguas
+**Checkpoint US5**: Sugestões interativas funcionam para queries ambíguas ✅
 
 ---
 
