@@ -278,17 +278,17 @@
 
 **Purpose**: Qualidade, documentação e verificação manual
 
-- [ ] T095 Executar `uv run ruff check src/cli/shared/ tests/unit/cli/shared/` - zero erros
-- [ ] T096 [P] Executar `uv run mypy src/cli/shared/ tests/unit/cli/shared/` - zero erros
-- [ ] T097 [P] Executar `uv run black src/cli/shared/ tests/unit/cli/shared/` - formatação ok
-- [ ] T098 Executar `uv run pytest tests/unit/cli/shared/ -v` - todos os testes passam
-- [ ] T099 [P] Verificação manual: painéis renderizam corretamente (60+ colunas)
-- [ ] T100 [P] Verificação manual: spinners animam sem flicker
-- [ ] T101 [P] Verificação manual: prompts respondem sem delay
-- [ ] T102 [P] Verificação manual: `NO_COLOR=1` output legível
-- [ ] T103 Atualizar docstrings conforme Google-style onde necessário
+- [x] T095 Executar `uv run ruff check src/cli/shared/ tests/unit/cli/shared/` - zero erros
+- [x] T096 [P] Executar `uv run mypy src/cli/shared/ tests/unit/cli/shared/` - zero erros
+- [x] T097 [P] Executar `uv run black src/cli/shared/ tests/unit/cli/shared/` - formatação ok
+- [x] T098 Executar `uv run pytest tests/unit/cli/shared/ -v` - todos os testes passam
+- [x] T099 [P] Verificação manual: painéis renderizam corretamente (60+ colunas)
+- [x] T100 [P] Verificação manual: spinners animam sem flicker
+- [x] T101 [P] Verificação manual: prompts respondem sem delay
+- [x] T102 [P] Verificação manual: `NO_COLOR=1` output legível
+- [x] T103 Atualizar docstrings conforme Google-style onde necessário
 
-**Checkpoint Final**: Qualidade validada, pronto para merge
+**Checkpoint Final**: Qualidade validada, pronto para merge ✅
 
 ---
 
@@ -389,15 +389,15 @@ Com múltiplos desenvolvedores após Phase 2:
 
 ## Success Criteria (from Spec)
 
-- [ ] **SC-001**: 100% dos componentes importáveis via `from src.cli.shared.ui import *`
-- [ ] **SC-002**: Zero erros de mypy/ruff/black
-- [ ] **SC-003**: Testes unitários cobrem lógica crítica (PhaseSpinner, Ctrl+C)
-- [ ] **SC-004**: Painéis renderizam em terminais 60+ colunas (manual)
-- [ ] **SC-005**: Spinners animam sem flicker (manual)
-- [ ] **SC-006**: Prompts respondem sem delay perceptível (manual)
-- [ ] **SC-007**: Output legível com `NO_COLOR=1` (manual)
-- [ ] **SC-008**: `ask_approval()` usável por plano 02P
-- [ ] **SC-009**: Painéis/spinners usáveis por plano 03P
+- [x] **SC-001**: 100% dos componentes importáveis via `from src.cli.shared.ui import *`
+- [x] **SC-002**: Zero erros de mypy/ruff/black
+- [x] **SC-003**: Testes unitários cobrem lógica crítica (PhaseSpinner, Ctrl+C)
+- [x] **SC-004**: Painéis renderizam em terminais 60+ colunas (manual)
+- [x] **SC-005**: Spinners animam sem flicker (manual)
+- [x] **SC-006**: Prompts respondem sem delay perceptível (manual)
+- [x] **SC-007**: Output legível com `NO_COLOR=1` (manual)
+- [x] **SC-008**: `ask_approval()` usável por plano 02P
+- [x] **SC-009**: Painéis/spinners usáveis por plano 03P
 
 ---
 
