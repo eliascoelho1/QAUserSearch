@@ -80,23 +80,23 @@
 
 #### Testes TDD (RED)
 
-- [ ] T016 [P] [US6] Criar teste `test_supports_color_no_color_env` em `tests/unit/cli/shared/test_terminal.py`
-- [ ] T017 [P] [US6] Criar teste `test_supports_color_force_color_env` em `tests/unit/cli/shared/test_terminal.py`
-- [ ] T018 [P] [US6] Criar teste `test_supports_unicode_windows_no_wt` em `tests/unit/cli/shared/test_terminal.py`
-- [ ] T019 [P] [US6] Criar teste `test_is_interactive_tty` em `tests/unit/cli/shared/test_terminal.py`
-- [ ] T020 [P] [US6] Criar teste `test_is_interactive_pipe` em `tests/unit/cli/shared/test_terminal.py`
-- [ ] T021 [P] [US6] Criar teste `test_get_terminal_size_fallback` em `tests/unit/cli/shared/test_terminal.py`
+- [x] T016 [P] [US6] Criar teste `test_supports_color_no_color_env` em `tests/unit/cli/shared/test_terminal.py`
+- [x] T017 [P] [US6] Criar teste `test_supports_color_force_color_env` em `tests/unit/cli/shared/test_terminal.py`
+- [x] T018 [P] [US6] Criar teste `test_supports_unicode_windows_no_wt` em `tests/unit/cli/shared/test_terminal.py`
+- [x] T019 [P] [US6] Criar teste `test_is_interactive_tty` em `tests/unit/cli/shared/test_terminal.py`
+- [x] T020 [P] [US6] Criar teste `test_is_interactive_pipe` em `tests/unit/cli/shared/test_terminal.py`
+- [x] T021 [P] [US6] Criar teste `test_get_terminal_size_fallback` em `tests/unit/cli/shared/test_terminal.py`
 
 #### Implementação (GREEN)
 
-- [ ] T022 [US6] Implementar `get_terminal_size()` em `src/cli/shared/utils/terminal.py`
-- [ ] T023 [US6] Implementar `supports_color()` com lógica NO_COLOR/FORCE_COLOR
-- [ ] T024 [US6] Implementar `supports_unicode()` com detecção Windows/Unix
-- [ ] T025 [US6] Implementar `is_interactive()` com isatty checks
+- [x] T022 [US6] Implementar `get_terminal_size()` em `src/cli/shared/utils/terminal.py`
+- [x] T023 [US6] Implementar `supports_color()` com lógica NO_COLOR/FORCE_COLOR
+- [x] T024 [US6] Implementar `supports_unicode()` com detecção Windows/Unix
+- [x] T025 [US6] Implementar `is_interactive()` com isatty checks
 
 #### Refactor
 
-- [ ] T026 [US6] Verificar testes passam e refatorar se necessário
+- [x] T026 [US6] Verificar testes passam e refatorar se necessário
 
 **Checkpoint US6**: Detecção de capacidades funciona em diferentes ambientes
 
