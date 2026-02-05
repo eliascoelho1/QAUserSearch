@@ -167,31 +167,31 @@
 
 ### Testes TDD (RED)
 
-- [ ] T046 [P] [US2] Criar teste `test_spinner_context_manager` em `tests/unit/cli/shared/test_progress.py`
-- [ ] T047 [P] [US2] Criar teste `test_spinner_non_interactive_fallback` em `tests/unit/cli/shared/test_progress.py`
-- [ ] T048 [P] [US2] Criar teste `test_phase_dataclass_frozen` em `tests/unit/cli/shared/test_progress.py`
-- [ ] T049 [P] [US2] Criar teste `test_phase_spinner_initial_state` em `tests/unit/cli/shared/test_progress.py`
-- [ ] T050 [P] [US2] Criar teste `test_phase_spinner_advance` em `tests/unit/cli/shared/test_progress.py`
-- [ ] T051 [P] [US2] Criar teste `test_phase_spinner_complete` em `tests/unit/cli/shared/test_progress.py`
-- [ ] T052 [P] [US2] Criar teste `test_phase_spinner_fail` em `tests/unit/cli/shared/test_progress.py`
-- [ ] T053 [P] [US2] Criar teste `test_phase_spinner_no_advance_past_end` em `tests/unit/cli/shared/test_progress.py`
-- [ ] T054 [P] [US2] Criar teste `test_create_bar_progress` em `tests/unit/cli/shared/test_progress.py`
+- [x] T046 [P] [US2] Criar teste `test_spinner_context_manager` em `tests/unit/cli/shared/test_progress.py`
+- [x] T047 [P] [US2] Criar teste `test_spinner_non_interactive_fallback` em `tests/unit/cli/shared/test_progress.py`
+- [x] T048 [P] [US2] Criar teste `test_phase_dataclass_frozen` em `tests/unit/cli/shared/test_progress.py`
+- [x] T049 [P] [US2] Criar teste `test_phase_spinner_initial_state` em `tests/unit/cli/shared/test_progress.py`
+- [x] T050 [P] [US2] Criar teste `test_phase_spinner_advance` em `tests/unit/cli/shared/test_progress.py`
+- [x] T051 [P] [US2] Criar teste `test_phase_spinner_complete` em `tests/unit/cli/shared/test_progress.py`
+- [x] T052 [P] [US2] Criar teste `test_phase_spinner_fail` em `tests/unit/cli/shared/test_progress.py`
+- [x] T053 [P] [US2] Criar teste `test_phase_spinner_no_advance_past_end` em `tests/unit/cli/shared/test_progress.py`
+- [x] T054 [P] [US2] Criar teste `test_create_bar_progress` em `tests/unit/cli/shared/test_progress.py`
 
 ### Implementação (GREEN)
 
-- [ ] T055 [US2] Implementar `Phase` dataclass em `src/cli/shared/ui/progress.py`
-- [ ] T056 [US2] Implementar `create_spinner_progress()` factory
-- [ ] T057 [US2] Implementar `create_bar_progress()` factory com barra, %, tempo
-- [ ] T058 [US2] Implementar `spinner()` context manager com fallback non-interactive
-- [ ] T059 [US2] Implementar `PhaseSpinner.__init__()` com lista de fases
-- [ ] T060 [US2] Implementar `PhaseSpinner.live()` context manager com Rich Live
-- [ ] T061 [US2] Implementar `PhaseSpinner.advance()` e `PhaseSpinner.complete()`
-- [ ] T062 [US2] Implementar `PhaseSpinner.fail()` com mensagem opcional
-- [ ] T063 [US2] Implementar fallback estático para terminais non-interactive
+- [x] T055 [US2] Implementar `Phase` dataclass em `src/cli/shared/ui/progress.py`
+- [x] T056 [US2] Implementar `create_spinner_progress()` factory
+- [x] T057 [US2] Implementar `create_bar_progress()` factory com barra, %, tempo
+- [x] T058 [US2] Implementar `spinner()` context manager com fallback non-interactive
+- [x] T059 [US2] Implementar `PhaseSpinner.__init__()` com lista de fases
+- [x] T060 [US2] Implementar `PhaseSpinner.live()` context manager com Rich Live
+- [x] T061 [US2] Implementar `PhaseSpinner.advance()` e `PhaseSpinner.complete()`
+- [x] T062 [US2] Implementar `PhaseSpinner.fail()` com mensagem opcional
+- [x] T063 [US2] Implementar fallback estático para terminais non-interactive
 
 ### Refactor
 
-- [ ] T064 [US2] Verificar testes passam e refatorar PhaseSpinner se necessário
+- [x] T064 [US2] Verificar testes passam e refatorar PhaseSpinner se necessário
 
 **Checkpoint US2**: Spinners animam, PhaseSpinner gerencia fases corretamente
 
