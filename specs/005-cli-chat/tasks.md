@@ -275,33 +275,33 @@
 
 #### Testes TDD (RED)
 
-- [ ] T106 [P] [US6] Criar teste `test_ws_client_init_default_url` em `tests/unit/cli/chat/test_client.py`
-- [ ] T107 [P] [US6] Criar teste `test_ws_client_init_custom_url` em `tests/unit/cli/chat/test_client.py`
-- [ ] T108 [P] [US6] Criar teste `test_ws_client_connect` em `tests/unit/cli/chat/test_client.py`
-- [ ] T109 [P] [US6] Criar teste `test_ws_client_disconnect` em `tests/unit/cli/chat/test_client.py`
-- [ ] T110 [P] [US6] Criar teste `test_ws_client_is_connected` em `tests/unit/cli/chat/test_client.py`
-- [ ] T111 [P] [US6] Criar teste `test_ws_client_send_prompt_sends_message` em `tests/unit/cli/chat/test_client.py`
-- [ ] T112 [P] [US6] Criar teste `test_ws_client_send_prompt_yields_responses` em `tests/unit/cli/chat/test_client.py`
-- [ ] T113 [P] [US6] Criar teste `test_ws_client_reconnect_on_disconnect` em `tests/unit/cli/chat/test_client.py`
-- [ ] T114 [P] [US6] Criar teste `test_ws_client_max_retries_exceeded` em `tests/unit/cli/chat/test_client.py`
-- [ ] T115 [P] [US6] Criar teste `test_ws_client_backoff_exponential` em `tests/unit/cli/chat/test_client.py`
+- [x] T106 [P] [US6] Criar teste `test_ws_client_init_default_url` em `tests/unit/cli/chat/test_client.py`
+- [x] T107 [P] [US6] Criar teste `test_ws_client_init_custom_url` em `tests/unit/cli/chat/test_client.py`
+- [x] T108 [P] [US6] Criar teste `test_ws_client_connect` em `tests/unit/cli/chat/test_client.py`
+- [x] T109 [P] [US6] Criar teste `test_ws_client_disconnect` em `tests/unit/cli/chat/test_client.py`
+- [x] T110 [P] [US6] Criar teste `test_ws_client_is_connected` em `tests/unit/cli/chat/test_client.py`
+- [x] T111 [P] [US6] Criar teste `test_ws_client_send_prompt_sends_message` em `tests/unit/cli/chat/test_client.py`
+- [x] T112 [P] [US6] Criar teste `test_ws_client_send_prompt_yields_responses` em `tests/unit/cli/chat/test_client.py`
+- [x] T113 [P] [US6] Criar teste `test_ws_client_reconnect_on_disconnect` em `tests/unit/cli/chat/test_client.py`
+- [x] T114 [P] [US6] Criar teste `test_ws_client_max_retries_exceeded` em `tests/unit/cli/chat/test_client.py`
+- [x] T115 [P] [US6] Criar teste `test_ws_client_backoff_exponential` em `tests/unit/cli/chat/test_client.py`
 
 #### Implementação (GREEN)
 
-- [ ] T116 [US6] Implementar `ChatClientProtocol` em `src/cli/chat/client.py`
-- [ ] T117 [US6] Implementar `WSChatClient.__init__()` em `src/cli/chat/client.py`
-- [ ] T118 [US6] Implementar `WSChatClient.connect()` usando websockets library
-- [ ] T119 [US6] Implementar `WSChatClient.disconnect()`
-- [ ] T120 [US6] Implementar `WSChatClient.is_connected` property
-- [ ] T121 [US6] Implementar `WSChatClient.send_prompt()` como AsyncIterator
-- [ ] T122 [US6] Implementar reconnection automática com backoff exponencial (max 3 retries)
-- [ ] T123 [US6] Implementar tratamento de erro quando reconexão falha
+- [x] T116 [US6] Implementar `ChatClientProtocol` em `src/cli/chat/client.py`
+- [x] T117 [US6] Implementar `WSChatClient.__init__()` em `src/cli/chat/client.py`
+- [x] T118 [US6] Implementar `WSChatClient.connect()` usando websockets library
+- [x] T119 [US6] Implementar `WSChatClient.disconnect()`
+- [x] T120 [US6] Implementar `WSChatClient.is_connected` property
+- [x] T121 [US6] Implementar `WSChatClient.send_prompt()` como AsyncIterator
+- [x] T122 [US6] Implementar reconnection automática com backoff exponencial (max 3 retries)
+- [x] T123 [US6] Implementar tratamento de erro quando reconexão falha
 
 #### Refactor
 
-- [ ] T124 [US6] Verificar testes passam e refatorar se necessário
+- [x] T124 [US6] Verificar testes passam e refatorar se necessário
 
-**Checkpoint US6**: Conexão WebSocket real funciona com reconexão automática
+**Checkpoint US6**: Conexão WebSocket real funciona com reconexão automática ✅
 
 ---
 
