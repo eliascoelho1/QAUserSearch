@@ -50,27 +50,27 @@
 
 #### Testes TDD (RED)
 
-- [ ] T005 [P] Criar teste `test_query_record_dataclass` em `tests/unit/cli/chat/test_session.py`
-- [ ] T006 [P] Criar teste `test_query_record_was_successful_true` em `tests/unit/cli/chat/test_session.py`
-- [ ] T007 [P] Criar teste `test_query_record_was_successful_false` em `tests/unit/cli/chat/test_session.py`
-- [ ] T008 [P] Criar teste `test_chat_session_initial_state` em `tests/unit/cli/chat/test_session.py`
-- [ ] T009 [P] Criar teste `test_chat_session_add_query` em `tests/unit/cli/chat/test_session.py`
-- [ ] T010 [P] Criar teste `test_chat_session_history_max_10` em `tests/unit/cli/chat/test_session.py`
-- [ ] T011 [P] Criar teste `test_chat_session_clear` em `tests/unit/cli/chat/test_session.py`
-- [ ] T012 [P] Criar teste `test_chat_session_toggle_mock_mode` em `tests/unit/cli/chat/test_session.py`
+- [x] T005 [P] Criar teste `test_query_record_dataclass` em `tests/unit/cli/chat/test_session.py`
+- [x] T006 [P] Criar teste `test_query_record_was_successful_true` em `tests/unit/cli/chat/test_session.py`
+- [x] T007 [P] Criar teste `test_query_record_was_successful_false` em `tests/unit/cli/chat/test_session.py`
+- [x] T008 [P] Criar teste `test_chat_session_initial_state` em `tests/unit/cli/chat/test_session.py`
+- [x] T009 [P] Criar teste `test_chat_session_add_query` em `tests/unit/cli/chat/test_session.py`
+- [x] T010 [P] Criar teste `test_chat_session_history_max_10` em `tests/unit/cli/chat/test_session.py`
+- [x] T011 [P] Criar teste `test_chat_session_clear` em `tests/unit/cli/chat/test_session.py`
+- [x] T012 [P] Criar teste `test_chat_session_toggle_mock_mode` em `tests/unit/cli/chat/test_session.py`
 
 #### Implementação (GREEN)
 
-- [ ] T013 Implementar `QueryRecord` dataclass em `src/cli/chat/session.py`
-- [ ] T014 Implementar `ChatSession` dataclass em `src/cli/chat/session.py`
-- [ ] T015 Implementar `ChatSession.add_query()` com limite de 10 itens (FIFO)
-- [ ] T016 Implementar `ChatSession.get_history()`, `clear()`, `toggle_mock_mode()`
+- [x] T013 Implementar `QueryRecord` dataclass em `src/cli/chat/session.py`
+- [x] T014 Implementar `ChatSession` dataclass em `src/cli/chat/session.py`
+- [x] T015 Implementar `ChatSession.add_query()` com limite de 10 itens (FIFO)
+- [x] T016 Implementar `ChatSession.get_history()`, `clear()`, `toggle_mock_mode()`
 
 #### Refactor
 
-- [ ] T017 Verificar testes passam e refatorar se necessário
+- [x] T017 Verificar testes passam e refatorar se necessário
 
-**Checkpoint Session**: `from src.cli.chat.session import ChatSession, QueryRecord` funciona
+**Checkpoint Session**: `from src.cli.chat.session import ChatSession, QueryRecord` funciona ✅
 
 ---
 
