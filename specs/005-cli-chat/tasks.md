@@ -82,38 +82,38 @@
 
 #### Testes TDD (RED)
 
-- [ ] T018 [P] [US3] Criar teste `test_command_type_enum_values` em `tests/unit/cli/chat/test_commands.py`
-- [ ] T019 [P] [US3] Criar teste `test_is_command_true` em `tests/unit/cli/chat/test_commands.py`
-- [ ] T020 [P] [US3] Criar teste `test_is_command_false_no_slash` em `tests/unit/cli/chat/test_commands.py`
-- [ ] T021 [P] [US3] Criar teste `test_parse_command_exit` em `tests/unit/cli/chat/test_commands.py`
-- [ ] T022 [P] [US3] Criar teste `test_parse_command_quit_alias` em `tests/unit/cli/chat/test_commands.py`
-- [ ] T023 [P] [US3] Criar teste `test_parse_command_case_insensitive` em `tests/unit/cli/chat/test_commands.py`
-- [ ] T024 [P] [US3] Criar teste `test_parse_command_unknown_returns_none` em `tests/unit/cli/chat/test_commands.py`
-- [ ] T025 [P] [US3] Criar teste `test_execute_command_exit` em `tests/unit/cli/chat/test_commands.py`
-- [ ] T026 [P] [US3] Criar teste `test_execute_command_help` em `tests/unit/cli/chat/test_commands.py`
-- [ ] T027 [P] [US3] Criar teste `test_execute_command_clear` em `tests/unit/cli/chat/test_commands.py`
-- [ ] T028 [P] [US3] Criar teste `test_execute_command_history` em `tests/unit/cli/chat/test_commands.py`
-- [ ] T029 [P] [US3] Criar teste `test_execute_command_execute_shows_info` em `tests/unit/cli/chat/test_commands.py`
-- [ ] T030 [P] [US3] Criar teste `test_execute_command_mock_toggles` em `tests/unit/cli/chat/test_commands.py`
+- [x] T018 [P] [US3] Criar teste `test_command_type_enum_values` em `tests/unit/cli/chat/test_commands.py`
+- [x] T019 [P] [US3] Criar teste `test_is_command_true` em `tests/unit/cli/chat/test_commands.py`
+- [x] T020 [P] [US3] Criar teste `test_is_command_false_no_slash` em `tests/unit/cli/chat/test_commands.py`
+- [x] T021 [P] [US3] Criar teste `test_parse_command_exit` em `tests/unit/cli/chat/test_commands.py`
+- [x] T022 [P] [US3] Criar teste `test_parse_command_quit_alias` em `tests/unit/cli/chat/test_commands.py`
+- [x] T023 [P] [US3] Criar teste `test_parse_command_case_insensitive` em `tests/unit/cli/chat/test_commands.py`
+- [x] T024 [P] [US3] Criar teste `test_parse_command_unknown_returns_none` em `tests/unit/cli/chat/test_commands.py`
+- [x] T025 [P] [US3] Criar teste `test_execute_command_exit` em `tests/unit/cli/chat/test_commands.py`
+- [x] T026 [P] [US3] Criar teste `test_execute_command_help` em `tests/unit/cli/chat/test_commands.py`
+- [x] T027 [P] [US3] Criar teste `test_execute_command_clear` em `tests/unit/cli/chat/test_commands.py`
+- [x] T028 [P] [US3] Criar teste `test_execute_command_history` em `tests/unit/cli/chat/test_commands.py`
+- [x] T029 [P] [US3] Criar teste `test_execute_command_execute_shows_info` em `tests/unit/cli/chat/test_commands.py`
+- [x] T030 [P] [US3] Criar teste `test_execute_command_mock_toggles` em `tests/unit/cli/chat/test_commands.py`
 
 #### Implementação (GREEN)
 
-- [ ] T031 [US3] Implementar `CommandType` enum em `src/cli/chat/commands.py`
-- [ ] T032 [US3] Implementar `CommandResult` dataclass em `src/cli/chat/commands.py`
-- [ ] T033 [US3] Implementar `is_command(text)` em `src/cli/chat/commands.py`
-- [ ] T034 [US3] Implementar `parse_command(text)` com case-insensitive e aliases
-- [ ] T035 [US3] Implementar `execute_command()` para EXIT/QUIT
-- [ ] T036 [US3] Implementar `execute_command()` para HELP (usa renderer)
-- [ ] T037 [US3] Implementar `execute_command()` para CLEAR
-- [ ] T038 [US3] Implementar `execute_command()` para HISTORY
-- [ ] T039 [US3] Implementar `execute_command()` para EXECUTE (simulação v1)
-- [ ] T040 [US3] Implementar `execute_command()` para MOCK
+- [x] T031 [US3] Implementar `CommandType` enum em `src/cli/chat/commands.py`
+- [x] T032 [US3] Implementar `CommandResult` dataclass em `src/cli/chat/commands.py`
+- [x] T033 [US3] Implementar `is_command(text)` em `src/cli/chat/commands.py`
+- [x] T034 [US3] Implementar `parse_command(text)` com case-insensitive e aliases
+- [x] T035 [US3] Implementar `execute_command()` para EXIT/QUIT
+- [x] T036 [US3] Implementar `execute_command()` para HELP (usa renderer)
+- [x] T037 [US3] Implementar `execute_command()` para CLEAR
+- [x] T038 [US3] Implementar `execute_command()` para HISTORY
+- [x] T039 [US3] Implementar `execute_command()` para EXECUTE (simulação v1)
+- [x] T040 [US3] Implementar `execute_command()` para MOCK
 
 #### Refactor
 
-- [ ] T041 [US3] Verificar testes passam e refatorar se necessário
+- [x] T041 [US3] Verificar testes passam e refatorar se necessário
 
-**Checkpoint Commands**: Todos os 6 comandos funcionam conforme spec
+**Checkpoint Commands**: Todos os 6 comandos funcionam conforme spec ✅
 
 ---
 

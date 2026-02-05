@@ -16,3 +16,22 @@ Modules:
     - mock_client: Mock client for offline development
     - client: WebSocket client for real backend connection
 """
+
+from src.cli.chat.commands import (
+    CommandResult,
+    CommandType,
+    execute_command,
+    is_command,
+    parse_command,
+)
+from src.cli.chat.session import ChatSession, QueryRecord
+
+__all__ = [
+    "ChatSession",
+    "CommandResult",
+    "CommandType",
+    "QueryRecord",
+    "execute_command",
+    "is_command",
+    "parse_command",
+]
