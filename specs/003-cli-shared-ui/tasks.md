@@ -239,22 +239,22 @@
 
 ### Testes TDD (RED)
 
-- [ ] T080 [P] [US4] Criar teste `test_approval_result_enum_values` em `tests/unit/cli/shared/test_prompts.py`
-- [ ] T081 [P] [US4] Criar teste `test_approval_result_inherits_str` em `tests/unit/cli/shared/test_prompts.py`
-- [ ] T082 [P] [US4] Criar teste `test_ask_approval_all_options` em `tests/unit/cli/shared/test_prompts.py`
-- [ ] T083 [P] [US4] Criar teste `test_ask_approval_no_edit` em `tests/unit/cli/shared/test_prompts.py`
-- [ ] T084 [P] [US4] Criar teste `test_ask_approval_no_skip` em `tests/unit/cli/shared/test_prompts.py`
-- [ ] T085 [P] [US4] Criar teste `test_ask_approval_keyboard_interrupt` em `tests/unit/cli/shared/test_prompts.py`
+- [x] T080 [P] [US4] Criar teste `test_approval_result_enum_values` em `tests/unit/cli/shared/test_prompts.py`
+- [x] T081 [P] [US4] Criar teste `test_approval_result_inherits_str` em `tests/unit/cli/shared/test_prompts.py`
+- [x] T082 [P] [US4] Criar teste `test_ask_approval_all_options` em `tests/unit/cli/shared/test_prompts.py`
+- [x] T083 [P] [US4] Criar teste `test_ask_approval_no_edit` em `tests/unit/cli/shared/test_prompts.py`
+- [x] T084 [P] [US4] Criar teste `test_ask_approval_no_skip` em `tests/unit/cli/shared/test_prompts.py`
+- [x] T085 [P] [US4] Criar teste `test_ask_approval_keyboard_interrupt` em `tests/unit/cli/shared/test_prompts.py`
 
 ### Implementação (GREEN)
 
-- [ ] T086 [US4] Implementar `ApprovalResult` enum em `src/cli/shared/ui/prompts.py`
-- [ ] T087 [US4] Implementar `ask_approval()` com opções condicionais
-- [ ] T088 [US4] Mapear seleção para `ApprovalResult` enum value
+- [x] T086 [US4] Implementar `ApprovalResult` enum em `src/cli/shared/ui/prompts.py`
+- [x] T087 [US4] Implementar `ask_approval()` com opções condicionais
+- [x] T088 [US4] Mapear seleção para `ApprovalResult` enum value
 
 ### Refactor
 
-- [ ] T089 [US4] Verificar testes passam e refatorar se necessário
+- [x] T089 [US4] Verificar testes passam e refatorar se necessário
 
 **Checkpoint US4**: `ask_approval()` pronto para uso em `02P-catalog-ai-enrichment`
 
