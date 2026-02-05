@@ -135,25 +135,25 @@
 
 ### Testes TDD (RED)
 
-- [ ] T033 [P] [US1] Criar teste `test_create_panel_basic` em `tests/unit/cli/shared/test_panels.py`
-- [ ] T034 [P] [US1] Criar teste `test_info_panel_style` em `tests/unit/cli/shared/test_panels.py`
-- [ ] T035 [P] [US1] Criar teste `test_success_panel_style` em `tests/unit/cli/shared/test_panels.py`
-- [ ] T036 [P] [US1] Criar teste `test_warning_panel_style` em `tests/unit/cli/shared/test_panels.py`
-- [ ] T037 [P] [US1] Criar teste `test_error_panel_style` em `tests/unit/cli/shared/test_panels.py`
-- [ ] T038 [P] [US1] Criar teste `test_panel_icon_fallback_ascii` em `tests/unit/cli/shared/test_panels.py`
+- [x] T033 [P] [US1] Criar teste `test_create_panel_basic` em `tests/unit/cli/shared/test_panels.py`
+- [x] T034 [P] [US1] Criar teste `test_info_panel_style` em `tests/unit/cli/shared/test_panels.py`
+- [x] T035 [P] [US1] Criar teste `test_success_panel_style` em `tests/unit/cli/shared/test_panels.py`
+- [x] T036 [P] [US1] Criar teste `test_warning_panel_style` em `tests/unit/cli/shared/test_panels.py`
+- [x] T037 [P] [US1] Criar teste `test_error_panel_style` em `tests/unit/cli/shared/test_panels.py`
+- [x] T038 [P] [US1] Criar teste `test_panel_icon_fallback_ascii` em `tests/unit/cli/shared/test_panels.py`
 
 ### Implementação (GREEN)
 
-- [ ] T039 [US1] Implementar `create_panel()` em `src/cli/shared/ui/panels.py`
-- [ ] T040 [US1] Implementar `info_panel()` com estilo azul e ícone
-- [ ] T041 [US1] Implementar `success_panel()` com estilo verde e ícone
-- [ ] T042 [US1] Implementar `warning_panel()` com estilo âmbar e ícone
-- [ ] T043 [US1] Implementar `error_panel()` com estilo vermelho e ícone
-- [ ] T044 [US1] Implementar fallback ASCII para ícones quando `supports_unicode()=False`
+- [x] T039 [US1] Implementar `create_panel()` em `src/cli/shared/ui/panels.py`
+- [x] T040 [US1] Implementar `info_panel()` com estilo azul e ícone
+- [x] T041 [US1] Implementar `success_panel()` com estilo verde e ícone
+- [x] T042 [US1] Implementar `warning_panel()` com estilo âmbar e ícone
+- [x] T043 [US1] Implementar `error_panel()` com estilo vermelho e ícone
+- [x] T044 [US1] Implementar fallback ASCII para ícones quando `supports_unicode()=False`
 
 ### Refactor
 
-- [ ] T045 [US1] Verificar testes passam e refatorar para reduzir duplicação
+- [x] T045 [US1] Verificar testes passam e refatorar para reduzir duplicação
 
 **Checkpoint US1**: Painéis funcionam com cores e fallback
 
