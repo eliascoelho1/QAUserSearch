@@ -7,7 +7,8 @@ from typer.testing import CliRunner
 
 from src.cli.main import app
 
-runner = CliRunner()
+# Use NO_COLOR to disable ANSI escape codes in output (consistent across CI/local)
+runner = CliRunner(env={"NO_COLOR": "1"})
 
 
 class TestQaHelp:
