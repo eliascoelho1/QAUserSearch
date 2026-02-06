@@ -219,6 +219,16 @@ class FilterResponse(BaseModel):
     is_temporal: bool = Field(default=False, description="Se é condição temporal")
 
 
+class AmbiguityResponse(BaseModel):
+    """Ambiguity detected in the prompt."""
+
+    field: str = Field(..., description="Campo ou termo ambíguo")
+    message: str = Field(..., description="Descrição da ambiguidade")
+    suggestions: list[str] = Field(
+        default_factory=list, description="Opções para resolver a ambiguidade"
+    )
+
+
 class InterpretationResponse(BaseModel):
     """Response from prompt interpretation."""
 
@@ -234,6 +244,9 @@ class InterpretationResponse(BaseModel):
         default_factory=list[FilterResponse], description="Filtros extraídos"
     )
     confidence: float = Field(..., ge=0.0, le=1.0, description="Confiança (0-1)")
+    ambiguities: list[AmbiguityResponse] = Field(
+        default_factory=list, description="Ambiguidades detectadas na interpretação"
+    )
 
 
 class QueryResponse(BaseModel):

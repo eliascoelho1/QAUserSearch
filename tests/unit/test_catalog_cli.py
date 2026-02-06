@@ -1,17 +1,10 @@
 """Unit tests for catalog CLI commands."""
 
-import re
-
 import pytest
 from typer.testing import CliRunner
 
 from src.cli.catalog import KNOWN_SOURCES, app
-
-
-def strip_ansi_codes(text: str) -> str:
-    """Remove ANSI escape codes from text."""
-    ansi_pattern = re.compile(r"\x1b\[[0-9;]*m")
-    return ansi_pattern.sub("", text)
+from tests.unit.cli import strip_ansi
 
 
 class TestCatalogCLI:
@@ -25,10 +18,11 @@ class TestCatalogCLI:
     def test_list_known_shows_all_sources(self, runner: CliRunner) -> None:
         """list-known should display all known sources."""
         result = runner.invoke(app, ["list-known"])
+        output = strip_ansi(result.output)
 
         assert result.exit_code == 0
         for db_name, table_name in KNOWN_SOURCES:
-            assert f"{db_name}.{table_name}" in result.output
+            assert f"{db_name}.{table_name}" in output
 
     def test_extract_requires_arguments(self, runner: CliRunner) -> None:
         """extract without arguments should show error."""
@@ -39,25 +33,27 @@ class TestCatalogCLI:
     def test_help_shows_commands(self, runner: CliRunner) -> None:
         """--help should show available commands."""
         result = runner.invoke(app, ["--help"])
+        output = strip_ansi(result.output)
 
         assert result.exit_code == 0
-        assert "extract" in result.output
-        assert "extract-all" in result.output
-        assert "list-known" in result.output
+        assert "extract" in output
+        assert "extract-all" in output
+        assert "list-known" in output
 
     def test_no_args_shows_help(self, runner: CliRunner) -> None:
         """Running with no args should show help."""
         result = runner.invoke(app, [])
+        output = strip_ansi(result.output)
 
         assert result.exit_code == 0
-        assert "extract" in result.output
-        assert "extract-all" in result.output
-        assert "list-known" in result.output
+        assert "extract" in output
+        assert "extract-all" in output
+        assert "list-known" in output
 
     def test_extract_help_shows_arguments(self, runner: CliRunner) -> None:
         """extract --help should show required arguments."""
         result = runner.invoke(app, ["extract", "--help"])
-        output = strip_ansi_codes(result.output).lower()
+        output = strip_ansi(result.output).lower()
 
         assert result.exit_code == 0
         assert "db_name" in output or "db-name" in output
@@ -67,7 +63,7 @@ class TestCatalogCLI:
     def test_extract_all_help_shows_options(self, runner: CliRunner) -> None:
         """extract-all --help should show options."""
         result = runner.invoke(app, ["extract-all", "--help"])
-        output = strip_ansi_codes(result.output).lower()
+        output = strip_ansi(result.output).lower()
 
         assert result.exit_code == 0
         assert "sample-size" in output

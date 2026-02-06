@@ -203,6 +203,8 @@ class InferredType(str, Enum):
 - PostgreSQL (catálogo de metadados), MongoDB (dados de QA externos) (001-llm-query-interpreter)
 - Python 3.11+ + FastAPI 0.115+, Pydantic 2.10+, PyYAML 6.0+, structlog 24.4+ (002-yaml-catalog)
 - YAML files (catalog/sources/{db_name}/{table_name}.yaml) + JSON Schema para validação (002-yaml-catalog)
+- Python 3.11+ + websockets >=12.0, Typer >=0.15.0, Rich ^13.9.0, Questionary ^2.0.0 (via shared UI) (005-cli-chat)
+- N/A (sessão em memória, sem persistência entre sessões) (005-cli-chat)
 
 ## Recent Changes
 - 001-llm-query-interpreter: Added Python 3.11 + FastAPI, CrewAI (1.9.3), Pydantic, SQLAlchemy async

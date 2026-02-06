@@ -86,7 +86,7 @@ jobs:
         env:
           DATABASE_URL: postgresql+asyncpg://postgres:postgres@localhost:5432/qausersearch_test
           ENVIRONMENT: development
-        run: uv run pytest --cov=src --cov-report=xml --cov-report=html
+        run: uv run pytest --tb=short -q --no-header -rF
 
       - name: Upload coverage
         uses: codecov/codecov-action@v4
